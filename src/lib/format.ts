@@ -12,3 +12,12 @@ export function formatDate(date: Date | string) {
     timeZone: "UTC",
   }).format(new Date(date));
 }
+
+// A fixed date-and-time format (Queensland time) so the server and the browser always agree.
+export function formatDateTime(date: Date | string) {
+  return new Intl.DateTimeFormat("en-AU", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Australia/Brisbane",
+  }).format(new Date(date));
+}

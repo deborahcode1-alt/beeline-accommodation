@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { publicListingWhere } from "@/lib/visibility";
+import { getGuest } from "@/lib/guestSession";
 import { calcTotalPrice, isRangeAvailable, nightsBetween } from "@/lib/availability";
 import { notifyNewBooking, notifyInstantBooking } from "@/lib/notifications";
 
@@ -54,6 +55,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // A guest who is signed in gets this stay on their account straight away.
+  const guestAccount = await getGuest();
+
   const totalPrice = calcTotalPrice(listing.basePrice, listing.cleaningFee, nights);
 
   const booking = await prisma.booking.create({
@@ -70,6 +74,7 @@ export async function POST(req: NextRequest) {
       // Hosts choose per listing: confirm straight away, or review each request.
       status: listing.bookingMode === "INSTANT" ? "CONFIRMED" : "PENDING",
       agreedToTerms: data.agreedToTerms,
+      guestAccountId: guestAccount?.id ?? null,
     },
     include: { listing: { select: { id: true, name: true, hostId: true } } },
   });

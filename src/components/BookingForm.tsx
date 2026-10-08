@@ -8,6 +8,9 @@ type Props = {
   listingId: string;
   listingName: string;
   instant?: boolean;
+  defaultName?: string;
+  defaultEmail?: string;
+  signedIn?: boolean;
   basePrice: number;
   cleaningFee: number;
   minNights: number;
@@ -27,6 +30,9 @@ export function BookingForm({
   listingId,
   listingName,
   instant = false,
+  defaultName = "",
+  defaultEmail = "",
+  signedIn = false,
   basePrice,
   cleaningFee,
   minNights,
@@ -39,8 +45,8 @@ export function BookingForm({
   const [checkIn, setCheckIn] = useState(initialCheckIn);
   const [checkOut, setCheckOut] = useState(initialCheckOut);
   const [guests, setGuests] = useState(initialGuests || 1);
-  const [guestName, setGuestName] = useState("");
-  const [guestEmail, setGuestEmail] = useState("");
+  const [guestName, setGuestName] = useState(defaultName);
+  const [guestEmail, setGuestEmail] = useState(defaultEmail);
   const [guestPhone, setGuestPhone] = useState("");
   const [message, setMessage] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -112,6 +118,24 @@ export function BookingForm({
             ? `Thanks, ${guestName.split(" ")[0] || "there"}! Your stay at ${listingName} is confirmed. We've emailed the details to ${guestEmail}, and the host will be in touch to arrange payment.`
             : `Thanks, ${guestName.split(" ")[0] || "there"}! Your booking request for ${listingName} has been sent to the host. You'll hear back by email at ${guestEmail} to confirm dates and arrange payment.`}
         </p>
+        <p className="mt-3 text-sm">
+          {signedIn ? (
+            <>
+              This stay is on your account.{" "}
+              <Link href="/account" className="font-semibold text-accent-deep hover:underline">
+                View my stays
+              </Link>
+            </>
+          ) : (
+            <>
+              Want all your stays in one place?{" "}
+              <Link href="/sign-up" className="font-semibold text-accent-deep hover:underline">
+                Create an account
+              </Link>{" "}
+              with the same email and open the link in your booking email to add this one.
+            </>
+          )}
+        </p>
         <Link href="/" className="mt-4 inline-block text-sm text-accent-deep hover:underline">
           &larr; Return home
         </Link>
@@ -123,6 +147,15 @@ export function BookingForm({
     <div className="grid gap-8 lg:grid-cols-3">
       <form onSubmit={handleSubmit} className="lg:col-span-2">
         <h2 className="text-lg font-semibold">Your details</h2>
+        {!signedIn && (
+          <p className="mt-1 text-sm text-muted">
+            Have an account?{" "}
+            <Link href="/sign-in" className="font-semibold text-accent-deep hover:underline">
+              Sign in
+            </Link>{" "}
+            to fill this in and keep the stay in My stays.
+          </p>
+        )}
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm">
             Check-in

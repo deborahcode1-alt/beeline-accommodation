@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getAdminContext, canAccessHost } from "@/lib/adminAuth";
+import { startOfToday } from "@/lib/retention";
 import { ListingForm } from "@/components/admin/ListingForm";
 import { PhotoManager } from "@/components/admin/PhotoManager";
 import { BookingsTable } from "@/components/admin/BookingsTable";
@@ -19,7 +20,7 @@ export default async function EditListingPage({
     where: { id },
     include: {
       photos: { orderBy: { order: "asc" } },
-      bookings: { orderBy: { checkIn: "asc" } },
+      bookings: { where: { checkOut: { gte: startOfToday() } }, orderBy: { checkIn: "asc" } },
     },
   });
   if (!listing || !canAccessHost(ctx, listing.hostId)) notFound();
@@ -48,7 +49,15 @@ export default async function EditListingPage({
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold">Bookings</h2>
-        <p className="mt-1 text-sm text-muted">Soonest upcoming first.</p>
+        <p className="mt-1 text-sm text-muted">
+          Current and upcoming, soonest first.{" "}
+          <Link
+            href={`/admin/bookings?view=archive&q=${encodeURIComponent(listing.name)}`}
+            className="text-accent-deep hover:underline"
+          >
+            See finished stays in the archive
+          </Link>
+        </p>
         <div className="mt-3">
           <BookingsTable
             bookings={listing.bookings.map((b) => ({ ...b, listing: { name: listing.name } }))}

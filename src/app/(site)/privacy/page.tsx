@@ -19,6 +19,7 @@ export default function PrivacyPage() {
           heading: "What we collect",
           body: [
             "Guests: name, email, phone number, travel dates, number of guests and any message you send when you make a booking request or contact a host.",
+            "Guest accounts: if you create an account we store your name, email and a securely scrambled password, and show you the stays linked to your account. You can ask us to delete your account at any time.",
             "Hosts: name, email, phone, business details, property information, photos, and subscription and billing details. Card details are handled by our payment provider and are not stored by us.",
             "Everyone: technical data such as device type and pages visited, which we use to keep the site working and improve it.",
           ],
@@ -35,6 +36,13 @@ export default function PrivacyPage() {
           body: [
             "A guest's details are shared with the host of the listing they contact or book, so the host can respond and look after the stay. Hosts must keep guest details private and use them only for that purpose.",
             "We use service providers to run the site, including hosting, email, text messaging, payments and subscriptions. They only receive what they need to provide their service, and some may store data outside Australia.",
+          ],
+        },
+        {
+          heading: "How long we keep it",
+          body: [
+            "Hosts can see a customer's details for 7 years after the customer's last stay. If a customer has not stayed or signed in for 7 years, their name, contact details and messages are deleted automatically. The booking's dates and price may be kept without any personal details so a host's records still add up.",
+            "You can ask us to delete your details sooner by contacting [contact email], unless we need to keep them for a legal reason.",
           ],
         },
         {

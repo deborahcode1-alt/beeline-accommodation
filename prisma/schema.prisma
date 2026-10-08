@@ -18,6 +18,25 @@ model AdminUser {
   hostId               String? // null = platform owner (sees everything); set = a host who only sees their own listings
 }
 
+// A guest's own account (separate from host/owner admin logins). Their stays are the bookings
+// linked to the account, plus, once the email is verified, any booking made with that email.
+model Guest {
+  id                   String    @id @default(cuid())
+  email                String    @unique // stored lower-case
+  name                 String
+  passwordHash         String
+  emailVerifiedAt      DateTime?
+  pendingCodeHash      String? // sha256 of an emailed code (verify email or reset password)
+  pendingCodeExpiresAt DateTime?
+  pendingCodeAttempts  Int       @default(0)
+  failedLogins         Int       @default(0)
+  lockedUntil          DateTime?
+  lastLoginAt          DateTime? // used for the 7-year retention rule
+  createdAt            DateTime  @default(now())
+
+  bookings Booking[]
+}
+
 // One per host family/business — holds the Square account payments for their
 // listings should be routed to. Credentials are nullable because a host may
 // not have Square set up yet; bookings fall back to request-only until then.
@@ -200,10 +219,13 @@ model Booking {
   confirmationTextSentAt DateTime?
   confirmationEmailSentAt DateTime?
   manageToken    String        @unique @default(cuid())
+  guestAccount   Guest?        @relation(fields: [guestAccountId], references: [id], onDelete: SetNull)
+  guestAccountId String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
   @@index([listingId, checkIn, checkOut])
+  @@index([guestAccountId])
 }
 
 model BlockedDate {

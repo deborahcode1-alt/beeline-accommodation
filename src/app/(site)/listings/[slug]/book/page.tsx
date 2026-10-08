@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { publicListingWhere } from "@/lib/visibility";
+import { getGuest } from "@/lib/guestSession";
 import { BookingForm } from "@/components/BookingForm";
 import { DEFAULT_CANCELLATION_POLICY } from "@/lib/site";
 
@@ -27,6 +28,7 @@ export default async function BookPage({
     where: { slug, ...publicListingWhere() },
   });
   if (!listing) notFound();
+  const guest = await getGuest();
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
@@ -42,6 +44,9 @@ export default async function BookPage({
           listingId={listing.id}
           listingName={listing.name}
           instant={listing.bookingMode === "INSTANT"}
+          defaultName={guest?.name ?? ""}
+          defaultEmail={guest?.email ?? ""}
+          signedIn={!!guest}
           basePrice={listing.basePrice}
           cleaningFee={listing.cleaningFee}
           minNights={listing.minNights}

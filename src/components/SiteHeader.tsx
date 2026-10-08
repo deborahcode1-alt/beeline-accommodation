@@ -1,7 +1,17 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
+import { getGuest } from "@/lib/guestSession";
+import { getAdminContext } from "@/lib/adminAuth";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const [admin, guest] = await Promise.all([getAdminContext(), getGuest()]);
+
+  const signedIn = admin
+    ? { href: "/admin", label: admin.isOwner ? "Admin" : "My dashboard" }
+    : guest
+      ? { href: "/account", label: "My stays" }
+      : null;
+
   return (
     <header className="bg-header-bg text-header-fg">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
@@ -19,10 +29,10 @@ export function SiteHeader() {
             List your property
           </Link>
           <Link
-            href="/admin/login"
+            href={signedIn ? signedIn.href : "/sign-in"}
             className="rounded-md bg-accent px-4 py-1.5 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover"
           >
-            Sign in
+            {signedIn ? signedIn.label : "Sign in"}
           </Link>
         </nav>
       </div>

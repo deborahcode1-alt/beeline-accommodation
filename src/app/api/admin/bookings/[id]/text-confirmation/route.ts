@@ -1,16 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { isSmsConfigured, sendSms, bookingConfirmationMessage } from "@/lib/sms";
 import { SITE_NAME } from "@/lib/site";
 import { requireBookingAccess } from "@/lib/adminAuth";
 
-export async function POST(
+function draftMessage(booking: {
+  guestName: string;
+  checkIn: Date;
+  checkOut: Date;
+  listing: { name: string };
+}) {
+  return bookingConfirmationMessage({
+    guestName: booking.guestName,
+    listingName: booking.listing.name,
+    checkIn: booking.checkIn,
+    checkOut: booking.checkOut,
+    siteName: SITE_NAME,
+  });
+}
+
+// GET: the text message as it would be sent, so the host can read it first.
+export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const access = await requireBookingAccess(id);
   if (access.error) return access.error;
+
+  const booking = await prisma.booking.findUnique({
+    where: { id },
+    include: { listing: { select: { name: true } } },
+  });
+  if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+
+  return NextResponse.json({
+    to: booking.guestPhone,
+    message: draftMessage(booking),
+    configured: isSmsConfigured(),
+  });
+}
+
+const sendSchema = z.object({ message: z.string().trim().min(1).max(1000).optional() });
+
+// POST: send the text, using the host's edited wording when provided.
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const access = await requireBookingAccess(id);
+  if (access.error) return access.error;
+
+  const parsed = sendSchema.safeParse(await req.json().catch(() => ({})));
+  if (!parsed.success) {
+    return NextResponse.json({ error: "The message is empty or too long." }, { status: 400 });
+  }
 
   const booking = await prisma.booking.findUnique({
     where: { id },
@@ -29,13 +75,7 @@ export async function POST(
     );
   }
 
-  const message = bookingConfirmationMessage({
-    guestName: booking.guestName,
-    listingName: booking.listing.name,
-    checkIn: booking.checkIn,
-    checkOut: booking.checkOut,
-    siteName: SITE_NAME,
-  });
+  const message = parsed.data.message ?? draftMessage(booking);
 
   try {
     await sendSms(booking.guestPhone, message);

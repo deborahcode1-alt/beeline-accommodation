@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
+import { InstallAppButton } from "@/components/InstallAppButton";
 import { SITE_NAME, SITE_SLOGAN } from "@/lib/site";
 
 export function SiteFooter() {
@@ -9,13 +10,14 @@ export function SiteFooter() {
         <div>
           <BrandLogo />
           <p className="mt-3 text-sm">{SITE_SLOGAN}</p>
+          <InstallAppButton className="mt-4 text-header-fg" onDark />
         </div>
         <nav className="grid grid-cols-2 gap-x-10 gap-y-2 text-sm">
-          <Link href="/host" className="hover:text-header-fg">List your property</Link>
+          <Link href="/sign-in" className="hover:text-header-fg">Sign in</Link>
           <Link href="/terms" className="hover:text-header-fg">Terms of use</Link>
-          <Link href="/admin/login" className="hover:text-header-fg">Host sign in</Link>
+          <Link href="/sign-up" className="hover:text-header-fg">Create an account</Link>
           <Link href="/privacy" className="hover:text-header-fg">Privacy policy</Link>
-          <span />
+          <Link href="/host" className="hover:text-header-fg">List your property</Link>
           <Link href="/host-agreement" className="hover:text-header-fg">Host agreement</Link>
         </nav>
       </div>

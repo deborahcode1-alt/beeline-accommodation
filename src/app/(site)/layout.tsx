@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -15,7 +15,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#111111",
+};
+
 export const metadata: Metadata = {
+  applicationName: SITE_NAME,
+  appleWebApp: { capable: true, title: "Beeline", statusBarStyle: "black-translucent" },
   metadataBase: new URL(SITE_URL),
   title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
   description: `${SITE_TAGLINE}. ${SITE_SLOGAN} Find local hosts, rooms, houses and farm stays across regional Australia and contact them directly.`,

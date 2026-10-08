@@ -33,7 +33,7 @@ export default async function AdminDashboardPage({
   const [pending, soon, monthBookings, upcomingCount, listingCount, messages, host] =
     await Promise.all([
       prisma.booking.findMany({
-        where: { status: "PENDING", ...scope },
+        where: { status: "PENDING", checkOut: { gte: today }, ...scope },
         orderBy: { createdAt: "desc" },
         include: withListing,
       }),

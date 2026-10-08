@@ -8,6 +8,8 @@ import { requireBookingAccess } from "@/lib/adminAuth";
 const patchSchema = z.object({
   status: z.enum(["PENDING", "CONFIRMED", "DECLINED", "CANCELLED"]).optional(),
   paymentStatus: z.enum(["UNPAID", "PAID", "REFUNDED"]).optional(),
+  // false = confirm without sending anything yet (the host reviews the message first).
+  notify: z.boolean().optional(),
   checkIn: z.coerce.date().optional(),
   checkOut: z.coerce.date().optional(),
   guests: z.coerce.number().int().min(1).max(50).optional(),
@@ -72,7 +74,9 @@ export async function PATCH(
   });
 
   if (data.status !== undefined && data.status !== existing.status) {
-    if (data.status === "CONFIRMED") await notifyBookingConfirmed(booking);
+    if (data.status === "CONFIRMED") {
+      if (data.notify !== false) await notifyBookingConfirmed(booking);
+    }
     else if (data.status === "DECLINED") await notifyBookingDeclined(booking);
   }
 
