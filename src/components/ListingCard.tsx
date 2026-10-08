@@ -1,33 +1,39 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatMoney } from "@/lib/format";
-import { stayTypeLabel, type StayType } from "@/lib/stayType";
+import { propertyTypeShort, type PropertyType } from "@/lib/propertyType";
 
 type Props = {
   slug: string;
   name: string;
-  tagline: string | null;
+  areaName?: string | null;
   basePrice: number;
-  maxGuests: number;
   bedrooms: number;
-  stayType: StayType;
+  propertyType: PropertyType;
+  petFriendly: boolean;
   coverPhoto: string | null;
 };
 
 export function ListingCard({
   slug,
   name,
-  tagline,
+  areaName,
   basePrice,
-  maxGuests,
   bedrooms,
-  stayType,
+  propertyType,
+  petFriendly,
   coverPhoto,
 }: Props) {
+  const details = [
+    `${bedrooms} bedroom${bedrooms === 1 ? "" : "s"}`,
+    propertyTypeShort(propertyType),
+    ...(petFriendly ? ["Pet friendly"] : []),
+  ];
+
   return (
     <Link
       href={`/listings/${slug}`}
-      className="group block overflow-hidden rounded-sm border border-card-border bg-background transition hover:shadow-md"
+      className="group block overflow-hidden rounded-xl border border-card-border bg-background transition hover:shadow-lg"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-foreground/5">
         {coverPhoto ? (
@@ -35,7 +41,7 @@ export function ListingCard({
             src={coverPhoto}
             alt={name}
             fill
-            sizes="(min-width: 768px) 33vw, 100vw"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             className="object-cover transition group-hover:scale-105"
           />
         ) : (
@@ -43,17 +49,14 @@ export function ListingCard({
             No photo yet
           </div>
         )}
-        <span className="absolute left-3 top-3 rounded-full bg-header-bg/90 px-2.5 py-1 text-xs font-medium text-header-fg">
-          {stayTypeLabel(stayType)}
-        </span>
       </div>
       <div className="p-4">
         <h3 className="font-semibold">{name}</h3>
-        {tagline && <p className="mt-1 text-sm text-muted">{tagline}</p>}
-        <p className="mt-2 text-sm text-muted">
-          Up to {maxGuests} guests &middot; {bedrooms} bedroom{bedrooms === 1 ? "" : "s"}
+        {areaName && <p className="mt-0.5 text-sm text-muted">{areaName}</p>}
+        <p className="mt-2 text-sm text-muted">{details.join(" \u00b7 ")}</p>
+        <p className="mt-2 text-sm font-semibold">
+          {formatMoney(basePrice)} <span className="font-normal text-muted">per night</span>
         </p>
-        <p className="mt-2 text-sm font-medium text-accent-deep">{formatMoney(basePrice)} / night</p>
       </div>
     </Link>
   );

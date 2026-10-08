@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { getAdminContext, canAccessHost } from "@/lib/adminAuth";
 import { IcalImportManager } from "@/components/admin/IcalImportManager";
 import { BlockedDatesManager } from "@/components/admin/BlockedDatesManager";
 import { CopyableUrl } from "@/components/admin/CopyableUrl";
@@ -10,12 +11,14 @@ export default async function ListingCalendarPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const ctx = await getAdminContext();
+  if (!ctx) redirect("/admin/login");
   const { id } = await params;
   const listing = await prisma.listing.findUnique({
     where: { id },
     include: { blockedDates: true, icalImports: true },
   });
-  if (!listing) notFound();
+  if (!listing || !canAccessHost(ctx, listing.hostId)) notFound();
 
   const hdrs = await headers();
   const host = hdrs.get("host");

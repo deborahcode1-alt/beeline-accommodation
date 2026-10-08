@@ -1,5 +1,5 @@
 export function formatMoney(amount: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+  return new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(amount);
 }
 
 // Booking/blocked dates are stored as UTC-midnight calendar dates, not moments in time —

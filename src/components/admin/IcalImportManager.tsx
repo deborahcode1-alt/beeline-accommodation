@@ -123,7 +123,7 @@ export function IcalImportManager({
         <button
           type="submit"
           disabled={busy}
-          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-deep disabled:opacity-50"
+          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg transition hover:bg-accent-hover disabled:opacity-50"
         >
           Connect
         </button>

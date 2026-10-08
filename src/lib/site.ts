@@ -1,6 +1,7 @@
-export const SITE_NAME = "Gympie Accommodation";
-export const SITE_TAGLINE = "Book directly with the host — no platform fees.";
-
+export const SITE_NAME = "Beeline Accommodation";
+export const SITE_TAGLINE = "A Direct Route to Your Next Stay";
+export const SITE_SLOGAN = "Stay Local. Book Direct.";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://gympie-accommodation.vercel.app";
 // Shown at checkout for a listing that has no cancellationPolicy of its own set.
 // Draft only — replace with the host's real policy before taking real payments.
 export const DEFAULT_CANCELLATION_POLICY = `This is a draft cancellation policy. Please replace it with your real terms before accepting real payments.

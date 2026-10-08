@@ -9,6 +9,7 @@ import { formatMoney } from "@/lib/format";
 
 type Props = {
   slug: string;
+  instant?: boolean;
   basePrice: number;
   cleaningFee: number;
   minNights: number;
@@ -30,6 +31,7 @@ function formatFriendly(d: Date) {
 }
 
 export function AvailabilityCalendar({
+  instant = false,
   slug,
   basePrice,
   cleaningFee,
@@ -199,9 +201,9 @@ export function AvailabilityCalendar({
       <button
         type="button"
         onClick={handleBookNow}
-        className="mt-4 w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white transition hover:bg-accent-deep"
+        className="mt-4 w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-accent-fg transition hover:bg-accent-hover"
       >
-        Book now
+        {instant ? "Book instantly" : "Request to book"}
       </button>
       <Link
         href="/"

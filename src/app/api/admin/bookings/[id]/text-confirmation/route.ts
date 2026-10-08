@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isSmsConfigured, sendSms, bookingConfirmationMessage } from "@/lib/sms";
 import { SITE_NAME } from "@/lib/site";
+import { requireBookingAccess } from "@/lib/adminAuth";
 
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const access = await requireBookingAccess(id);
+  if (access.error) return access.error;
 
   const booking = await prisma.booking.findUnique({
     where: { id },

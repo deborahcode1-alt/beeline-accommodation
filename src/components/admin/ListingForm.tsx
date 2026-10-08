@@ -15,6 +15,9 @@ type Initial = {
   address: string;
   stayType: "SHORT_TERM" | "LONG_TERM";
   propertyType: PropertyType;
+  petFriendly: boolean;
+  bookingMode: "REQUEST" | "INSTANT";
+  areaId: string | null;
   maxGuests: number;
   bedrooms: number;
   beds: number;
@@ -35,6 +38,9 @@ const empty: Initial = {
   address: "",
   stayType: "SHORT_TERM",
   propertyType: "HOUSE",
+  petFriendly: false,
+  bookingMode: "REQUEST",
+  areaId: null,
   maxGuests: 2,
   bedrooms: 1,
   beds: 1,
@@ -47,7 +53,17 @@ const empty: Initial = {
   hostId: null,
 };
 
-export function ListingForm({ initial }: { initial?: Initial }) {
+type AreaOption = { id: string; name: string };
+
+export function ListingForm({
+  initial,
+  areas = [],
+  isOwner = true,
+}: {
+  initial?: Initial;
+  areas?: AreaOption[];
+  isOwner?: boolean;
+}) {
   const router = useRouter();
   const [form, setForm] = useState<Initial>(initial ?? empty);
   const [amenitiesText, setAmenitiesText] = useState((initial?.amenities ?? []).join(", "));
@@ -74,7 +90,8 @@ export function ListingForm({ initial }: { initial?: Initial }) {
     const payload = {
       ...form,
       cancellationPolicy: form.cancellationPolicy || undefined,
-      hostId: form.hostId || undefined,
+      hostId: isOwner ? form.hostId || undefined : undefined,
+      areaId: form.areaId || null,
       amenities: amenitiesText
         .split(",")
         .map((a) => a.trim())
@@ -158,21 +175,23 @@ export function ListingForm({ initial }: { initial?: Initial }) {
             <option value="LONG_TERM">Long-term stay</option>
           </select>
         </label>
+        {isOwner && (
         <label className="flex flex-col gap-1 text-sm">
-          Host (Square payout account)
-          <select
-            value={form.hostId ?? ""}
-            onChange={(e) => update("hostId", e.target.value || null)}
-            className="rounded-md border border-card-border px-3 py-2"
-          >
-            <option value="">Unassigned</option>
-            {hosts.map((h) => (
-              <option key={h.id} value={h.id}>
-                {h.name} {h.squareConnected ? "" : "(Square not connected)"}
-              </option>
-            ))}
-          </select>
-        </label>
+            Host (Square payout account)
+            <select
+              value={form.hostId ?? ""}
+              onChange={(e) => update("hostId", e.target.value || null)}
+              className="rounded-md border border-card-border px-3 py-2"
+            >
+              <option value="">Unassigned</option>
+              {hosts.map((h) => (
+                <option key={h.id} value={h.id}>
+                  {h.name} {h.squareConnected ? "" : "(Square not connected)"}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
 
       <label className="flex flex-col gap-1 text-sm">
@@ -191,6 +210,44 @@ export function ListingForm({ initial }: { initial?: Initial }) {
         <span className="text-xs text-muted">
           Decides which &ldquo;What kind of place?&rdquo;ldquo;Style of accommodation&ldquo;What kind of place?&rdquo;rdquo; group it shows under on the home page.
         </span>
+      </label>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="flex flex-col gap-1 text-sm">
+          Area
+          <select
+            value={form.areaId ?? ""}
+            onChange={(e) => update("areaId", e.target.value || null)}
+            className="rounded-md border border-card-border px-3 py-2"
+          >
+            <option value="">No area (won&apos;t appear on an area page)</option>
+            {areas.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          How guests book
+          <select
+            value={form.bookingMode}
+            onChange={(e) => update("bookingMode", e.target.value as Initial["bookingMode"])}
+            className="rounded-md border border-card-border px-3 py-2"
+          >
+            <option value="REQUEST">Request to book (you approve each one)</option>
+            <option value="INSTANT">Instant booking (confirmed straight away)</option>
+          </select>
+        </label>
+      </div>
+
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={form.petFriendly}
+          onChange={(e) => update("petFriendly", e.target.checked)}
+        />
+        Pet friendly
       </label>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -309,7 +366,7 @@ export function ListingForm({ initial }: { initial?: Initial }) {
       <button
         type="submit"
         disabled={submitting}
-        className="mt-2 w-fit rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white transition hover:bg-accent-deep disabled:opacity-50"
+        className="mt-2 w-fit rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-accent-fg transition hover:bg-accent-hover disabled:opacity-50"
       >
         {submitting ? "Saving..." : form.id ? "Save changes" : "Create listing"}
       </button>

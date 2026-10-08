@@ -3,9 +3,11 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { calcTotalPrice, isRangeAvailable, nightsBetween } from "@/lib/availability";
 import { notifyBookingConfirmed, notifyBookingDeclined } from "@/lib/notifications";
+import { requireBookingAccess } from "@/lib/adminAuth";
 
 const patchSchema = z.object({
   status: z.enum(["PENDING", "CONFIRMED", "DECLINED", "CANCELLED"]).optional(),
+  paymentStatus: z.enum(["UNPAID", "PAID", "REFUNDED"]).optional(),
   checkIn: z.coerce.date().optional(),
   checkOut: z.coerce.date().optional(),
   guests: z.coerce.number().int().min(1).max(50).optional(),
@@ -20,6 +22,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const access = await requireBookingAccess(id);
+  if (access.error) return access.error;
   const body = await req.json().catch(() => null);
   const parsed = patchSchema.safeParse(body);
   if (!parsed.success) {
@@ -39,6 +43,7 @@ export async function PATCH(
   if (data.message !== undefined) updateData.message = data.message;
   if (data.guests !== undefined) updateData.guests = data.guests;
   if (data.status !== undefined) updateData.status = data.status;
+  if (data.paymentStatus !== undefined) updateData.paymentStatus = data.paymentStatus;
 
   const datesChanged = data.checkIn !== undefined || data.checkOut !== undefined;
   if (datesChanged) {

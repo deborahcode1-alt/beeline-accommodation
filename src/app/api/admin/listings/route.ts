@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
+import { requireAdmin, listingScope } from "@/lib/adminAuth";
 
 const listingSchema = z.object({
   name: z.string().min(1).max(200),
@@ -20,11 +21,17 @@ const listingSchema = z.object({
   minNights: z.coerce.number().int().min(1).default(1),
   amenities: z.array(z.string()).default([]),
   published: z.boolean().default(true),
+  petFriendly: z.boolean().default(false),
+  bookingMode: z.enum(["REQUEST", "INSTANT"]).default("REQUEST"),
+  areaId: z.string().nullable().optional(),
   hostId: z.string().optional(),
 });
 
 export async function GET() {
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
   const listings = await prisma.listing.findMany({
+    where: listingScope(auth.ctx),
     orderBy: { createdAt: "desc" },
     include: { photos: true, host: true, _count: { select: { bookings: true } } },
   });
@@ -32,12 +39,16 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
   const body = await req.json().catch(() => null);
   const parsed = listingSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const data = parsed.data;
+  // A host can only create listings under their own host account.
+  if (!auth.ctx.isOwner) data.hostId = auth.ctx.hostId ?? undefined;
 
   const baseSlug = slugify(data.name) || "listing";
   let slug = baseSlug;

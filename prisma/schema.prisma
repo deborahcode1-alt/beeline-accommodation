@@ -14,6 +14,8 @@ model AdminUser {
   pendingCodeHash      String? // sha256 of the current email verification code, if one is pending
   pendingCodeExpiresAt DateTime?
   pendingCodeAttempts  Int       @default(0)
+  host                 Host?     @relation(fields: [hostId], references: [id])
+  hostId               String? // null = platform owner (sees everything); set = a host who only sees their own listings
 }
 
 // One per host family/business — holds the Square account payments for their
@@ -26,7 +28,76 @@ model Host {
   notificationPhone   String?
   squareAccessToken   String?
   squareLocationId    String?
+  // Public profile shown to guests on each listing.
+  bio                 String?
+  website             String?
+  publicPhone         String?
+  publicEmail         String?
+  photoUrl            String?
+  // Beeline subscription. Listings of a host whose subscription has lapsed are hidden.
+  subscriptionStatus  SubscriptionStatus @default(TRIAL)
+  trialEndsAt         DateTime?
+  subscriptionRenewsAt DateTime?
+  stripeCustomerId    String?
+  stripeSubscriptionId String?
   createdAt           DateTime @default(now())
+
+  listings   Listing[]
+  adminUsers AdminUser[]
+  messages   HostMessage[]
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  COMPLIMENTARY // founding hosts with no charge
+}
+
+enum BookingMode {
+  REQUEST // host reviews every request
+  INSTANT // confirmed straight away if the dates are free
+}
+
+// A guest's question to a host, sent from a listing page.
+model HostMessage {
+  id        String   @id @default(cuid())
+  host      Host?    @relation(fields: [hostId], references: [id])
+  hostId    String?
+  listingId String?
+  listingName String?
+  name      String
+  email     String
+  phone     String?
+  message   String
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// A property owner asking to list on Beeline, submitted from /host.
+model HostEnquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  area      String
+  details   String?
+  createdAt DateTime @default(now())
+}
+
+// A place guests search for, e.g. Gympie. Each area gets its own landing page
+// at /<slug> titled "<name> Accommodation".
+model Area {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  name       String
+  state      String   @default("QLD")
+  headline   String?
+  intro      String?
+  heroImage  String?
+  published  Boolean  @default(true)
+  createdAt  DateTime @default(now())
 
   listings Listing[]
 }
@@ -55,6 +126,10 @@ model Listing {
   address            String?
   stayType           StayType @default(SHORT_TERM)
   propertyType       PropertyType @default(HOUSE)
+  petFriendly        Boolean  @default(false)
+  bookingMode        BookingMode @default(REQUEST)
+  area               Area?    @relation(fields: [areaId], references: [id])
+  areaId             String?
   maxGuests          Int      @default(2)
   bedrooms           Int      @default(1)
   beds               Int      @default(1)

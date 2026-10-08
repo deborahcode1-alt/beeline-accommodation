@@ -86,6 +86,23 @@ export async function notifyNewBooking(booking: BookingWithListing) {
   );
 }
 
+export async function notifyInstantBooking(booking: BookingWithListing) {
+  // Guest: straight to the confirmation. Host: a heads-up that it's already confirmed.
+  await notifyBookingConfirmed(booking);
+  const dates = `${fmtDate(booking.checkIn)} - ${fmtDate(booking.checkOut)}`;
+  const host = await hostContact(booking.listing.hostId);
+  await tryEmail(
+    host.email,
+    `New instant booking: ${booking.listing.name}`,
+    `${booking.guestName} booked ${booking.listing.name} for ${dates} (${formatMoney(booking.totalPrice)}). ` +
+      `It was confirmed automatically. Contact the guest to arrange payment: ${booking.guestEmail}${booking.guestPhone ? ", " + booking.guestPhone : ""}.`
+  );
+  await trySms(
+    host.phone,
+    `New instant booking: ${booking.guestName}, ${booking.listing.name}, ${dates}. Check your dashboard.`
+  );
+}
+
 export function confirmationEmailContent(booking: BookingWithListing) {
   const dates = `${fmtDate(booking.checkIn)} - ${fmtDate(booking.checkOut)}`;
   const link = manageUrl(booking.manageToken);

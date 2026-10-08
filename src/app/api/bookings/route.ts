@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { publicListingWhere } from "@/lib/visibility";
 import { calcTotalPrice, isRangeAvailable, nightsBetween } from "@/lib/availability";
-import { notifyNewBooking } from "@/lib/notifications";
+import { notifyNewBooking, notifyInstantBooking } from "@/lib/notifications";
 
 const bookingSchema = z.object({
   listingId: z.string().min(1),
@@ -24,8 +25,10 @@ export async function POST(req: NextRequest) {
   }
   const data = parsed.data;
 
-  const listing = await prisma.listing.findUnique({ where: { id: data.listingId } });
-  if (!listing || !listing.published) {
+  const listing = await prisma.listing.findFirst({
+    where: { id: data.listingId, ...publicListingWhere() },
+  });
+  if (!listing) {
     return NextResponse.json({ error: "Listing not found" }, { status: 404 });
   }
 
@@ -64,13 +67,15 @@ export async function POST(req: NextRequest) {
       guests: data.guests,
       message: data.message,
       totalPrice,
-      status: "PENDING",
+      // Hosts choose per listing: confirm straight away, or review each request.
+      status: listing.bookingMode === "INSTANT" ? "CONFIRMED" : "PENDING",
       agreedToTerms: data.agreedToTerms,
     },
     include: { listing: { select: { id: true, name: true, hostId: true } } },
   });
 
-  await notifyNewBooking(booking);
+  if (booking.status === "CONFIRMED") await notifyInstantBooking(booking);
+  else await notifyNewBooking(booking);
 
   return NextResponse.json({ booking }, { status: 201 });
 }

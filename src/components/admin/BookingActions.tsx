@@ -113,7 +113,7 @@ export function BookingActions({
           <button
             disabled={busy}
             onClick={() => setStatus("CONFIRMED")}
-            className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white transition hover:bg-accent-deep disabled:opacity-50"
+            className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-accent-fg transition hover:bg-accent-hover disabled:opacity-50"
           >
             Confirm
           </button>

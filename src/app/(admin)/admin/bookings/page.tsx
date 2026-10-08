@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { BookingsTable } from "@/components/admin/BookingsTable";
+import { getAdminContext, bookingScope } from "@/lib/adminAuth";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -17,11 +19,13 @@ export default async function AdminBookingsPage({
 }: {
   searchParams: Promise<{ status?: string }>;
 }) {
+  const ctx = await getAdminContext();
+  if (!ctx) redirect("/admin/login");
   const { status } = await searchParams;
   const activeStatus = TABS.some((t) => t.value === status) ? status ?? "" : "";
 
   const bookings = await prisma.booking.findMany({
-    where: activeStatus ? { status: activeStatus as never } : undefined,
+    where: { ...(activeStatus ? { status: activeStatus as never } : {}), ...bookingScope(ctx) },
     orderBy: { checkIn: "asc" },
     include: { listing: { select: { name: true } } },
   });

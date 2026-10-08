@@ -1,6 +1,8 @@
 import { formatDate, formatMoney } from "@/lib/format";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { BookingActions } from "@/components/admin/BookingActions";
+import { PaidCheckbox } from "@/components/admin/PaidCheckbox";
+import { GuestContactLinks } from "@/components/admin/GuestContactLinks";
 
 type Row = {
   id: string;
@@ -12,6 +14,7 @@ type Row = {
   guests: number;
   totalPrice: number;
   status: string;
+  paymentStatus: string;
   confirmationTextSentAt: Date | null;
   confirmationEmailSentAt: Date | null;
   listing: { name: string };
@@ -48,6 +51,9 @@ export function BookingsTable({
               <td className="px-4 py-3">
                 <div className="font-medium">{b.guestName}</div>
                 <div className="text-xs text-muted">{b.guestEmail}</div>
+                <div className="mt-1.5">
+                  <GuestContactLinks phone={b.guestPhone} email={b.guestEmail} />
+                </div>
               </td>
               {showListingColumn && <td className="px-4 py-3">{b.listing.name}</td>}
               <td className="px-4 py-3">
@@ -57,6 +63,11 @@ export function BookingsTable({
               <td className="px-4 py-3">{formatMoney(b.totalPrice)}</td>
               <td className="px-4 py-3">
                 <StatusBadge status={b.status} />
+                {(b.status === "CONFIRMED" || b.status === "PENDING") && (
+                  <div className="mt-2">
+                    <PaidCheckbox bookingId={b.id} paymentStatus={b.paymentStatus} />
+                  </div>
+                )}
               </td>
               <td className="px-4 py-3">
                 <BookingActions

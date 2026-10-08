@@ -1,25 +1,28 @@
 import Link from "next/link";
-import { SITE_NAME } from "@/lib/site";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export function SiteHeader() {
   return (
     <header className="bg-header-bg text-header-fg">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-        <Link href="/" className="text-lg font-semibold tracking-wide">
-          {SITE_NAME}
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+        <Link href="/" aria-label="Beeline Accommodation home">
+          <BrandLogo />
         </Link>
-        <nav className="flex items-center gap-6 text-sm">
-          <Link href="/#listings" className="text-header-fg/85 transition hover:text-header-fg">
+        <nav className="flex items-center gap-5 text-sm sm:gap-7">
+          <Link href="/#areas" className="hidden text-header-fg/85 transition hover:text-header-fg sm:inline">
             Stays
           </Link>
-          <Link href="/#contact" className="text-header-fg/85 transition hover:text-header-fg">
-            Contact
+          <Link href="/#how" className="hidden text-header-fg/85 transition hover:text-header-fg sm:inline">
+            How it works
+          </Link>
+          <Link href="/host" className="text-header-fg/85 transition hover:text-header-fg">
+            List your property
           </Link>
           <Link
-            href="/#listings"
-            className="rounded-full bg-accent px-4 py-1.5 text-xs font-semibold tracking-wide text-white uppercase transition hover:bg-accent-deep"
+            href="/admin/login"
+            className="rounded-md bg-accent px-4 py-1.5 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover"
           >
-            Book now
+            Sign in
           </Link>
         </nav>
       </div>

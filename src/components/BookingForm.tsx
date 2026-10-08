@@ -7,6 +7,7 @@ import { formatMoney } from "@/lib/format";
 type Props = {
   listingId: string;
   listingName: string;
+  instant?: boolean;
   basePrice: number;
   cleaningFee: number;
   minNights: number;
@@ -25,6 +26,7 @@ function nightsBetween(checkIn: string, checkOut: string) {
 export function BookingForm({
   listingId,
   listingName,
+  instant = false,
   basePrice,
   cleaningFee,
   minNights,
@@ -104,11 +106,11 @@ export function BookingForm({
   if (success) {
     return (
       <div className="rounded-sm border border-card-border p-6">
-        <h2 className="text-lg font-semibold">Request sent</h2>
+        <h2 className="text-lg font-semibold">{instant ? "Booking confirmed" : "Request sent"}</h2>
         <p className="mt-2 text-sm text-muted">
-          Thanks, {guestName.split(" ")[0] || "there"}! Your booking request for {listingName} has
-          been sent to the host. You&apos;ll hear back by email at {guestEmail} to confirm dates
-          and arrange payment.
+          {instant
+            ? `Thanks, ${guestName.split(" ")[0] || "there"}! Your stay at ${listingName} is confirmed. We've emailed the details to ${guestEmail}, and the host will be in touch to arrange payment.`
+            : `Thanks, ${guestName.split(" ")[0] || "there"}! Your booking request for ${listingName} has been sent to the host. You'll hear back by email at ${guestEmail} to confirm dates and arrange payment.`}
         </p>
         <Link href="/" className="mt-4 inline-block text-sm text-accent-deep hover:underline">
           &larr; Return home
@@ -224,9 +226,9 @@ export function BookingForm({
         <button
           type="submit"
           disabled={submitting}
-          className="mt-4 w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white transition hover:bg-accent-deep disabled:opacity-50 sm:w-auto"
+          className="mt-4 w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-accent-fg transition hover:bg-accent-hover disabled:opacity-50 sm:w-auto"
         >
-          {submitting ? "Sending request..." : "Confirm request"}
+          {submitting ? (instant ? "Booking..." : "Sending request...") : instant ? "Confirm booking" : "Confirm request"}
         </button>
         <p className="mt-2 text-xs text-muted">
           Online payment isn&apos;t connected for this listing yet &mdash; the host will confirm

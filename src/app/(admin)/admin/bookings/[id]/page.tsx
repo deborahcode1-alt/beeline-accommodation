@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getAdminContext, canAccessHost } from "@/lib/adminAuth";
 import { formatDate, formatMoney } from "@/lib/format";
 import { manageUrl } from "@/lib/notifications";
 import { StatusBadge } from "@/components/admin/StatusBadge";
@@ -17,12 +18,14 @@ export default async function BookingDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const ctx = await getAdminContext();
+  if (!ctx) redirect("/admin/login");
   const { id } = await params;
   const booking = await prisma.booking.findUnique({
     where: { id },
-    include: { listing: { select: { id: true, name: true, slug: true } } },
+    include: { listing: { select: { id: true, name: true, slug: true, hostId: true } } },
   });
-  if (!booking) notFound();
+  if (!booking || !canAccessHost(ctx, booking.listing.hostId)) notFound();
 
   return (
     <div>

@@ -1,16 +1,20 @@
 export type PropertyType = "BUDGET" | "LUXURY" | "APARTMENT" | "FARM_STAY" | "BOUTIQUE_HOTEL" | "HOUSE";
 
-export const PROPERTY_TYPES: { value: PropertyType; label: string; blurb: string }[] = [
-  { value: "BUDGET", label: "Budget", blurb: "Simple, great-value stays" },
-  { value: "LUXURY", label: "Luxury", blurb: "Premium, special-occasion stays" },
-  { value: "BOUTIQUE_HOTEL", label: "Boutique hotel rooms", blurb: "Characterful heritage rooms" },
-  { value: "APARTMENT", label: "Apartments", blurb: "Self-contained apartments" },
-  { value: "FARM_STAY", label: "Acreage & farm stays", blurb: "Space, animals and country quiet" },
-  { value: "HOUSE", label: "Houses & townhouses", blurb: "Whole places to yourselves" },
+export const PROPERTY_TYPES: { value: PropertyType; label: string; short: string; blurb: string }[] = [
+  { value: "BUDGET", short: "Budget", label: "Budget", blurb: "Simple, great-value stays" },
+  { value: "LUXURY", short: "Luxury", label: "Luxury", blurb: "Premium, special-occasion stays" },
+  { value: "BOUTIQUE_HOTEL", short: "Boutique", label: "Boutique hotel rooms", blurb: "Characterful heritage rooms" },
+  { value: "APARTMENT", short: "Apartment", label: "Apartments", blurb: "Self-contained apartments" },
+  { value: "FARM_STAY", short: "Farm stay", label: "Acreage & farm stays", blurb: "Space, animals and country quiet" },
+  { value: "HOUSE", short: "House", label: "Houses & townhouses", blurb: "Whole places to yourselves" },
 ];
 
 export function propertyTypeLabel(value: PropertyType) {
   return PROPERTY_TYPES.find((t) => t.value === value)?.label ?? "Stay";
+}
+
+export function propertyTypeShort(value: PropertyType) {
+  return PROPERTY_TYPES.find((t) => t.value === value)?.short ?? "Stay";
 }
 
 export function isPropertyType(value: string | undefined): value is PropertyType {

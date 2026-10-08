@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getAdminContext, canAccessHost } from "@/lib/adminAuth";
 import { ListingForm } from "@/components/admin/ListingForm";
 import { PhotoManager } from "@/components/admin/PhotoManager";
 import { BookingsTable } from "@/components/admin/BookingsTable";
@@ -11,6 +12,8 @@ export default async function EditListingPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const ctx = await getAdminContext();
+  if (!ctx) redirect("/admin/login");
   const { id } = await params;
   const listing = await prisma.listing.findUnique({
     where: { id },
@@ -19,7 +22,8 @@ export default async function EditListingPage({
       bookings: { orderBy: { checkIn: "asc" } },
     },
   });
-  if (!listing) notFound();
+  if (!listing || !canAccessHost(ctx, listing.hostId)) notFound();
+  const areas = await prisma.area.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } });
 
   return (
     <div>
@@ -64,6 +68,8 @@ export default async function EditListingPage({
         <h2 className="text-lg font-semibold">Details</h2>
         <div className="mt-3">
           <ListingForm
+            areas={areas}
+            isOwner={ctx.isOwner}
             initial={{
               id: listing.id,
               name: listing.name,
@@ -73,6 +79,9 @@ export default async function EditListingPage({
               address: listing.address ?? "",
               stayType: listing.stayType,
               propertyType: listing.propertyType,
+              petFriendly: listing.petFriendly,
+              bookingMode: listing.bookingMode,
+              areaId: listing.areaId,
               maxGuests: listing.maxGuests,
               bedrooms: listing.bedrooms,
               beds: listing.beds,

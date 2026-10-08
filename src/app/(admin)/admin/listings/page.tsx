@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatMoney } from "@/lib/format";
+import { getAdminContext, listingScope } from "@/lib/adminAuth";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminListingsPage() {
+  const ctx = await getAdminContext();
+  if (!ctx) redirect("/admin/login");
   const listings = await prisma.listing.findMany({
+    where: listingScope(ctx),
     orderBy: { createdAt: "desc" },
     include: { _count: { select: { bookings: true } } },
   });
@@ -16,7 +21,7 @@ export default async function AdminListingsPage() {
         <h1 className="text-2xl font-semibold">Listings</h1>
         <Link
           href="/admin/listings/new"
-          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-deep"
+          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg transition hover:bg-accent-hover"
         >
           New listing
         </Link>

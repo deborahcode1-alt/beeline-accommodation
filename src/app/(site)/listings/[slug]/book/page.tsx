@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { publicListingWhere } from "@/lib/visibility";
 import { BookingForm } from "@/components/BookingForm";
 import { DEFAULT_CANCELLATION_POLICY } from "@/lib/site";
 
@@ -22,20 +23,25 @@ export default async function BookPage({
   const { slug } = await params;
   const query = await searchParams;
 
-  const listing = await prisma.listing.findUnique({ where: { slug } });
-  if (!listing || !listing.published) notFound();
+  const listing = await prisma.listing.findFirst({
+    where: { slug, ...publicListingWhere() },
+  });
+  if (!listing) notFound();
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
       <h1 className="text-2xl font-semibold tracking-tight">Book {listing.name}</h1>
       <p className="mt-1 text-sm text-muted">
-        This sends a request to the host &mdash; it isn&apos;t confirmed until they accept.
+        {listing.bookingMode === "INSTANT"
+          ? "This is an instant booking — your dates are confirmed as soon as you submit."
+          : "This sends a request to the host — it isn't confirmed until they accept."}
       </p>
 
       <div className="mt-8">
         <BookingForm
           listingId={listing.id}
           listingName={listing.name}
+          instant={listing.bookingMode === "INSTANT"}
           basePrice={listing.basePrice}
           cleaningFee={listing.cleaningFee}
           minNights={listing.minNights}
