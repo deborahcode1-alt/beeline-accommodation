@@ -189,7 +189,7 @@ export function ListingForm({ initial }: { initial?: Initial }) {
           ))}
         </select>
         <span className="text-xs text-muted">
-          Decides which &ldquo;What kind of place?&rdquo; group it shows under on the home page.
+          Decides which &ldquo;What kind of place?&rdquo;ldquo;Style of accommodation&ldquo;What kind of place?&rdquo;rdquo; group it shows under on the home page.
         </span>
       </label>
 

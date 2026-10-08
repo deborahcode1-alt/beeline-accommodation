@@ -32,6 +32,8 @@ model Host {
 }
 
 enum PropertyType {
+  BUDGET // budget rooms and stays
+  LUXURY // luxury stays
   APARTMENT
   FARM_STAY // acreage / farm stay
   BOUTIQUE_HOTEL // boutique hotel rooms

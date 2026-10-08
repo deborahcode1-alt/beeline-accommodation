@@ -10,7 +10,7 @@ const listingSchema = z.object({
   cancellationPolicy: z.string().max(4000).optional(),
   address: z.string().max(300).optional(),
   stayType: z.enum(["SHORT_TERM", "LONG_TERM"]).default("SHORT_TERM"),
-  propertyType: z.enum(["APARTMENT", "FARM_STAY", "BOUTIQUE_HOTEL", "HOUSE"]).default("HOUSE"),
+  propertyType: z.enum(["BUDGET", "LUXURY", "APARTMENT", "FARM_STAY", "BOUTIQUE_HOTEL", "HOUSE"]).default("HOUSE"),
   maxGuests: z.coerce.number().int().min(1),
   bedrooms: z.coerce.number().int().min(0),
   beds: z.coerce.number().int().min(0),

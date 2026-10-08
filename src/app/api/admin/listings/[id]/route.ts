@@ -9,7 +9,7 @@ const updateSchema = z.object({
   cancellationPolicy: z.string().max(4000).optional(),
   address: z.string().max(300).optional(),
   stayType: z.enum(["SHORT_TERM", "LONG_TERM"]).optional(),
-  propertyType: z.enum(["APARTMENT", "FARM_STAY", "BOUTIQUE_HOTEL", "HOUSE"]).optional(),
+  propertyType: z.enum(["BUDGET", "LUXURY", "APARTMENT", "FARM_STAY", "BOUTIQUE_HOTEL", "HOUSE"]).optional(),
   maxGuests: z.coerce.number().int().min(1).optional(),
   bedrooms: z.coerce.number().int().min(0).optional(),
   beds: z.coerce.number().int().min(0).optional(),

@@ -43,23 +43,15 @@ export default async function HomePage({
       (activeType === null || l.propertyType === activeType)
   );
 
-  // Only offer sizes and types that actually have a place to stay.
-  const sizeTiles = BEDROOM_TIERS.map((t) => {
-    const matching = all.filter((l) => tierFor(l.bedrooms) === t.bedrooms);
-    if (matching.length === 0) return null;
-    const sleeps = matching.map((l) => l.maxGuests);
-    const min = Math.min(...sleeps);
-    const max = Math.max(...sleeps);
-    return {
-      bedrooms: t.bedrooms,
-      count: matching.length,
-      sleeps: min === max ? `sleeps ${min}` : `sleeps ${min}–${max}`,
-    };
-  }).filter((t) => t !== null);
+  // Types with no listings are hidden; every bedroom size (1 to 6+) stays visible.
+  const sizeTiles = BEDROOM_TIERS.map((t) => ({
+    bedrooms: t.bedrooms,
+    count: all.filter((l) => tierFor(l.bedrooms) === t.bedrooms).length,
+  }));
   const typeTiles = PROPERTY_TYPES.map((t) => ({
     ...t,
     count: all.filter((l) => l.propertyType === t.value).length,
-  })).filter((t) => t.count > 0);
+  }));
 
   return (
     <div>
@@ -88,10 +80,22 @@ export default async function HomePage({
           <h2 className="text-xl font-semibold">Find your stay</h2>
 
           <p className="mt-5 text-xs font-medium uppercase tracking-wide text-muted">
-            How many are staying?
+            How many bedrooms?
           </p>
           <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {sizeTiles.map((t) => {
+              const label = `${t.bedrooms === 6 ? "6+" : t.bedrooms} bedroom${t.bedrooms === 1 ? "" : "s"}`;
+              if (t.count === 0) {
+                return (
+                  <span
+                    key={t.bedrooms}
+                    aria-disabled="true"
+                    className="cursor-default rounded-sm border border-card-border bg-background px-3 py-3 text-center text-sm font-semibold opacity-40"
+                  >
+                    {label}
+                  </span>
+                );
+              }
               const active = activeBeds === t.bedrooms;
               return (
                 <Link
@@ -99,28 +103,35 @@ export default async function HomePage({
                   href={filterHref(active ? null : t.bedrooms, activeType)}
                   scroll={false}
                   aria-current={active ? "true" : undefined}
-                  className={`rounded-sm border px-3 py-3 text-center transition ${
+                  className={`rounded-sm border px-3 py-3 text-center text-sm font-semibold transition ${
                     active
                       ? "border-accent bg-accent text-white"
                       : "border-card-border bg-background hover:border-accent"
                   }`}
                 >
-                  <span className="block text-sm font-semibold">
-                    {t.bedrooms === 6 ? "6+" : t.bedrooms} bedroom{t.bedrooms === 1 ? "" : "s"}
-                  </span>
-                  <span className={`block text-xs ${active ? "text-white/80" : "text-muted"}`}>
-                    {t.sleeps}
-                  </span>
+                  {label}
                 </Link>
               );
             })}
           </div>
 
           <p className="mt-6 text-xs font-medium uppercase tracking-wide text-muted">
-            What kind of place?
+            Style of accommodation
           </p>
-          <div className="mt-2 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {typeTiles.map((t) => {
+              if (t.count === 0) {
+                return (
+                  <span
+                    key={t.value}
+                    aria-disabled="true"
+                    className="cursor-default rounded-sm border border-card-border bg-background px-4 py-3 opacity-40"
+                  >
+                    <span className="block text-sm font-semibold">{t.label}</span>
+                    <span className="block text-xs text-muted">{t.blurb}</span>
+                  </span>
+                );
+              }
               const active = activeType === t.value;
               return (
                 <Link

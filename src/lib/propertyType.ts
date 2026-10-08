@@ -1,9 +1,11 @@
-export type PropertyType = "APARTMENT" | "FARM_STAY" | "BOUTIQUE_HOTEL" | "HOUSE";
+export type PropertyType = "BUDGET" | "LUXURY" | "APARTMENT" | "FARM_STAY" | "BOUTIQUE_HOTEL" | "HOUSE";
 
 export const PROPERTY_TYPES: { value: PropertyType; label: string; blurb: string }[] = [
+  { value: "BUDGET", label: "Budget", blurb: "Simple, great-value stays" },
+  { value: "LUXURY", label: "Luxury", blurb: "Premium, special-occasion stays" },
+  { value: "BOUTIQUE_HOTEL", label: "Boutique hotel rooms", blurb: "Characterful heritage rooms" },
   { value: "APARTMENT", label: "Apartments", blurb: "Self-contained apartments" },
   { value: "FARM_STAY", label: "Acreage & farm stays", blurb: "Space, animals and country quiet" },
-  { value: "BOUTIQUE_HOTEL", label: "Boutique hotel rooms", blurb: "Characterful heritage rooms" },
   { value: "HOUSE", label: "Houses & townhouses", blurb: "Whole places to yourselves" },
 ];
 
