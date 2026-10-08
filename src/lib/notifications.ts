@@ -25,7 +25,7 @@ function fmtDate(d: Date) {
 }
 
 export function manageUrl(token: string) {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://gympie-accommodation.vercel.app";
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://beeline-accommodation.vercel.app";
   return `${base}/manage/${token}`;
 }
 

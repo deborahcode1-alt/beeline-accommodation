@@ -34,6 +34,13 @@ model Host {
   publicPhone         String?
   publicEmail         String?
   photoUrl            String?
+  blurb               String? // short line shown under the host's name
+  hostType            String?
+  yearsHosting        String?
+  livesOnSite         String?
+  checkInStyle        String?
+  responseTime        String?
+  languages           String?
   // Beeline subscription. Listings of a host whose subscription has lapsed are hidden.
   subscriptionStatus  SubscriptionStatus @default(TRIAL)
   trialEndsAt         DateTime?
@@ -127,6 +134,7 @@ model Listing {
   stayType           StayType @default(SHORT_TERM)
   propertyType       PropertyType @default(HOUSE)
   petFriendly        Boolean  @default(false)
+  parking            String   @default("NONE") // NONE, STREET, OFF_STREET, COVERED
   bookingMode        BookingMode @default(REQUEST)
   area               Area?    @relation(fields: [areaId], references: [id])
   areaId             String?

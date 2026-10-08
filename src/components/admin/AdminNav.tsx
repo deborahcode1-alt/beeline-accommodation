@@ -18,6 +18,7 @@ export function AdminNav({ role }: { role: Role }) {
           { href: "/admin/listings", label: "Listings" },
           { href: "/admin/hosts", label: "Hosts" },
           { href: "/admin/areas", label: "Areas" },
+          { href: "/admin/team", label: "Team" },
           { href: "/admin/account", label: "Account" },
         ]
       : role === "host"

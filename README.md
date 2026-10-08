@@ -1,17 +1,24 @@
-# Airbnb Host Site
+# Beeline Accommodation
 
-A direct-booking website for an Airbnb host: a public listing page with an
-availability calendar and booking-request form, plus an admin dashboard to
-manage listings, review booking requests, and keep availability in sync with
-Airbnb over iCal.
+A directory and direct-booking platform for local accommodation hosts. Guests
+search an area (for example Gympie) and land on that area's page, "Gympie
+Accommodation", where they can filter stays, contact the host directly, and
+either book instantly or send a booking request. Hosts get their own sign-in,
+bookings dashboard and calendar, and pay a simple subscription instead of a
+commission.
+
+Tagline: "A Direct Route to Your Next Stay". Slogan: "Stay Local. Book Direct."
 
 ## Stack
 
 - Next.js (App Router) + TypeScript + Tailwind CSS
-- Prisma + SQLite (swap the `DATABASE_URL` for Postgres/MySQL later without
-  changing app code)
-- `ical-generator` / `node-ical` for two-way calendar sync with Airbnb
-- Cookie-based admin session (no third-party auth service)
+- Prisma + PostgreSQL (Neon)
+- Vercel (hosting, Blob for photos)
+- Resend (email), Twilio (text messages, optional)
+- `ical-generator` / `node-ical` for two-way calendar sync with Airbnb,
+  Booking.com and other platforms
+- Cookie-based admin session; hosts only ever see their own listings and
+  bookings, the platform owner and collaborators see everything
 
 ## Getting started
 
@@ -24,35 +31,29 @@ npm run dev
 ```
 
 Visit `http://localhost:3000` for the public site and
-`http://localhost:3000/admin/login` for the host dashboard (credentials come
+`http://localhost:3000/admin/login` for sign-in (the first owner login comes
 from `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `.env`, applied by `db:seed`).
 
-## Airbnb calendar sync
+## Roles
 
-Each listing gets:
+- **Owner / collaborator** (no host attached): sees every host, listing and
+  booking, and manages hosts, areas, subscriptions and team sign-ins. Add
+  collaborators from the Team page.
+- **Host**: sees only their own listings, bookings, messages and profile.
 
-- **Export URL** (`/admin/listings/<id>/calendar`): paste this into Airbnb's
-  "Import calendar" setting so direct bookings block the listing on Airbnb.
-- **Import URL**: paste Airbnb's own export `.ics` URL here so bookings made
-  on Airbnb block the listing on this site.
+## Calendar sync
 
-Syncing happens on demand (the "Sync all now" button) and whenever an import
-URL is added. For hands-off syncing, hit `GET /api/cron/sync-ical?secret=<CRON_SECRET>`
-on a schedule (Windows Task Scheduler locally, or a Vercel Cron / any HTTP
-cron service once deployed).
+Each listing has an export URL (paste it into other platforms so direct
+bookings block those dates) and any number of import URLs (so bookings made
+elsewhere block the dates here). For hands-off syncing, hit
+`GET /api/cron/sync-ical?secret=<CRON_SECRET>` on a schedule.
 
-## Booking flow
+## Not switched on yet
 
-Guests submit a request from a listing page; nothing is charged automatically.
-The host confirms or declines each request from `/admin`. There is no payment
-processing wired up yet — add a provider (e.g. Stripe) before taking real
-payments if you want to charge cards directly.
-
-## Notes
-
-- Photos are added by URL (host-hosted images, Imgur, etc.) — there's no file
-  upload/storage wired up.
-- Email notifications are not wired up; the admin dashboard is the source of
-  truth for new requests until you add an email provider.
-
-
+- Stripe subscription billing (`src/lib/billing.ts` is a stub until keys exist)
+- Square checkout per host (`src/lib/payments.ts`)
+- Text messages until Twilio credentials are set
+- Email to anyone but the Resend account owner until a sending domain is
+  verified
+- The terms, privacy policy and host agreement pages are drafts pending legal
+  review

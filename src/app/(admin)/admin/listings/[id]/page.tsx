@@ -80,6 +80,7 @@ export default async function EditListingPage({
               stayType: listing.stayType,
               propertyType: listing.propertyType,
               petFriendly: listing.petFriendly,
+              parking: listing.parking as "NONE" | "STREET" | "OFF_STREET" | "COVERED",
               bookingMode: listing.bookingMode,
               areaId: listing.areaId,
               maxGuests: listing.maxGuests,

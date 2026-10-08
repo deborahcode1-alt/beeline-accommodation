@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, canAccessHost } from "@/lib/adminAuth";
+import { PROFILE_SUBJECTS, BLURB_MAX } from "@/lib/hostProfile";
+
+const subjectField = (key: string) => {
+  const values = PROFILE_SUBJECTS.find((s) => s.key === key)!.options.map((o) => o.value);
+  return z
+    .string()
+    .transform((v) => v.trim())
+    .refine((v) => v === "" || values.includes(v), "Pick one of the options")
+    .transform((v) => v || null)
+    .nullable()
+    .optional();
+};
 
 const optionalText = (max: number) =>
   z
@@ -32,6 +44,13 @@ const profileSchema = z.object({
     .nullable()
     .optional(),
   photoUrl: optionalText(1000),
+  blurb: optionalText(BLURB_MAX),
+  languages: optionalText(120),
+  hostType: subjectField("hostType"),
+  yearsHosting: subjectField("yearsHosting"),
+  livesOnSite: subjectField("livesOnSite"),
+  checkInStyle: subjectField("checkInStyle"),
+  responseTime: subjectField("responseTime"),
   notificationEmail: optionalText(200),
   notificationPhone: optionalText(50),
   // Platform-owner only:

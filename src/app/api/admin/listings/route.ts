@@ -22,6 +22,7 @@ const listingSchema = z.object({
   amenities: z.array(z.string()).default([]),
   published: z.boolean().default(true),
   petFriendly: z.boolean().default(false),
+  parking: z.enum(["NONE", "STREET", "OFF_STREET", "COVERED"]).default("NONE"),
   bookingMode: z.enum(["REQUEST", "INSTANT"]).default("REQUEST"),
   areaId: z.string().nullable().optional(),
   hostId: z.string().optional(),

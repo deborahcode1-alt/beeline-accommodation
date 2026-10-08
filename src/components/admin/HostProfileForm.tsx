@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
+import { PROFILE_SUBJECTS, BLURB_MAX } from "@/lib/hostProfile";
 
 type Initial = {
   name: string;
@@ -12,6 +13,13 @@ type Initial = {
   publicPhone: string;
   publicEmail: string;
   photoUrl: string;
+  blurb: string;
+  languages: string;
+  hostType: string;
+  yearsHosting: string;
+  livesOnSite: string;
+  checkInStyle: string;
+  responseTime: string;
   notificationEmail: string;
   notificationPhone: string;
 };
@@ -129,15 +137,62 @@ export function HostProfileForm({ hostId, initial }: { hostId: string; initial: 
           className={input}
         />
       </label>
-      <label className="flex flex-col gap-1 text-sm">
-        About you and your place
-        <textarea
-          value={form.bio}
-          onChange={(e) => update("bio", e.target.value)}
-          rows={4}
-          className={input}
-        />
-      </label>
+      <fieldset className="grid gap-4 rounded-lg border border-card-border bg-soft p-4">
+        <legend className="px-1 text-sm font-semibold">About you and your place</legend>
+
+        <label className="flex flex-col gap-1 text-sm">
+          A little blurb
+          <input
+            value={form.blurb}
+            onChange={(e) => update("blurb", e.target.value.slice(0, BLURB_MAX))}
+            maxLength={BLURB_MAX}
+            placeholder="One or two friendly sentences guests see under your name"
+            className={input}
+          />
+          <span className="text-xs text-muted">
+            {form.blurb.length}/{BLURB_MAX} characters
+          </span>
+        </label>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          {PROFILE_SUBJECTS.map((subject) => (
+            <label key={subject.key} className="flex flex-col gap-1 text-sm">
+              {subject.label}
+              <select
+                value={form[subject.key]}
+                onChange={(e) => update(subject.key, e.target.value)}
+                className={input}
+              >
+                <option value="">Prefer not to say</option>
+                {subject.options.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+          <label className="flex flex-col gap-1 text-sm">
+            Languages you speak
+            <input
+              value={form.languages}
+              onChange={(e) => update("languages", e.target.value)}
+              placeholder="e.g. English, Italian"
+              className={input}
+            />
+          </label>
+        </div>
+
+        <label className="flex flex-col gap-1 text-sm">
+          More about you and your place (optional)
+          <textarea
+            value={form.bio}
+            onChange={(e) => update("bio", e.target.value)}
+            rows={4}
+            className={input}
+          />
+        </label>
+      </fieldset>
 
       <fieldset className="grid gap-4 rounded-lg border border-card-border p-4">
         <legend className="px-1 text-sm font-semibold">

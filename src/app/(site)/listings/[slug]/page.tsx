@@ -10,6 +10,8 @@ import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 import { ContactHostForm } from "@/components/ContactHostForm";
 import { stayTypeLabel } from "@/lib/stayType";
 import { propertyTypeLabel } from "@/lib/propertyType";
+import { bedroomLabel, bathroomLabel, parkingShort } from "@/lib/listingFacts";
+import { profileFacts } from "@/lib/hostProfile";
 import { DEFAULT_CANCELLATION_POLICY } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -94,13 +96,17 @@ export default async function ListingPage({
       <div className="mt-10 grid gap-10 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="flex flex-wrap gap-4 border-b border-card-border pb-6 text-sm">
-            <span>{listing.maxGuests} guests</span>
+            <span>{bedroomLabel(listing.bedrooms)}</span>
             <span>&middot;</span>
-            <span>{listing.bedrooms} bedrooms</span>
+            <span>{bathroomLabel(listing.baths)}</span>
             <span>&middot;</span>
-            <span>{listing.beds} beds</span>
+            <span>{propertyTypeLabel(listing.propertyType)}</span>
             <span>&middot;</span>
-            <span>{listing.baths} baths</span>
+            <span>{listing.petFriendly ? "Pet friendly" : "No pets"}</span>
+            <span>&middot;</span>
+            <span>{parkingShort(listing.parking) ?? "No parking"}</span>
+            <span>&middot;</span>
+            <span>{listing.beds} bed{listing.beds === 1 ? "" : "s"}, sleeps {listing.maxGuests}</span>
           </div>
 
           <div className="prose prose-neutral mt-6 max-w-none whitespace-pre-line">
@@ -137,9 +143,19 @@ export default async function ListingPage({
                 )}
                 <div className="text-sm">
                   <p className="font-semibold">Hosted by {host.name}</p>
-                  {host.bio && <p className="mt-1 whitespace-pre-line text-muted">{host.bio}</p>}
+                  {host.blurb && <p className="mt-1 italic">&ldquo;{host.blurb}&rdquo;</p>}
+                  {host.bio && <p className="mt-2 whitespace-pre-line text-muted">{host.bio}</p>}
                 </div>
               </div>
+            )}
+            {host && profileFacts(host).length > 0 && (
+              <ul className="mt-4 flex flex-wrap gap-2 text-xs">
+                {profileFacts(host).map((fact) => (
+                  <li key={fact} className="rounded-full border border-card-border bg-background px-3 py-1">
+                    {fact}
+                  </li>
+                ))}
+              </ul>
             )}
             {host && (phone || host.publicEmail || host.website) && (
               <div className="mt-4 flex flex-wrap gap-2">

@@ -28,6 +28,13 @@ export default async function ProfilePage() {
             publicPhone: host.publicPhone ?? "",
             publicEmail: host.publicEmail ?? "",
             photoUrl: host.photoUrl ?? "",
+            blurb: host.blurb ?? "",
+            languages: host.languages ?? "",
+            hostType: host.hostType ?? "",
+            yearsHosting: host.yearsHosting ?? "",
+            livesOnSite: host.livesOnSite ?? "",
+            checkInStyle: host.checkInStyle ?? "",
+            responseTime: host.responseTime ?? "",
             notificationEmail: host.notificationEmail ?? "",
             notificationPhone: host.notificationPhone ?? "",
           }}

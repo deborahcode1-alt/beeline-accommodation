@@ -21,6 +21,7 @@ const updateSchema = z.object({
   amenities: z.array(z.string()).optional(),
   published: z.boolean().optional(),
   petFriendly: z.boolean().optional(),
+  parking: z.enum(["NONE", "STREET", "OFF_STREET", "COVERED"]).optional(),
   bookingMode: z.enum(["REQUEST", "INSTANT"]).optional(),
   areaId: z.string().nullable().optional(),
   hostId: z.string().nullable().optional(),

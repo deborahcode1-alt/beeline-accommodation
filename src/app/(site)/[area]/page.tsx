@@ -259,6 +259,8 @@ export default async function AreaPage({
                 areaName={`${area.name}, ${area.state}`}
                 basePrice={l.basePrice}
                 bedrooms={l.bedrooms}
+                baths={l.baths}
+                parking={l.parking}
                 propertyType={l.propertyType}
                 petFriendly={l.petFriendly}
                 coverPhoto={l.photos[0]?.url ?? null}

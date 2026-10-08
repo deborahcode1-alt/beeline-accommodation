@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatMoney } from "@/lib/format";
 import { propertyTypeShort, type PropertyType } from "@/lib/propertyType";
+import { bedroomLabel, bathroomLabel, parkingShort } from "@/lib/listingFacts";
 
 type Props = {
   slug: string;
@@ -9,6 +10,8 @@ type Props = {
   areaName?: string | null;
   basePrice: number;
   bedrooms: number;
+  baths: number;
+  parking: string;
   propertyType: PropertyType;
   petFriendly: boolean;
   coverPhoto: string | null;
@@ -20,14 +23,19 @@ export function ListingCard({
   areaName,
   basePrice,
   bedrooms,
+  baths,
+  parking,
   propertyType,
   petFriendly,
   coverPhoto,
 }: Props) {
+  const parkingText = parkingShort(parking);
   const details = [
-    `${bedrooms} bedroom${bedrooms === 1 ? "" : "s"}`,
+    bedroomLabel(bedrooms),
+    bathroomLabel(baths),
     propertyTypeShort(propertyType),
     ...(petFriendly ? ["Pet friendly"] : []),
+    ...(parkingText ? [parkingText] : []),
   ];
 
   return (
