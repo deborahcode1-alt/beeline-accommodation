@@ -1,16 +1,65 @@
 import Image from "next/image";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ListingCard } from "@/components/ListingCard";
 import { SITE_TAGLINE } from "@/lib/site";
+import {
+  BEDROOM_TIERS,
+  PROPERTY_TYPES,
+  isPropertyType,
+  tierFor,
+} from "@/lib/propertyType";
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
-  const listings = await prisma.listing.findMany({
+function filterHref(beds: number | null, type: string | null) {
+  const params = new URLSearchParams();
+  if (beds) params.set("beds", String(beds));
+  if (type) params.set("type", type);
+  const qs = params.toString();
+  return `/${qs ? `?${qs}` : ""}#listings`;
+}
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ beds?: string; type?: string }>;
+}) {
+  const sp = await searchParams;
+  const bedsParam = Number(sp.beds);
+  const activeBeds =
+    Number.isInteger(bedsParam) && bedsParam >= 1 && bedsParam <= 6 ? bedsParam : null;
+  const activeType = isPropertyType(sp.type) ? sp.type : null;
+
+  const all = await prisma.listing.findMany({
     where: { published: true },
     orderBy: { basePrice: "asc" },
     include: { photos: { orderBy: { order: "asc" }, take: 1 } },
   });
+
+  const listings = all.filter(
+    (l) =>
+      (activeBeds === null || tierFor(l.bedrooms) === activeBeds) &&
+      (activeType === null || l.propertyType === activeType)
+  );
+
+  // Only offer sizes and types that actually have a place to stay.
+  const sizeTiles = BEDROOM_TIERS.map((t) => {
+    const matching = all.filter((l) => tierFor(l.bedrooms) === t.bedrooms);
+    if (matching.length === 0) return null;
+    const sleeps = matching.map((l) => l.maxGuests);
+    const min = Math.min(...sleeps);
+    const max = Math.max(...sleeps);
+    return {
+      bedrooms: t.bedrooms,
+      count: matching.length,
+      sleeps: min === max ? `sleeps ${min}` : `sleeps ${min}–${max}`,
+    };
+  }).filter((t) => t !== null);
+  const typeTiles = PROPERTY_TYPES.map((t) => ({
+    ...t,
+    count: all.filter((l) => l.propertyType === t.value).length,
+  })).filter((t) => t.count > 0);
 
   return (
     <div>
@@ -34,9 +83,89 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section id="find" className="border-b border-card-border bg-foreground/[0.03]">
+        <div className="mx-auto max-w-5xl px-6 py-10">
+          <h2 className="text-xl font-semibold">Find your stay</h2>
+
+          <p className="mt-5 text-xs font-medium uppercase tracking-wide text-muted">
+            How many are staying?
+          </p>
+          <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {sizeTiles.map((t) => {
+              const active = activeBeds === t.bedrooms;
+              return (
+                <Link
+                  key={t.bedrooms}
+                  href={filterHref(active ? null : t.bedrooms, activeType)}
+                  scroll={false}
+                  aria-current={active ? "true" : undefined}
+                  className={`rounded-sm border px-3 py-3 text-center transition ${
+                    active
+                      ? "border-accent bg-accent text-white"
+                      : "border-card-border bg-background hover:border-accent"
+                  }`}
+                >
+                  <span className="block text-sm font-semibold">
+                    {t.bedrooms === 6 ? "6+" : t.bedrooms} bedroom{t.bedrooms === 1 ? "" : "s"}
+                  </span>
+                  <span className={`block text-xs ${active ? "text-white/80" : "text-muted"}`}>
+                    {t.sleeps}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+
+          <p className="mt-6 text-xs font-medium uppercase tracking-wide text-muted">
+            What kind of place?
+          </p>
+          <div className="mt-2 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {typeTiles.map((t) => {
+              const active = activeType === t.value;
+              return (
+                <Link
+                  key={t.value}
+                  href={filterHref(activeBeds, active ? null : t.value)}
+                  scroll={false}
+                  aria-current={active ? "true" : undefined}
+                  className={`rounded-sm border px-4 py-3 transition ${
+                    active
+                      ? "border-accent bg-accent text-white"
+                      : "border-card-border bg-background hover:border-accent"
+                  }`}
+                >
+                  <span className="block text-sm font-semibold">{t.label}</span>
+                  <span className={`block text-xs ${active ? "text-white/80" : "text-muted"}`}>
+                    {t.blurb}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       <section id="listings" className="mx-auto max-w-5xl px-6 py-16">
-        {listings.length === 0 ? (
+        {(activeBeds !== null || activeType !== null) && (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-muted">
+              {listings.length} place{listings.length === 1 ? "" : "s"} match your choices
+            </p>
+            <Link href="/#listings" scroll={false} className="text-sm text-accent-deep hover:underline">
+              Clear filters
+            </Link>
+          </div>
+        )}
+        {all.length === 0 ? (
           <p className="text-center text-muted">No listings published yet. Check back soon.</p>
+        ) : listings.length === 0 ? (
+          <p className="text-center text-muted">
+            Nothing matches that combination &mdash;{" "}
+            <Link href="/#listings" className="text-accent-deep hover:underline">
+              clear the filters
+            </Link>{" "}
+            to see everything.
+          </p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {listings.map((l) => (

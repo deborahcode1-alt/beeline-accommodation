@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PROPERTY_TYPES, type PropertyType } from "@/lib/propertyType";
 
 type Host = { id: string; name: string; squareConnected: boolean };
 
@@ -13,6 +14,7 @@ type Initial = {
   cancellationPolicy: string;
   address: string;
   stayType: "SHORT_TERM" | "LONG_TERM";
+  propertyType: PropertyType;
   maxGuests: number;
   bedrooms: number;
   beds: number;
@@ -32,6 +34,7 @@ const empty: Initial = {
   cancellationPolicy: "",
   address: "",
   stayType: "SHORT_TERM",
+  propertyType: "HOUSE",
   maxGuests: 2,
   bedrooms: 1,
   beds: 1,
@@ -171,6 +174,24 @@ export function ListingForm({ initial }: { initial?: Initial }) {
           </select>
         </label>
       </div>
+
+      <label className="flex flex-col gap-1 text-sm">
+        Property type
+        <select
+          value={form.propertyType}
+          onChange={(e) => update("propertyType", e.target.value as PropertyType)}
+          className="rounded-md border border-card-border px-3 py-2"
+        >
+          {PROPERTY_TYPES.map((t) => (
+            <option key={t.value} value={t.value}>
+              {t.label}
+            </option>
+          ))}
+        </select>
+        <span className="text-xs text-muted">
+          Decides which &ldquo;What kind of place?&rdquo; group it shows under on the home page.
+        </span>
+      </label>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <label className="flex flex-col gap-1 text-sm">

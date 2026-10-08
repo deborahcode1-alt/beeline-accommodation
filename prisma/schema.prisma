@@ -31,6 +31,13 @@ model Host {
   listings Listing[]
 }
 
+enum PropertyType {
+  APARTMENT
+  FARM_STAY // acreage / farm stay
+  BOUTIQUE_HOTEL // boutique hotel rooms
+  HOUSE // whole houses and townhouses
+}
+
 enum StayType {
   SHORT_TERM
   LONG_TERM
@@ -45,6 +52,7 @@ model Listing {
   cancellationPolicy String? // falls back to a site-wide default draft policy when null
   address            String?
   stayType           StayType @default(SHORT_TERM)
+  propertyType       PropertyType @default(HOUSE)
   maxGuests          Int      @default(2)
   bedrooms           Int      @default(1)
   beds               Int      @default(1)

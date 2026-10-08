@@ -72,6 +72,7 @@ export default async function EditListingPage({
               cancellationPolicy: listing.cancellationPolicy ?? "",
               address: listing.address ?? "",
               stayType: listing.stayType,
+              propertyType: listing.propertyType,
               maxGuests: listing.maxGuests,
               bedrooms: listing.bedrooms,
               beds: listing.beds,
