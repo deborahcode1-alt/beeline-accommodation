@@ -8,7 +8,7 @@ const STATUSES = [
   { value: "ACTIVE", label: "Active (paying)" },
   { value: "PAST_DUE", label: "Payment overdue (grace period)" },
   { value: "CANCELLED", label: "Cancelled (listings hidden)" },
-  { value: "COMPLIMENTARY", label: "Founding host (free, visible)" },
+  { value: "COMPLIMENTARY", label: "Platform owner (no charge, always visible)" },
 ];
 
 export function OwnerHostControls({

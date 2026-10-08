@@ -11,7 +11,7 @@ const labels: Record<string, string> = {
   ACTIVE: "Active",
   PAST_DUE: "Payment overdue",
   CANCELLED: "Cancelled",
-  COMPLIMENTARY: "Founding host",
+  COMPLIMENTARY: "Owner (no charge)",
 };
 
 export function SubscriptionBadge({ status }: { status: string }) {

@@ -59,7 +59,7 @@ enum SubscriptionStatus {
   ACTIVE
   PAST_DUE
   CANCELLED
-  COMPLIMENTARY // founding hosts with no charge
+  COMPLIMENTARY // the platform owner's own listings (Marcus), no charge
 }
 
 enum BookingMode {

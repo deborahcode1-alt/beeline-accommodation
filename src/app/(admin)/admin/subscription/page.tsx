@@ -31,7 +31,7 @@ export default async function SubscriptionPage() {
 
   const hasSubscription = !!host.stripeSubscriptionId;
   const note: Record<string, string> = {
-    COMPLIMENTARY: "You are a founding host, so your listings are free and stay visible.",
+    COMPLIMENTARY: "These listings belong to the platform owner, so there is no subscription charge.",
     TRIAL: host.trialEndsAt
       ? `Your free trial ends ${formatDate(host.trialEndsAt)}. Subscribe before then to keep your listings visible.`
       : "You are on a free trial. Subscribe to keep your listings visible.",
