@@ -19,7 +19,7 @@ export async function SiteHeader() {
           <BrandLogo />
         </Link>
         <nav className="flex items-center gap-3 text-sm sm:gap-6">
-          <Link href="/#areas" className="hidden text-header-fg/85 transition hover:text-header-fg md:inline">
+          <Link href="/#stays" className="hidden text-header-fg/85 transition hover:text-header-fg md:inline">
             Stays
           </Link>
           <Link href="/#how" className="hidden text-header-fg/85 transition hover:text-header-fg md:inline">

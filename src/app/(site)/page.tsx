@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { publicListingWhere } from "@/lib/visibility";
 import { AreaSearch } from "@/components/AreaSearch";
+import { ListingCard } from "@/components/ListingCard";
 import { SITE_SLOGAN } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +33,21 @@ const STEPS = [
   },
 ];
 
+const HOME_GRID_SIZE = 12;
+
 export default async function HomePage() {
+  const [stays, totalStays] = await Promise.all([
+    prisma.listing.findMany({
+      where: publicListingWhere(),
+      orderBy: { basePrice: "asc" },
+      take: HOME_GRID_SIZE,
+      include: {
+        photos: { orderBy: { order: "asc" }, take: 1 },
+        area: { select: { name: true, state: true } },
+      },
+    }),
+    prisma.listing.count({ where: publicListingWhere() }),
+  ]);
   const areas = await prisma.area.findMany({
     where: { published: true },
     orderBy: { name: "asc" },
@@ -96,6 +111,53 @@ export default async function HomePage() {
             </span>
           </div>
         </div>
+      </section>
+
+      <section id="stays" className="mx-auto max-w-6xl px-6 pb-14">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <h2 className="text-2xl font-bold">Stays</h2>
+          {totalStays > 0 && (
+            <p className="text-sm text-muted">
+              {totalStays} stay{totalStays === 1 ? "" : "s"}, lowest price first
+            </p>
+          )}
+        </div>
+        {stays.length === 0 ? (
+          <p className="mt-4 rounded-xl border border-dashed border-card-border p-8 text-center text-sm text-muted">
+            Our first stays are being added. Check back soon.
+          </p>
+        ) : (
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {stays.map((l) => (
+              <ListingCard
+                key={l.id}
+                slug={l.slug}
+                name={l.name}
+                areaName={l.area ? `${l.area.name}, ${l.area.state}` : null}
+                basePrice={l.basePrice}
+                bedrooms={l.bedrooms}
+                baths={l.baths}
+                parking={l.parking}
+                propertyType={l.propertyType}
+                petFriendly={l.petFriendly}
+                coverPhoto={l.photos[0]?.url ?? null}
+              />
+            ))}
+          </div>
+        )}
+        {areas.length > 0 && (
+          <div className="mt-8 flex flex-wrap gap-3">
+            {areas.map((a) => (
+              <Link
+                key={a.id}
+                href={`/${a.slug}`}
+                className="rounded-md border border-card-border px-4 py-2 text-sm font-semibold hover:border-accent"
+              >
+                See all {a.name} Accommodation &rarr;
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="border-y border-card-border bg-soft">
