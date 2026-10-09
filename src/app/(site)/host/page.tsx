@@ -3,7 +3,7 @@ import Link from "next/link";
 import { HostEnquiryForm } from "@/components/HostEnquiryForm";
 
 export const metadata: Metadata = {
-  title: "List your property",
+  title: "Become a collaborator",
   description:
     "List your accommodation on Beeline for a simple subscription. No commission, your own payment method, and guests contact you directly.",
 };
@@ -41,15 +41,15 @@ export default function HostPage() {
       <section className="bg-soft">
         <div className="mx-auto max-w-6xl px-6 py-14 sm:py-20">
           <h1 className="max-w-3xl text-4xl font-extrabold tracking-tight sm:text-5xl">
-            List your property on Beeline
+            Become a Beeline collaborator
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-foreground/80">
-            Get found by guests searching your area, and keep the booking relationship. Hosts pay
+            List your property, get found by guests searching your area, and keep the booking relationship. Hosts pay
             a simple subscription instead of a commission.
           </p>
           <p className="mt-3 text-sm text-muted">
             Already a host?{" "}
-            <Link href="/admin/login" className="font-semibold text-accent-deep hover:underline">
+            <Link href="/sign-in" className="font-semibold text-accent-deep hover:underline">
               Sign in
             </Link>
           </p>

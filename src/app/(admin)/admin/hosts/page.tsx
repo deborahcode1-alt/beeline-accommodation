@@ -48,7 +48,7 @@ export default async function HostsPage() {
       </div>
 
       <h2 className="mt-12 text-lg font-semibold">People asking to list</h2>
-      <p className="mt-1 text-sm text-muted">From the List your property page, newest first.</p>
+      <p className="mt-1 text-sm text-muted">From the Become a collaborator page, newest first.</p>
       <div className="mt-3 space-y-3">
         {enquiries.length === 0 && <p className="text-sm text-muted">None yet.</p>}
         {enquiries.map((e) => {

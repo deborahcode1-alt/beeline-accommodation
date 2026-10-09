@@ -17,7 +17,7 @@ export function SiteFooter() {
           <Link href="/terms" className="hover:text-header-fg">Terms of use</Link>
           <Link href="/sign-up" className="hover:text-header-fg">Create an account</Link>
           <Link href="/privacy" className="hover:text-header-fg">Privacy policy</Link>
-          <Link href="/host" className="hover:text-header-fg">List your property</Link>
+          <Link href="/host" className="hover:text-header-fg">Become a collaborator</Link>
           <Link href="/host-agreement" className="hover:text-header-fg">Host agreement</Link>
         </nav>
       </div>

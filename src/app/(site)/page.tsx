@@ -17,8 +17,8 @@ const VALUES = [
 const STEPS = [
   {
     n: "1",
-    title: "Search an area",
-    text: "Pick the town or region you are heading to and see the stays hosted there.",
+    title: "Pick an area",
+    text: "Choose the town or region you are heading to and see the stays hosted there.",
   },
   {
     n: "2",
@@ -42,7 +42,7 @@ export default async function HomePage() {
   return (
     <div>
       <section className="bg-soft">
-        <div className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
           <p className="text-sm font-semibold uppercase tracking-widest text-accent-deep">
             {SITE_SLOGAN}
           </p>
@@ -52,13 +52,14 @@ export default async function HomePage() {
           <p className="mt-4 max-w-xl text-lg text-foreground/80">
             Unique places. Local stays. Direct bookings.
           </p>
-          <div className="mt-8">
-            <AreaSearch areas={areas.map((a) => ({ slug: a.slug, name: a.name, state: a.state }))} />
-          </div>
+          <p className="mt-5 max-w-xl rounded-lg border border-accent bg-background px-4 py-3 text-sm">
+            <strong>This site is growing, and so are our stays.</strong> We are adding new places
+            and new areas all the time, so check back soon.
+          </p>
         </div>
       </section>
 
-      <section id="areas" className="mx-auto max-w-6xl px-6 py-16">
+      <section id="areas" className="mx-auto max-w-6xl px-6 py-14">
         <h2 className="text-2xl font-bold">Where we are</h2>
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {areas.map((a) => (
@@ -87,9 +88,9 @@ export default async function HomePage() {
           ))}
           <div className="flex aspect-[4/3] items-center justify-center rounded-xl border border-dashed border-card-border p-6 text-center text-sm text-muted">
             <span>
-              More areas coming soon. Want yours listed? Tell us on the{" "}
+              More areas coming soon. Want yours listed?{" "}
               <Link href="/host" className="text-accent-deep underline">
-                host page
+                Become a collaborator
               </Link>
               .
             </span>
@@ -108,7 +109,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="how" className="mx-auto max-w-6xl px-6 py-16">
+      <section id="how" className="mx-auto max-w-6xl px-6 py-14">
         <h2 className="text-2xl font-bold">How Beeline works</h2>
         <div className="mt-8 grid gap-8 sm:grid-cols-3">
           {STEPS.map((s) => (
@@ -123,20 +124,30 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section id="search" className="border-t border-card-border bg-soft">
+        <div className="mx-auto max-w-6xl px-6 py-14">
+          <h2 className="text-2xl font-bold">Where are you going?</h2>
+          <p className="mt-1 text-sm text-muted">Type a town or area to see the stays there.</p>
+          <div className="mt-5">
+            <AreaSearch areas={areas.map((a) => ({ slug: a.slug, name: a.name, state: a.state }))} />
+          </div>
+        </div>
+      </section>
+
       <section className="bg-header-bg text-header-fg">
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-6 py-14 sm:flex-row sm:items-center">
           <div>
             <h2 className="text-2xl font-bold">Host accommodation in your area?</h2>
             <p className="mt-2 max-w-xl text-header-fg/80">
-              List your property on Beeline for a simple subscription. No commission, your own
-              payment method, and guests contact you directly.
+              Become a Beeline collaborator and list your property for a simple subscription. No
+              commission, your own payment method, and guests contact you directly.
             </p>
           </div>
           <Link
             href="/host"
             className="rounded-md bg-accent px-6 py-3 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover"
           >
-            List your property
+            Become a collaborator
           </Link>
         </div>
       </section>
