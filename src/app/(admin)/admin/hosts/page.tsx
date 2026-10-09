@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getAdminContext } from "@/lib/adminAuth";
@@ -50,7 +51,9 @@ export default async function HostsPage() {
       <p className="mt-1 text-sm text-muted">From the List your property page, newest first.</p>
       <div className="mt-3 space-y-3">
         {enquiries.length === 0 && <p className="text-sm text-muted">None yet.</p>}
-        {enquiries.map((e) => (
+        {enquiries.map((e) => {
+          const photos: string[] = JSON.parse(e.photoUrls || "[]");
+          return (
           <div key={e.id} className="rounded-lg border border-card-border p-4 text-sm">
             <p className="font-medium">
               {e.name} <span className="font-normal text-muted">&middot; {e.area}</span>
@@ -62,8 +65,21 @@ export default async function HostsPage() {
               {e.phone && <span className="text-muted"> &middot; {e.phone}</span>}
             </p>
             {e.details && <p className="mt-2 whitespace-pre-line text-muted">{e.details}</p>}
+            {photos.length > 0 && (
+              <div className="mt-3">
+                <p className="text-xs text-muted">{photos.length} photo(s), click to open full size</p>
+                <div className="mt-1 grid grid-cols-3 gap-2 sm:grid-cols-6">
+                  {photos.map((url) => (
+                    <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="relative block aspect-square overflow-hidden rounded-md border border-card-border">
+                      <Image src={url} alt="House photo" fill sizes="120px" className="object-cover" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

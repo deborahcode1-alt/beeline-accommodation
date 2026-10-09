@@ -109,6 +109,7 @@ model HostEnquiry {
   phone     String?
   area      String
   details   String?
+  photoUrls String   @default("[]") // JSON array of uploaded house photo URLs
   createdAt DateTime @default(now())
 }
 

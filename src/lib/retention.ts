@@ -1,3 +1,4 @@
+import { del } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 
 // Customer details are kept for 7 years after their last stay. If a customer has not stayed (or
@@ -72,7 +73,18 @@ export async function purgeExpiredCustomerData(now = new Date()) {
 
   // Old guest messages and host enquiries also contain personal details.
   const messages = await prisma.hostMessage.deleteMany({ where: { createdAt: { lt: cutoff } } });
-  const enquiries = await prisma.hostEnquiry.deleteMany({ where: { createdAt: { lt: cutoff } } });
+  // ...and so do the house photos attached to host enquiries, which are removed from storage too.
+  const oldEnquiries = await prisma.hostEnquiry.findMany({
+    where: { createdAt: { lt: cutoff } },
+    select: { id: true, photoUrls: true },
+  });
+  for (const enquiry of oldEnquiries) {
+    const urls: string[] = JSON.parse(enquiry.photoUrls || "[]");
+    if (urls.length) await del(urls).catch((err) => console.error("Could not delete enquiry photos:", err));
+  }
+  const enquiries = await prisma.hostEnquiry.deleteMany({
+    where: { id: { in: oldEnquiries.map((e) => e.id) } },
+  });
 
   return {
     customersDeleted: customers,

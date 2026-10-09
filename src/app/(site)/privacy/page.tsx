@@ -20,7 +20,7 @@ export default function PrivacyPage() {
           body: [
             "Guests: name, email, phone number, travel dates, number of guests and any message you send when you make a booking request or contact a host.",
             "Guest accounts: if you create an account we store your name, email and a securely scrambled password, and show you the stays linked to your account. You can ask us to delete your account at any time.",
-            "Hosts: name, email, phone, business details, property information, photos, and subscription and billing details. Card details are handled by our payment provider and are not stored by us.",
+            "Hosts and people registering their interest: name, email, phone, business details, property information, photos (including any house photos you attach to an enquiry), and subscription and billing details. Card details are handled by our payment provider and are not stored by us.",
             "Everyone: technical data such as device type and pages visited, which we use to keep the site working and improve it.",
           ],
         },
