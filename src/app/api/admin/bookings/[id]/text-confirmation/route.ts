@@ -70,7 +70,7 @@ export async function POST(
   }
   if (!isSmsConfigured()) {
     return NextResponse.json(
-      { error: "Texting isn't set up yet — add Twilio credentials to enable it." },
+      { error: "Texting isn't set up yet — add ClickSend credentials to enable it." },
       { status: 400 }
     );
   }

@@ -14,7 +14,7 @@ Tagline: "A Direct Route to Your Next Stay". Slogan: "Stay Local. Book Direct."
 - Next.js (App Router) + TypeScript + Tailwind CSS
 - Prisma + PostgreSQL (Neon)
 - Vercel (hosting, Blob for photos)
-- Resend (email), Twilio (text messages, optional)
+- Resend (email), ClickSend (text messages, optional)
 - `ical-generator` / `node-ical` for two-way calendar sync with Airbnb,
   Booking.com and other platforms
 - Cookie-based admin session; hosts only ever see their own listings and
@@ -52,7 +52,7 @@ elsewhere block the dates here). For hands-off syncing, hit
 
 - Stripe subscription billing (`src/lib/billing.ts` is a stub until keys exist)
 - Square checkout per host (`src/lib/payments.ts`)
-- Text messages until Twilio credentials are set
+- Text messages until ClickSend credentials are set
 - Email to anyone but the Resend account owner until a sending domain is
   verified
 - The terms, privacy policy and host agreement pages are drafts pending legal
