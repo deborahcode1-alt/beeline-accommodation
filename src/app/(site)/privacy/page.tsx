@@ -12,7 +12,7 @@ export default function PrivacyPage() {
         {
           heading: "About this policy",
           body: [
-            "This policy explains how Beeline Accommodation (operated by [legal entity name], ABN [ABN]) collects, uses and protects personal information, in line with the Australian Privacy Principles.",
+            "This policy explains how Beeline Accommodation (operated by The Trustee for The Opal Trust, ABN 79 778 523 721) collects, uses and protects personal information, in line with the Australian Privacy Principles.",
           ],
         },
         {
@@ -42,7 +42,7 @@ export default function PrivacyPage() {
           heading: "How long we keep it",
           body: [
             "Hosts can see a customer's details for 7 years after the customer's last stay. If a customer has not stayed or signed in for 7 years, their name, contact details and messages are deleted automatically. The booking's dates and price may be kept without any personal details so a host's records still add up.",
-            "You can ask us to delete your details sooner by contacting [contact email], unless we need to keep them for a legal reason.",
+            "You can ask us to delete your details sooner by contacting bookonbeeline@gmail.com, unless we need to keep them for a legal reason.",
           ],
         },
         {
@@ -54,7 +54,7 @@ export default function PrivacyPage() {
         {
           heading: "Your choices and rights",
           body: [
-            "You can ask to see or correct the personal information we hold, or ask us to delete it where the law allows, by contacting [contact email]. If you are unhappy with our response you can complain to the Office of the Australian Information Commissioner.",
+            "You can ask to see or correct the personal information we hold, or ask us to delete it where the law allows, by contacting bookonbeeline@gmail.com. If you are unhappy with our response you can complain to the Office of the Australian Information Commissioner.",
           ],
         },
         {

@@ -12,7 +12,7 @@ export default function TermsPage() {
         {
           heading: "Who we are",
           body: [
-            "Beeline Accommodation (\"Beeline\", \"we\") operates this website, which helps guests find and contact independent accommodation hosts. Beeline is operated by [legal entity name], ABN [ABN].",
+            "Beeline Accommodation (\"Beeline\", \"we\") operates this website, which helps guests find and contact independent accommodation hosts. Beeline is operated by The Trustee for The Opal Trust, ABN 79 778 523 721.",
           ],
         },
         {
@@ -56,7 +56,7 @@ export default function TermsPage() {
         {
           heading: "Complaints",
           body: [
-            "If you have a problem with a listing or a host, contact the host first. If it is not resolved, contact us at [contact email] and we will review it and may remove a listing that breaches our rules.",
+            "If you have a problem with a listing or a host, contact the host first. If it is not resolved, contact us at bookonbeeline@gmail.com and we will review it and may remove a listing that breaches our rules.",
           ],
         },
         {
