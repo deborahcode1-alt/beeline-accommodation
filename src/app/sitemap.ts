@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { publicListingWhere } from "@/lib/visibility";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://beeline-accommodation.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://beelineaccommodation.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [areas, listings] = await Promise.all([
