@@ -24,7 +24,10 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { name, state, headline, heroImage } = parsed.data;
+  const { state, headline, heroImage } = parsed.data;
+  // The site adds "Accommodation" itself, so keep just the place name (also catches the usual misspelling).
+  const name = parsed.data.name.replace(/s+accom+odw*s*$/i, "").trim();
+  if (!name) return NextResponse.json({ error: "Enter the name of the town or area" }, { status: 400 });
   const slug = slugify(name);
   if (!slug || RESERVED.has(slug)) {
     return NextResponse.json({ error: "Choose a different area name" }, { status: 400 });

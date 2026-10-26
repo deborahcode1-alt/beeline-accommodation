@@ -64,7 +64,7 @@ export function AreaManager({ areas }: { areas: AreaRow[] }) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          placeholder="Area name, e.g. Maryborough"
+          placeholder="Place name only, e.g. Maryborough"
           className={`${input} sm:col-span-2`}
         />
         <input
