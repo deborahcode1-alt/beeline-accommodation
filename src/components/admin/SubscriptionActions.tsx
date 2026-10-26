@@ -2,7 +2,17 @@
 
 import { useState } from "react";
 
-export function SubscriptionActions({ hasSubscription }: { hasSubscription: boolean }) {
+export function SubscriptionActions({
+  hasSubscription,
+  monthlyLabel,
+  yearlyLabel,
+  canSubscribe = true,
+}: {
+  hasSubscription: boolean;
+  monthlyLabel?: string;
+  yearlyLabel?: string;
+  canSubscribe?: boolean;
+}) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,11 +53,11 @@ export function SubscriptionActions({ hasSubscription }: { hasSubscription: bool
           </>
         ) : (
           <>
-            <button disabled={busy} onClick={() => go("checkout", "monthly")} className={primary}>
-              Subscribe monthly
+            <button disabled={busy || !canSubscribe} onClick={() => go("checkout", "monthly")} className={primary}>
+              Subscribe monthly{monthlyLabel ? ` (${monthlyLabel})` : ""}
             </button>
-            <button disabled={busy} onClick={() => go("checkout", "yearly")} className={secondary}>
-              Subscribe yearly
+            <button disabled={busy || !canSubscribe} onClick={() => go("checkout", "yearly")} className={secondary}>
+              Subscribe yearly{yearlyLabel ? ` (${yearlyLabel})` : ""}
             </button>
           </>
         )}

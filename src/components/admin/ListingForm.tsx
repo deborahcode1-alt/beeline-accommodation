@@ -121,7 +121,11 @@ export function ListingForm({
         }
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ? JSON.stringify(data.error) : "Save failed");
+      if (!res.ok) {
+        throw new Error(
+          typeof data.error === "string" ? data.error : data.error ? JSON.stringify(data.error) : "Save failed"
+        );
+      }
 
       if (!form.id) {
         router.push(`/admin/listings/${data.listing.id}`);

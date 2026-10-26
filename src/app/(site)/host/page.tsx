@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HostEnquiryForm } from "@/components/HostEnquiryForm";
+import { HOST_TIERS, formatAud } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Become a collaborator",
@@ -67,12 +68,37 @@ export default function HostPage() {
         </div>
       </section>
 
+      <section id="pricing" className="border-t border-card-border">
+        <div className="mx-auto max-w-6xl px-6 py-14">
+          <h2 className="text-2xl font-bold">Simple pricing</h2>
+          <p className="mt-2 max-w-2xl text-sm text-muted">
+            One subscription, based on how many listings you have. No commission on your bookings,
+            ever. Pay yearly and one month is free. Prices are in Australian dollars.
+          </p>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2">
+            {HOST_TIERS.map((t) => (
+              <div key={t.key} className="rounded-xl border border-card-border p-6">
+                <h3 className="text-lg font-semibold">{t.label}</h3>
+                <p className="mt-3 text-3xl font-extrabold">
+                  {formatAud(t.monthly)} <span className="text-base font-normal text-muted">a month</span>
+                </p>
+                <p className="mt-1 text-sm text-muted">
+                  or {formatAud(t.yearly)} a year (one month free)
+                </p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-sm text-muted">
+            More than 10 listings? Get in touch below and we will arrange a plan for you.
+          </p>
+        </div>
+      </section>
+
       <section id="apply" className="border-t border-card-border bg-soft">
         <div className="mx-auto max-w-2xl px-6 py-14">
           <h2 className="text-2xl font-bold">Register your interest</h2>
           <p className="mt-2 text-sm text-muted">
             Tell us about your property and we&apos;ll be in touch about getting you listed.
-            Subscription pricing will be confirmed when we speak.
           </p>
           <div className="mt-6">
             <HostEnquiryForm />

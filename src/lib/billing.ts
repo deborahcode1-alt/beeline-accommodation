@@ -1,13 +1,15 @@
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { SITE_URL } from "@/lib/site";
+import { HOST_TIERS, tierForListingCount, type TierKey } from "@/lib/pricing";
 
 // Host subscriptions are billed through Stripe Billing on the platform owner's own Stripe
 // account (not Stripe Connect: guest payments go to hosts by their own methods, and Beeline takes
 // no commission). To switch it on, set these in the environment:
 //   STRIPE_SECRET_KEY       the account's secret key (test key while testing)
-//   STRIPE_PRICE_MONTHLY    the price code for the monthly host subscription
-//   STRIPE_PRICE_YEARLY     the price code for the yearly host subscription
+//   STRIPE_PRICE_T1_MONTHLY / STRIPE_PRICE_T1_YEARLY   prices for 1 to 3 listings (A$100 a month, A$1,100 a year)
+//   STRIPE_PRICE_T2_MONTHLY / STRIPE_PRICE_T2_YEARLY   prices for 4 to 10 listings (A$200 a month, A$2,200 a year)
+//   (the amounts live in src/lib/pricing.ts and must match the prices created in Stripe)
 //   STRIPE_WEBHOOK_SECRET   the signing secret of the webhook endpoint
 // Then in the Stripe dashboard add a webhook endpoint at <site>/api/stripe/webhook listening for:
 //   checkout.session.completed, customer.subscription.created, customer.subscription.updated,
@@ -16,11 +18,30 @@ import { SITE_URL } from "@/lib/site";
 
 export type Plan = "monthly" | "yearly";
 
+const PRICE_ENV: Record<TierKey, Record<Plan, string>> = {
+  T1: { monthly: "STRIPE_PRICE_T1_MONTHLY", yearly: "STRIPE_PRICE_T1_YEARLY" },
+  T2: { monthly: "STRIPE_PRICE_T2_MONTHLY", yearly: "STRIPE_PRICE_T2_YEARLY" },
+};
+
+export function priceIdFor(tier: TierKey, plan: Plan) {
+  return process.env[PRICE_ENV[tier][plan]];
+}
+
+/** Which of our plans a Stripe price belongs to, so the tier follows whatever the host pays for. */
+export function tierFromPriceId(priceId: string | null | undefined): TierKey | null {
+  if (!priceId) return null;
+  for (const tier of HOST_TIERS) {
+    if (priceIdFor(tier.key, "monthly") === priceId || priceIdFor(tier.key, "yearly") === priceId) {
+      return tier.key;
+    }
+  }
+  return null;
+}
+
 export function isBillingConfigured() {
   return !!(
     process.env.STRIPE_SECRET_KEY &&
-    process.env.STRIPE_PRICE_MONTHLY &&
-    process.env.STRIPE_PRICE_YEARLY
+    HOST_TIERS.every((t) => priceIdFor(t.key, "monthly") && priceIdFor(t.key, "yearly"))
   );
 }
 
@@ -67,8 +88,15 @@ export async function createCheckoutSession(params: {
     throw new Error("You already have a subscription. Use Manage billing to change or cancel it.");
   }
 
-  const price =
-    params.plan === "yearly" ? process.env.STRIPE_PRICE_YEARLY : process.env.STRIPE_PRICE_MONTHLY;
+  // The plan is chosen by how many listings the host has (1 to 3, or 4 to 10).
+  const listingCount = await prisma.listing.count({ where: { hostId: host.id } });
+  const tier = tierForListingCount(listingCount);
+  if (!tier) {
+    throw new Error(
+      "You have more than 10 listings, which needs a custom plan. Please contact us to arrange it."
+    );
+  }
+  const price = priceIdFor(tier.key, params.plan);
 
   // If the host still has free trial left, Stripe waits until it ends before the first charge.
   // Stripe needs the trial end to be at least 48 hours away, so allow a little extra.
@@ -158,6 +186,7 @@ async function applySubscription(sub: Stripe.Subscription) {
     sub.items?.data?.[0]?.current_period_end ??
     (sub as unknown as { current_period_end?: number }).current_period_end;
   const ended = status === "CANCELLED";
+  const tier = tierFromPriceId(sub.items?.data?.[0]?.price?.id);
 
   await prisma.host.update({
     where: { id: host.id },
@@ -165,6 +194,7 @@ async function applySubscription(sub: Stripe.Subscription) {
       subscriptionStatus: status,
       stripeCustomerId: idOf(sub.customer) ?? host.stripeCustomerId,
       stripeSubscriptionId: ended ? null : sub.id,
+      planTier: ended ? null : (tier ?? host.planTier),
       subscriptionRenewsAt: !ended && periodEnd ? new Date(periodEnd * 1000) : null,
       ...(status === "TRIAL" && sub.trial_end ? { trialEndsAt: new Date(sub.trial_end * 1000) } : {}),
     },

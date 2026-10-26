@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getAdminContext } from "@/lib/adminAuth";
 import { formatDate } from "@/lib/format";
 import { isBillingConfigured } from "@/lib/billing";
+import { formatAud, tierByKey, tierForListingCount } from "@/lib/pricing";
 import { SubscriptionBadge } from "@/components/admin/SubscriptionBadge";
 import { SubscriptionActions } from "@/components/admin/SubscriptionActions";
 
@@ -35,6 +36,9 @@ export default async function SubscriptionPage({
   if (!host) redirect("/admin");
 
   const hasSubscription = !!host.stripeSubscriptionId;
+  const listingCount = await prisma.listing.count({ where: { hostId: host.id } });
+  const suggestedTier = tierForListingCount(listingCount);
+  const currentTier = tierByKey(host.planTier);
   const note: Record<string, string> = {
     COMPLIMENTARY: "These listings belong to the platform owner, so there is no subscription charge.",
     TRIAL: host.trialEndsAt
@@ -83,8 +87,43 @@ export default async function SubscriptionPage({
       </div>
 
       {host.subscriptionStatus !== "COMPLIMENTARY" && (
+        <div className="mt-6 rounded-lg border border-card-border p-5 text-sm">
+          <p className="font-semibold">Your plan</p>
+          {hasSubscription && currentTier ? (
+            <>
+              <p className="mt-1">
+                {currentTier.label}: {formatAud(currentTier.monthly)} a month or{" "}
+                {formatAud(currentTier.yearly)} a year. You have {listingCount} listing
+                {listingCount === 1 ? "" : "s"}.
+              </p>
+              {listingCount > currentTier.maxListings && (
+                <p className="mt-2 text-red-600">
+                  You have more listings than this plan covers. Change plan with Manage billing.
+                </p>
+              )}
+            </>
+          ) : suggestedTier ? (
+            <p className="mt-1">
+              You have {listingCount} listing{listingCount === 1 ? "" : "s"}, so the{" "}
+              {suggestedTier.label} plan applies: {formatAud(suggestedTier.monthly)} a month, or{" "}
+              {formatAud(suggestedTier.yearly)} a year (one month free).
+            </p>
+          ) : (
+            <p className="mt-1">
+              You have more than 10 listings, which needs a custom plan. Please contact us.
+            </p>
+          )}
+        </div>
+      )}
+
+      {host.subscriptionStatus !== "COMPLIMENTARY" && (
         <div className="mt-6">
-          <SubscriptionActions hasSubscription={hasSubscription} />
+          <SubscriptionActions
+            hasSubscription={hasSubscription}
+            monthlyLabel={suggestedTier ? `${formatAud(suggestedTier.monthly)} a month` : undefined}
+            yearlyLabel={suggestedTier ? `${formatAud(suggestedTier.yearly)} a year` : undefined}
+            canSubscribe={!!suggestedTier}
+          />
           {!isBillingConfigured() && (
             <p className="mt-3 text-xs text-muted">
               Online billing is being set up and is not switched on yet, so these buttons will

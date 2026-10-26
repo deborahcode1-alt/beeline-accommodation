@@ -18,7 +18,7 @@ export default function HostAgreementPage() {
         {
           heading: "Subscription",
           body: [
-            "The fee is [amount] per [month/year], billed in advance by our payment provider. You can cancel at any time from your dashboard. Cancellation takes effect at the end of the period you have paid for. [Lawyer to confirm refund wording under the Australian Consumer Law.]",
+            "The fee depends on how many listings you have: A$100 per month for 1 to 3 listings, or A$200 per month for 4 to 10 listings. If you pay yearly you pay for 11 months instead of 12 (A$1,100 or A$2,200 a year), so one month is free. Fees are in Australian dollars, billed in advance by our payment provider. Hosts with more than 10 listings agree a custom plan with us. You can cancel at any time from your dashboard. Cancellation takes effect at the end of the period you have paid for. [Lawyer to confirm refund wording under the Australian Consumer Law.]",
             "If a payment fails we will email you and allow [number] days to fix it. If the subscription lapses, your listings are removed from the platform. Your information is kept for [number] days so you can reactivate by paying.",
             "Bookings already confirmed when a listing is removed remain your responsibility to honour and you must tell affected guests.",
           ],

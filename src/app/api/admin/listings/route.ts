@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { requireAdmin, listingScope } from "@/lib/adminAuth";
+import { listingLimitFor } from "@/lib/pricing";
 
 const listingSchema = z.object({
   name: z.string().min(1).max(200),
@@ -50,6 +51,26 @@ export async function POST(req: NextRequest) {
   const data = parsed.data;
   // A host can only create listings under their own host account.
   if (!auth.ctx.isOwner) data.hostId = auth.ctx.hostId ?? undefined;
+
+  // A host can have as many listings as their plan covers (3 on the first plan, 10 on the second).
+  if (!auth.ctx.isOwner && auth.ctx.hostId) {
+    const host = await prisma.host.findUnique({ where: { id: auth.ctx.hostId } });
+    if (host) {
+      const limit = listingLimitFor(host);
+      const count = await prisma.listing.count({ where: { hostId: host.id } });
+      if (count >= limit) {
+        return NextResponse.json(
+          {
+            error:
+              limit >= 10
+                ? "Your plan covers up to 10 listings. Please contact us to arrange more."
+                : `Your plan covers up to ${limit} listings. Move to the 4 to 10 listings plan from the Subscription page to add more.`,
+          },
+          { status: 403 }
+        );
+      }
+    }
+  }
 
   const baseSlug = slugify(data.name) || "listing";
   let slug = baseSlug;
