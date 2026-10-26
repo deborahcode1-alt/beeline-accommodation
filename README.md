@@ -50,7 +50,7 @@ elsewhere block the dates here). For hands-off syncing, hit
 
 ## Not switched on yet
 
-- Stripe subscription billing (`src/lib/billing.ts` is a stub until keys exist)
+- Stripe subscription billing is built (`src/lib/billing.ts`, webhook at `/api/stripe/webhook`) but stays off until the four `STRIPE_` settings are added
 - Square checkout per host (`src/lib/payments.ts`)
 - Text messages until ClickSend credentials are set
 - Email to anyone but the Resend account owner until a sending domain is

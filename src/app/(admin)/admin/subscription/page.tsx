@@ -9,9 +9,14 @@ import { SubscriptionActions } from "@/components/admin/SubscriptionActions";
 
 export const dynamic = "force-dynamic";
 
-export default async function SubscriptionPage() {
+export default async function SubscriptionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string }>;
+}) {
   const ctx = await getAdminContext();
   if (!ctx) redirect("/admin/login");
+  const { checkout } = await searchParams;
   if (!ctx.hostId) {
     return (
       <div>
@@ -43,16 +48,35 @@ export default async function SubscriptionPage() {
     CANCELLED:
       "Your subscription has ended, so your listings are hidden from guests. Subscribe again to bring them straight back.",
   };
+  // A trial that is already set up through Stripe is still a trial, but there is nothing to subscribe to.
+  const trialWithSubscription = host.subscriptionStatus === "TRIAL" && hasSubscription;
 
   return (
     <div className="max-w-xl">
       <h1 className="text-2xl font-semibold">Subscription</h1>
+
+      {checkout === "success" && (
+        <p className="mt-4 rounded-lg border border-accent bg-soft p-4 text-sm">
+          Thanks, your subscription is being set up. The status below updates within a minute. If
+          it still shows the old status, refresh the page.
+        </p>
+      )}
+      {checkout === "cancelled" && (
+        <p className="mt-4 rounded-lg border border-card-border p-4 text-sm text-muted">
+          Checkout was cancelled and you have not been charged.
+        </p>
+      )}
+
       <div className="mt-6 rounded-lg border border-card-border p-5">
         <p className="text-sm text-muted">Status</p>
         <p className="mt-1">
           <SubscriptionBadge status={host.subscriptionStatus} />
         </p>
-        <p className="mt-3 text-sm">{note[host.subscriptionStatus]}</p>
+        <p className="mt-3 text-sm">
+          {trialWithSubscription && host.trialEndsAt
+            ? `Your subscription is set up. Your free trial ends ${formatDate(host.trialEndsAt)} and your first payment is taken then.`
+            : note[host.subscriptionStatus]}
+        </p>
         <p className="mt-2 text-sm text-muted">
           Beeline takes no commission on your bookings. The subscription is the only charge.
         </p>
