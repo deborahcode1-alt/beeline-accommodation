@@ -1,0 +1,22 @@
+name: Calendar sync
+
+# Pulls each listing's connected Airbnb / Booking.com calendars into Beeline every 15 minutes.
+# (Vercel's free plan only allows a daily scheduled job, so GitHub runs the faster one.)
+# Needs the repository secret CRON_SECRET, the same value as CRON_SECRET on Vercel.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Sync connected calendars
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --fail --silent --show-error --max-time 120 \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            https://beelineaccommodation.com/api/cron/sync-ical
