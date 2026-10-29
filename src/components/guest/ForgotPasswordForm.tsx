@@ -1,5 +1,6 @@
 "use client";
 
+import { PasswordInput } from "@/components/PasswordInput";
 import { useState } from "react";
 import Link from "next/link";
 
@@ -83,8 +84,7 @@ export function ForgotPasswordForm() {
         </label>
         <label className="flex flex-col gap-1 text-sm">
           New password (at least 8 characters)
-          <input
-            type="password"
+          <PasswordInput
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required

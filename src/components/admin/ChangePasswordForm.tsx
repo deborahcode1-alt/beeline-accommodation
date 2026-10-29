@@ -1,5 +1,6 @@
 "use client";
 
+import { PasswordInput } from "@/components/PasswordInput";
 import { useState } from "react";
 
 export function ChangePasswordForm() {
@@ -83,8 +84,7 @@ export function ChangePasswordForm() {
         </label>
         <label className="flex flex-col gap-1 text-sm">
           New password
-          <input
-            type="password"
+          <PasswordInput
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
@@ -94,8 +94,7 @@ export function ChangePasswordForm() {
         </label>
         <label className="flex flex-col gap-1 text-sm">
           Confirm new password
-          <input
-            type="password"
+          <PasswordInput
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
@@ -136,8 +135,7 @@ export function ChangePasswordForm() {
       </p>
       <label className="flex flex-col gap-1 text-sm">
         Current password
-        <input
-          type="password"
+        <PasswordInput
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
           required

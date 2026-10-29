@@ -1,5 +1,6 @@
 "use client";
 
+import { PasswordInput } from "@/components/PasswordInput";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -58,8 +59,7 @@ export function SignUpForm({ next }: { next?: string }) {
       </label>
       <label className="flex flex-col gap-1 text-sm">
         Password (at least 8 characters)
-        <input
-          type="password"
+        <PasswordInput
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required

@@ -1,5 +1,6 @@
 "use client";
 
+import { PasswordInput } from "@/components/PasswordInput";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -64,8 +65,7 @@ export function ChangePasswordBox() {
     <form onSubmit={submit} className="grid max-w-sm gap-3">
       <label className="flex flex-col gap-1 text-sm">
         Current password
-        <input
-          type="password"
+        <PasswordInput
           value={current}
           onChange={(e) => setCurrent(e.target.value)}
           required
@@ -75,8 +75,7 @@ export function ChangePasswordBox() {
       </label>
       <label className="flex flex-col gap-1 text-sm">
         New password (at least 8 characters)
-        <input
-          type="password"
+        <PasswordInput
           value={next}
           onChange={(e) => setNext(e.target.value)}
           required

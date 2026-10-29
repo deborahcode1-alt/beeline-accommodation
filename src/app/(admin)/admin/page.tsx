@@ -9,6 +9,7 @@ import { GuestContactLinks } from "@/components/admin/GuestContactLinks";
 import { MarkHandledButton } from "@/components/admin/MarkHandledButton";
 import { SubscriptionBadge } from "@/components/admin/SubscriptionBadge";
 import { getLiveChecklist } from "@/lib/getLive";
+import { formatDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function AdminDashboardPage({
   const scope = bookingScope(ctx, showAll);
   const withListing = { listing: { select: { name: true } } };
 
-  const [pending, soon, monthBookings, upcomingCount, listingCount, messages, host] =
+  const [pending, soon, monthBookings, upcomingCount, listingCount, messages, host, enquiries] =
     await Promise.all([
       prisma.booking.findMany({
         where: { status: "PENDING", checkOut: { gte: today }, ...scope },
@@ -70,6 +71,8 @@ export default async function AdminDashboardPage({
         take: 10,
       }),
       ctx.hostId ? prisma.host.findUnique({ where: { id: ctx.hostId } }) : null,
+      // People who asked to become a collaborator (owner only).
+      ctx.isOwner ? prisma.hostEnquiry.findMany({ orderBy: { createdAt: "desc" }, take: 5 }) : [],
     ]);
 
   const getLive = ctx.hostId ? await getLiveChecklist(ctx.hostId) : null;
@@ -127,6 +130,37 @@ export default async function AdminDashboardPage({
           <p className="mt-1 text-2xl font-semibold">{listingCount}</p>
         </div>
       </div>
+
+      {ctx.isOwner && (
+        <section className="mt-10">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-lg font-semibold">Collaborator enquiries</h2>
+            <Link href="/admin/hosts" className="text-sm text-accent-deep underline">
+              All enquiries and hosts
+            </Link>
+          </div>
+          {enquiries.length === 0 ? (
+            <p className="mt-2 text-sm text-muted">No one has applied yet. New applications appear here and are emailed to you.</p>
+          ) : (
+            <div className="mt-3 space-y-3">
+              {enquiries.map((e) => (
+                <div key={e.id} className="rounded-lg border border-card-border p-4 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-medium">
+                      {e.name} <span className="font-normal text-muted">&middot; {e.area}</span>
+                    </p>
+                    <span className="text-xs text-muted">{formatDateTime(e.createdAt)}</span>
+                  </div>
+                  {e.details && <p className="mt-2 whitespace-pre-line">{e.details}</p>}
+                  <div className="mt-3">
+                    <GuestContactLinks phone={e.phone} email={e.email} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {pending.length > 0 && (
         <section className="mt-10">
