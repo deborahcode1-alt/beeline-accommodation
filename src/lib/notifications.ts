@@ -45,10 +45,10 @@ async function hostContact(hostId: string | null) {
 
 // Every notification is best-effort: log and swallow errors (including "not
 // configured yet") rather than let a failed text/email break the booking flow.
-async function tryEmail(to: string | null | undefined, subject: string, text: string) {
+async function tryEmail(to: string | null | undefined, subject: string, text: string, html?: string) {
   if (!to || !isEmailConfigured()) return;
   try {
-    await sendEmail({ to, subject, text });
+    await sendEmail({ to, subject, text, html });
   } catch (err) {
     console.error("email notification failed:", err);
   }
@@ -347,7 +347,19 @@ export async function notifyOwnerOfEnquiry(params: {
       `Email: ${params.email}${params.phone ? `\nPhone: ${params.phone}` : ""}\nArea: ${params.area}\n` +
       `${params.details ? `\n${params.details}\n` : ""}${params.photoCount ? `\nPhotos: ${params.photoCount} (see them in the admin)\n` : ""}\n` +
       `Review and approve (or decline) with one click: ${site}/admin/enquiries\n\n` +
-      `Approving creates their host account and emails them a link to set their password and start the checklist.`
+      `Approving creates their host account and emails them a link to set their password and start the checklist.`,
+    buttonEmailHtml({
+      heading: `New host request: ${params.name}`,
+      paragraphs: [
+        `${params.name} wants to list on ${SITE_NAME}.`,
+        `Email: ${params.email}${params.phone ? `\nPhone: ${params.phone}` : ""}\nArea: ${params.area}`,
+        ...(params.details ? [params.details] : []),
+        ...(params.photoCount ? [`Photos: ${params.photoCount} (see them in the admin)`] : []),
+      ],
+      buttonLabel: "Review and approve",
+      buttonUrl: `${site}/admin/enquiries`,
+      footer: "Approving creates their host account and emails them a link to set their password and start their checklist.",
+    })
   );
 }
 
@@ -363,6 +375,17 @@ export async function sendHostInviteEmail(params: { to: string; name: string; li
       `2. You'll land on your "Get live" checklist: your profile, bank details, listings and photos, cancellation policy, calendar links, the host agreement and your subscription. Each step ticks itself off.\n\n` +
       `3. When every step is done we check it over and switch your listings on. There's no commission on your bookings.\n\n` +
       `Any questions, reply to this email.\n\n- ${SITE_NAME}`,
+    html: buttonEmailHtml({
+      heading: `You're approved, ${params.name.split(" ")[0]}`,
+      paragraphs: [
+        `Good news: we'd love to have you on ${SITE_NAME}.`,
+        `Choose your password to get started. The link works for 7 days.`,
+        `You'll land on your "Get live" checklist: your profile, bank details, listings and photos, cancellation policy, calendar links, the host agreement and your subscription. When every step is done we check it over and switch your listings on. There's no commission on your bookings.`,
+      ],
+      buttonLabel: "Set my password",
+      buttonUrl: params.link,
+      footer: "Any questions, just reply to this email.",
+    }),
   });
   return true;
 }
@@ -374,5 +397,24 @@ export async function sendEnquiryDeclinedEmail(params: { to: string; name: strin
     `About your request to join ${SITE_NAME}`,
     `Hi ${params.name.split(" ")[0]},\n\nThanks for your interest in listing on ${SITE_NAME}. We're not able to take your place on at the moment, ` +
       `but we'd be glad to hear from you again as we add new areas.\n\n- ${SITE_NAME}`
+  );
+}
+
+// ---- Emails with a button ---------------------------------------------------------------------
+
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+/** A simple, mail-safe HTML email: paragraphs of text and one big button. */
+function buttonEmailHtml(params: { heading: string; paragraphs: string[]; buttonLabel: string; buttonUrl: string; footer?: string }) {
+  const p = (t: string) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.5;color:#222">${escapeHtml(t).replace(/\n/g, "<br>")}</p>`;
+  return (
+    `<div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;padding:24px">` +
+    `<h1 style="margin:0 0 16px;font-size:20px;color:#111">${escapeHtml(params.heading)}</h1>` +
+    params.paragraphs.map(p).join("") +
+    `<p style="margin:22px 0"><a href="${escapeHtml(params.buttonUrl)}" style="display:inline-block;background:#f5b800;color:#111;font-weight:bold;text-decoration:none;padding:13px 22px;border-radius:6px;font-size:15px">${escapeHtml(params.buttonLabel)}</a></p>` +
+    `<p style="margin:0 0 6px;font-size:12px;color:#666">If the button doesn't work, copy this link into your browser:<br>${escapeHtml(params.buttonUrl)}</p>` +
+    (params.footer ? `<p style="margin:14px 0 0;font-size:12px;color:#666">${escapeHtml(params.footer)}</p>` : "") +
+    `</div>`
   );
 }

@@ -14,6 +14,8 @@ export async function sendEmail(params: {
   to: string;
   subject: string;
   text: string;
+  /** Optional HTML version (for a button). The plain text is always sent too. */
+  html?: string;
 }): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
@@ -30,6 +32,7 @@ export async function sendEmail(params: {
     to: params.to,
     subject: params.subject,
     text: params.text,
+    ...(params.html ? { html: params.html } : {}),
     ...(process.env.RESEND_REPLY_TO ? { replyTo: process.env.RESEND_REPLY_TO } : {}),
   });
 
