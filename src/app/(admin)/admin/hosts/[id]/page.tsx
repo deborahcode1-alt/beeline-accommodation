@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { getAdminContext } from "@/lib/adminAuth";
 import { HostProfileForm } from "@/components/admin/HostProfileForm";
 import { OwnerHostControls } from "@/components/admin/OwnerHostControls";
+import { getLiveChecklist } from "@/lib/getLive";
+import { GetLiveChecklist } from "@/components/admin/GetLiveChecklist";
+import { OwnerGetLive } from "@/components/admin/OwnerGetLive";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +28,7 @@ export default async function HostDetailPage({
     },
   });
   if (!host) notFound();
+  const getLive = await getLiveChecklist(host.id, { forOwner: true });
 
   return (
     <div>
@@ -54,6 +58,21 @@ export default async function HostDetailPage({
           logins={host.adminUsers.map((u) => u.email)}
         />
       </div>
+
+      {getLive && (
+        <section className="mt-12">
+          <h2 className="text-lg font-semibold">Get live checklist</h2>
+          <p className="mt-1 text-sm text-muted">
+            {getLive.approved ? "Live on the site. " : "Not on the site yet. "}
+            {getLive.doneCount} of {getLive.items.length} steps done. The host sees this same list under Get live
+            when they sign in.
+          </p>
+          <OwnerGetLive hostId={host.id} approved={getLive.approved} allDone={getLive.allDone} />
+          <div className="mt-4 max-w-2xl">
+            <GetLiveChecklist items={getLive.items} canConfirm={false} />
+          </div>
+        </section>
+      )}
 
       <h2 className="mt-12 text-lg font-semibold">Profile</h2>
       <div className="mt-3">

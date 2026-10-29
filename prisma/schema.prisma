@@ -73,6 +73,10 @@ model Host {
   bankAccountNumber    String?
   // Guests can pay this host by card through the platform Stripe account (set by the platform owner)
   acceptsCardPayments  Boolean @default(false)
+  // Going live: the host works through the Get live checklist; the platform owner approves it
+  liveApprovedAt       DateTime?
+  agreedHostTermsAt    DateTime? // accepted the host agreement
+  calendarsSkippedAt   DateTime? // confirmed they do not list anywhere else, so no calendar link is needed
   createdAt           DateTime @default(now())
 
   listings   Listing[]

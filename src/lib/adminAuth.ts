@@ -27,9 +27,28 @@ export function listingScope(ctx: AdminContext) {
   return ctx.isOwner ? {} : { hostId: ctx.hostId };
 }
 
-/** Prisma `where` fragment limiting bookings to what this admin may see. */
-export function bookingScope(ctx: AdminContext) {
-  return ctx.isOwner ? {} : { listing: { hostId: ctx.hostId } };
+// The platform owner's own listings: no host, or a complimentary (free) host. Everyone else's bookings and
+// calendars are private to that host, and the owner only opens them when a host needs a correction.
+const OWN_LISTINGS = { OR: [{ hostId: null }, { host: { subscriptionStatus: "COMPLIMENTARY" as const } }] };
+
+/** Whether a host's listings count as the owner's own (so the owner sees their bookings by default). */
+export function isOwnersHost(host: { subscriptionStatus: string } | null) {
+  return host === null || host.subscriptionStatus === "COMPLIMENTARY";
+}
+
+/**
+ * Prisma `where` fragment limiting bookings to what this admin may see. Hosts see their own; the owner sees
+ * the owner's own listings, plus every host's only when `showAll` is set.
+ */
+export function bookingScope(ctx: AdminContext, showAll = false) {
+  if (!ctx.isOwner) return { listing: { hostId: ctx.hostId } };
+  return showAll ? {} : { listing: OWN_LISTINGS };
+}
+
+/** The same idea for guest messages to hosts. */
+export function messageScope(ctx: AdminContext, showAll = false) {
+  if (!ctx.isOwner) return { hostId: ctx.hostId };
+  return showAll ? {} : OWN_LISTINGS;
 }
 
 export function canAccessHost(ctx: AdminContext, hostId: string | null) {

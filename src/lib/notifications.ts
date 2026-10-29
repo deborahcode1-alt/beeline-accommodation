@@ -70,13 +70,14 @@ export async function notifyNewBooking(booking: BookingWithListing) {
     booking.guestEmail,
     `Your request for ${booking.listing.name} has been sent`,
     `Hi ${booking.guestName.split(" ")[0]},\n\nYour booking request for ${booking.listing.name} ` +
-      `(${dates}, ${formatMoney(booking.totalPrice)} total) has been sent to the host for approval. ` +
-      `You'll hear back soon.\n\nManage this request: ${manageUrl(booking.manageToken)}\n\n- ${SITE_NAME}`
+      `(${dates}, ${formatMoney(booking.totalPrice)} total) has been sent to the host.\n\n` +
+      `Your booking is not confirmed yet. The host will confirm it, and we'll email you as soon as they do. ` +
+      `You don't need to pay anything until then.\n\nSee your request: ${manageUrl(booking.manageToken)}\n\n- ${SITE_NAME}`
   );
   await trySms(
     booking.guestPhone,
     `Hi ${booking.guestName.split(" ")[0]}, your request for ${booking.listing.name} (${dates}) ` +
-      `has been sent to the host for approval. - ${SITE_NAME}`
+      `has been sent. The host will confirm your booking and we'll let you know. - ${SITE_NAME}`
   );
 
   const host = await hostContact(booking.listing.hostId);
@@ -247,4 +248,69 @@ export async function notifyRescheduleRequested(
     host.phone,
     `${booking.guestName} wants to reschedule ${booking.listing.name} to ${newDates}. Check your dashboard.`
   );
+}
+
+// ---- Hosts: going live ------------------------------------------------------------------------
+
+async function hostLoginEmails(hostId: string) {
+  const [host, logins] = await Promise.all([
+    prisma.host.findUnique({ where: { id: hostId }, select: { name: true, notificationEmail: true } }),
+    prisma.adminUser.findMany({ where: { hostId }, select: { email: true } }),
+  ]);
+  const emails = new Set<string>(logins.map((l) => l.email));
+  if (host?.notificationEmail) emails.add(host.notificationEmail);
+  return { name: host?.name ?? "there", emails: [...emails] };
+}
+
+/** The owner has approved a host: their listings are now on the site. */
+export async function notifyHostLive(hostId: string) {
+  const { name, emails } = await hostLoginEmails(hostId);
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://beelineaccommodation.com";
+  for (const to of emails) {
+    await tryEmail(
+      to,
+      `You're live on ${SITE_NAME}`,
+      `Hi ${name},\n\nGreat news: your listings are now live on ${SITE_NAME} and guests can find and book them.\n\n` +
+        `Check how they look: ${site}\nManage bookings and calendars: ${site}/admin\n\n- ${SITE_NAME}`
+    );
+  }
+}
+
+/** The owner sends a host their setup checklist, with what is still to do. */
+export async function sendHostChecklistEmail(hostId: string, remaining: string[]) {
+  const { name, emails } = await hostLoginEmails(hostId);
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://beelineaccommodation.com";
+  const todo = remaining.length
+    ? `Still to do:\n${remaining.map((r) => `  - ${r}`).join("\n")}`
+    : "Every step is already done. We'll check it over and switch your listings on.";
+  const text =
+    `Hi ${name},\n\nHere is your ${SITE_NAME} checklist. Work through it and your listings go live on the site once ` +
+    `every step is done and we've approved it.\n\nSign in and open "Get live": ${site}/admin/get-live\n\n${todo}\n\n` +
+    `The page also shows your Beeline calendar link for each listing, ready to paste into Airbnb, Booking.com and the others.\n\n- ${SITE_NAME}`;
+  const sent: string[] = [];
+  for (const to of emails) {
+    if (!isEmailConfigured()) break;
+    try {
+      await sendEmail({ to, subject: `Your ${SITE_NAME} checklist: get your listings live`, text });
+      sent.push(to);
+    } catch (err) {
+      console.error("checklist email failed:", err);
+    }
+  }
+  return sent;
+}
+
+/** A connected calendar stopped syncing: tell the host once, not on every retry. */
+export async function notifySyncFailed(params: { hostId: string | null; listingName: string; label: string; error: string }) {
+  if (!params.hostId) return;
+  const { emails } = await hostLoginEmails(params.hostId);
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://beelineaccommodation.com";
+  for (const to of emails) {
+    await tryEmail(
+      to,
+      `Calendar problem: ${params.listingName}`,
+      `Your ${params.label} calendar for ${params.listingName} stopped syncing with ${SITE_NAME}, so bookings made there may not be blocking dates here.\n\n` +
+        `What we saw: ${params.error}\n\nOpen the listing's Calendar & sync page and check the link is the calendar (.ics) link from ${params.label}: ${site}/admin\n\n- ${SITE_NAME}`
+    );
+  }
 }

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { BookingsTable } from "@/components/admin/BookingsTable";
 import { getAdminContext, bookingScope } from "@/lib/adminAuth";
+import { OtherHostsToggle } from "@/components/admin/OtherHostsToggle";
 import { RETENTION_YEARS, startOfToday } from "@/lib/retention";
 
 export const dynamic = "force-dynamic";
@@ -18,11 +19,12 @@ const TABS = [
 export default async function AdminBookingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; view?: string; q?: string }>;
+  searchParams: Promise<{ status?: string; view?: string; q?: string; all?: string }>;
 }) {
   const ctx = await getAdminContext();
   if (!ctx) redirect("/admin/login");
-  const { status, view, q: rawQ } = await searchParams;
+  const { status, view, q: rawQ, all } = await searchParams;
+  const showAll = ctx.isOwner && all === "1";
   const archive = view === "archive";
   const q = (rawQ ?? "").trim().slice(0, 100);
   const activeStatus = TABS.some((t) => t.value === status) ? status ?? "" : "";
@@ -44,7 +46,7 @@ export default async function AdminBookingsPage({
             ],
           }
         : {}),
-      ...bookingScope(ctx),
+      ...bookingScope(ctx, showAll),
     },
     orderBy: { checkIn: archive ? "desc" : "asc" },
     include: { listing: { select: { name: true } } },
@@ -54,6 +56,7 @@ export default async function AdminBookingsPage({
   const href = (params: Record<string, string>) => {
     const sp = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) if (v) sp.set(k, v);
+    if (showAll) sp.set("all", "1");
     const qs = sp.toString();
     return `/admin/bookings${qs ? `?${qs}` : ""}`;
   };
@@ -64,7 +67,7 @@ export default async function AdminBookingsPage({
         <h1 className="text-2xl font-semibold">{archive ? "Archived stays" : "Bookings"}</h1>
         <div className="flex gap-1 rounded-lg border border-card-border p-1 text-sm">
           <Link
-            href="/admin/bookings"
+            href={href({})}
             className={`rounded-md px-3 py-1.5 font-medium ${
               !archive ? "bg-accent text-accent-fg" : "text-muted hover:text-foreground"
             }`}
@@ -72,7 +75,7 @@ export default async function AdminBookingsPage({
             Current &amp; upcoming
           </Link>
           <Link
-            href="/admin/bookings?view=archive"
+            href={href({ view: "archive" })}
             className={`rounded-md px-3 py-1.5 font-medium ${
               archive ? "bg-accent text-accent-fg" : "text-muted hover:text-foreground"
             }`}
@@ -82,6 +85,14 @@ export default async function AdminBookingsPage({
         </div>
       </div>
 
+      {ctx.isOwner && (
+        <OtherHostsToggle
+          showAll={showAll}
+          showHref={href({ view: archive ? "archive" : "", status: activeStatus, q, all: "1" })}
+          hideHref={`/admin/bookings${archive ? "?view=archive" : ""}`}
+        />
+      )}
+
       {archive ? (
         <>
           <p className="mt-2 text-sm text-muted">
@@ -90,6 +101,7 @@ export default async function AdminBookingsPage({
           </p>
           <form method="get" className="mt-4 flex flex-wrap gap-2">
             <input type="hidden" name="view" value="archive" />
+            {showAll && <input type="hidden" name="all" value="1" />}
             {activeStatus && <input type="hidden" name="status" value={activeStatus} />}
             <input
               name="q"

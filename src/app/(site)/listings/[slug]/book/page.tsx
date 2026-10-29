@@ -39,7 +39,7 @@ export default async function BookPage({
       <p className="mt-1 text-sm text-muted">
         {listing.bookingMode === "INSTANT"
           ? "This is an instant booking — your dates are confirmed as soon as you submit."
-          : "This sends a request to the host — it isn't confirmed until they accept."}
+          : "This sends a request to the host. Your booking is not confirmed until the host confirms it, and we'll email you as soon as they do."}
       </p>
 
       <div className="mt-8">

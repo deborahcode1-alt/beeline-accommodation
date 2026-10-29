@@ -26,6 +26,7 @@ export function AdminNav({ role }: { role: Role }) {
             { href: "/admin", label: "Dashboard" },
             { href: "/admin/bookings", label: "Bookings" },
             { href: "/admin/listings", label: "Listings" },
+            { href: "/admin/get-live", label: "Get live" },
             { href: "/admin/profile", label: "Profile" },
             { href: "/admin/subscription", label: "Subscription" },
             { href: "/admin/account", label: "Account" },

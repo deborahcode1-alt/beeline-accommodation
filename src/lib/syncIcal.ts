@@ -1,8 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { fetchImportedBlocks } from "@/lib/ical";
+import { notifySyncFailed } from "@/lib/notifications";
 
 export async function syncListingImports(listingId: string) {
   const imports = await prisma.icalImportUrl.findMany({ where: { listingId } });
+  const listing = imports.length
+    ? await prisma.listing.findUnique({ where: { id: listingId }, select: { name: true, hostId: true } })
+    : null;
   const results: { id: string; ok: boolean; error?: string }[] = [];
 
   for (const imp of imports) {
@@ -33,6 +37,10 @@ export async function syncListingImports(listingId: string) {
         where: { id: imp.id },
         data: { lastError: message },
       });
+      // Tell the host once, when it first breaks, not on every retry.
+      if (!imp.lastError && listing) {
+        await notifySyncFailed({ hostId: listing.hostId, listingName: listing.name, label: imp.label, error: message }).catch(() => {});
+      }
       results.push({ id: imp.id, ok: false, error: message });
     }
   }

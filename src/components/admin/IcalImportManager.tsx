@@ -24,18 +24,26 @@ export function IcalImportManager({
   const [label, setLabel] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   async function addImport(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
       const res = await fetch(`/api/admin/listings/${listingId}/ical-imports`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url, label }),
       });
-      if (!res.ok) throw new Error("Could not add that calendar URL");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? "Could not add that calendar URL");
+      setNotice(
+        data.found === 0
+          ? "Connected. No bookings on that calendar right now."
+          : `Connected. Found ${data.found} booked date${data.found === 1 ? "" : "s"} on that calendar.`
+      );
       setUrl("");
       setLabel("");
       router.refresh();
@@ -129,6 +137,7 @@ export function IcalImportManager({
         </button>
       </form>
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {notice && <p className="mt-2 text-sm text-accent-deep">{notice}</p>}
 
       {imports.length > 0 && (
         <button

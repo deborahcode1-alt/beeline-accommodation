@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, canAccessHost } from "@/lib/adminAuth";
 import { PROFILE_SUBJECTS, BLURB_MAX } from "@/lib/hostProfile";
+import { notifyHostLive } from "@/lib/notifications";
 
 const subjectField = (key: string) => {
   const values = PROFILE_SUBJECTS.find((s) => s.key === key)!.options.map((o) => o.value);
@@ -70,6 +71,8 @@ const profileSchema = z.object({
     .optional(),
   // Platform-owner only:
   acceptsCardPayments: z.boolean().optional(),
+  // Approve the host to go live (or take them offline again).
+  liveApproved: z.boolean().optional(),
   subscriptionStatus: z.enum(["TRIAL", "ACTIVE", "PAST_DUE", "CANCELLED", "COMPLIMENTARY"]).optional(),
   trialEndsAt: z.coerce.date().nullable().optional(),
 });
@@ -90,7 +93,7 @@ export async function PATCH(
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { subscriptionStatus, trialEndsAt, acceptsCardPayments, ...profile } = parsed.data;
+  const { subscriptionStatus, trialEndsAt, acceptsCardPayments, liveApproved, ...profile } = parsed.data;
   const data: Record<string, unknown> = { ...profile };
   // Hosts can't change their own subscription state by hand; it follows billing.
   if (auth.ctx.isOwner) {
@@ -98,8 +101,12 @@ export async function PATCH(
     if (trialEndsAt !== undefined) data.trialEndsAt = trialEndsAt;
     // Card payments land in the platform Stripe account, so only the owner switches them on for a host.
     if (acceptsCardPayments !== undefined) data.acceptsCardPayments = acceptsCardPayments;
+    if (liveApproved !== undefined) data.liveApprovedAt = liveApproved ? new Date() : null;
   }
 
+  const before = liveApproved ? await prisma.host.findUnique({ where: { id }, select: { liveApprovedAt: true } }) : null;
   const host = await prisma.host.update({ where: { id }, data });
+  // Tell the host the moment they go live (not when an already-live host is saved again).
+  if (auth.ctx.isOwner && liveApproved && !before?.liveApprovedAt) await notifyHostLive(id);
   return NextResponse.json({ host });
 }

@@ -133,11 +133,16 @@ export function ManageBookingClient({
             <p className="mt-1 text-sm text-muted">{guests} guest{guests > 1 ? "s" : ""}</p>
           </div>
           <span className="shrink-0 rounded-full bg-header-bg px-2.5 py-1 text-xs font-medium text-header-fg">
-            {status.charAt(0) + status.slice(1).toLowerCase()}
+            {status === "PENDING" ? "Waiting for host" : status.charAt(0) + status.slice(1).toLowerCase()}
           </span>
         </div>
         <p className="mt-3 text-sm font-medium">{formatMoney(rescheduled ? newTotal || totalPrice : totalPrice)} total</p>
 
+        {status === "PENDING" && !rescheduled && !cancelled && (
+          <p className="mt-3 rounded-md bg-accent/10 px-3 py-2 text-sm text-accent-deep">
+            The host will confirm your booking. It isn&apos;t booked until they do, and we&apos;ll email you as soon as they have.
+          </p>
+        )}
         {rescheduled && (
           <p className="mt-3 rounded-md bg-accent/10 px-3 py-2 text-sm text-accent-deep">
             New dates requested &mdash; this is back with the host for approval.

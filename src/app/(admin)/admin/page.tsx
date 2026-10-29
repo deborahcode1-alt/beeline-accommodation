@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getAdminContext, listingScope, bookingScope } from "@/lib/adminAuth";
+import { getAdminContext, listingScope, bookingScope, messageScope } from "@/lib/adminAuth";
+import { OtherHostsToggle } from "@/components/admin/OtherHostsToggle";
 import { BookingsTable } from "@/components/admin/BookingsTable";
 import { MonthCalendar, parseMonth } from "@/components/admin/MonthCalendar";
 import { GuestContactLinks } from "@/components/admin/GuestContactLinks";
 import { MarkHandledButton } from "@/components/admin/MarkHandledButton";
 import { SubscriptionBadge } from "@/components/admin/SubscriptionBadge";
+import { getLiveChecklist } from "@/lib/getLive";
 
 export const dynamic = "force-dynamic";
 
@@ -15,11 +17,12 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export default async function AdminDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string }>;
+  searchParams: Promise<{ month?: string; all?: string }>;
 }) {
   const ctx = await getAdminContext();
   if (!ctx) redirect("/admin/login");
-  const { month: monthParam } = await searchParams;
+  const { month: monthParam, all } = await searchParams;
+  const showAll = ctx.isOwner && all === "1";
   const { year, month } = parseMonth(monthParam);
 
   const now = new Date();
@@ -27,7 +30,7 @@ export default async function AdminDashboardPage({
   const in30 = new Date(today.getTime() + 30 * DAY_MS);
   const monthStart = new Date(Date.UTC(year, month, 1));
   const monthEnd = new Date(Date.UTC(year, month + 1, 1));
-  const scope = bookingScope(ctx);
+  const scope = bookingScope(ctx, showAll);
   const withListing = { listing: { select: { name: true } } };
 
   const [pending, soon, monthBookings, upcomingCount, listingCount, messages, host] =
@@ -62,16 +65,37 @@ export default async function AdminDashboardPage({
       }),
       prisma.listing.count({ where: listingScope(ctx) }),
       prisma.hostMessage.findMany({
-        where: { handled: false, ...(ctx.isOwner ? {} : { hostId: ctx.hostId }) },
+        where: { handled: false, ...messageScope(ctx, showAll) },
         orderBy: { createdAt: "desc" },
         take: 10,
       }),
       ctx.hostId ? prisma.host.findUnique({ where: { id: ctx.hostId } }) : null,
     ]);
 
+  const getLive = ctx.hostId ? await getLiveChecklist(ctx.hostId) : null;
+
   return (
     <div>
       <h1 className="text-2xl font-semibold">Dashboard</h1>
+
+      {ctx.isOwner && (
+        <OtherHostsToggle showAll={showAll} showHref="/admin?all=1" hideHref="/admin" />
+      )}
+
+      {getLive && !getLive.approved && (
+        <Link
+          href="/admin/get-live"
+          className="mt-4 flex items-center justify-between rounded-lg border border-accent bg-soft px-4 py-3 text-sm hover:bg-accent/10"
+        >
+          <span>
+            <strong>Get your listings live:</strong>{" "}
+            {getLive.allDone
+              ? "all steps done. We’re checking everything over."
+              : `${getLive.doneCount} of ${getLive.items.length} steps done.`}
+          </span>
+          <span className="text-muted">Open checklist &rarr;</span>
+        </Link>
+      )}
 
       {host && (
         <Link

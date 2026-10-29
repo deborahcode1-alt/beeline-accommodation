@@ -205,6 +205,11 @@ export function AvailabilityCalendar({
       >
         {instant ? "Book instantly" : "Request to book"}
       </button>
+      {!instant && (
+        <p className="mt-2 text-center text-xs text-muted">
+          This sends a request. The host confirms every booking, and you pay once they have.
+        </p>
+      )}
       <Link
         href="/"
         className="mt-3 block text-center text-sm text-muted underline-offset-2 hover:underline"

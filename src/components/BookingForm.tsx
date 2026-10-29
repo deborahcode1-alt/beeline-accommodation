@@ -132,7 +132,7 @@ export function BookingForm({
         <p className="mt-2 text-sm text-muted">
           {instant
             ? `Thanks, ${guestName.split(" ")[0] || "there"}! Your stay at ${listingName} is confirmed. We've emailed the details to ${guestEmail}${onlinePayment ? ", including how to pay." : ", and the host will be in touch to arrange payment."}`
-            : `Thanks, ${guestName.split(" ")[0] || "there"}! Your booking request for ${listingName} has been sent to the host. You'll hear back by email at ${guestEmail} to confirm dates${onlinePayment ? ", and you can then pay online." : " and arrange payment."}`}
+            : `Thanks, ${guestName.split(" ")[0] || "there"}! Your booking request for ${listingName} has been sent to the host. Your booking is not confirmed yet: the host will confirm it, and we'll email you at ${guestEmail} as soon as they do${onlinePayment ? ", and you can then pay online." : " to arrange payment."}`}
         </p>
         {manageToken && (
           <Link
@@ -280,12 +280,19 @@ export function BookingForm({
 
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
+        {!instant && (
+          <p className="mt-4 rounded-md border border-accent bg-soft px-4 py-3 text-sm">
+            <strong>The host will confirm your booking.</strong> Sending this request does not book the stay yet, and
+            you won&apos;t be asked to pay until the host has said yes.
+          </p>
+        )}
+
         <button
           type="submit"
           disabled={submitting}
           className="mt-4 w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-accent-fg transition hover:bg-accent-hover disabled:opacity-50 sm:w-auto"
         >
-          {submitting ? (instant ? "Booking..." : "Sending request...") : instant ? "Confirm booking" : "Confirm request"}
+          {submitting ? (instant ? "Booking..." : "Sending request...") : instant ? "Confirm booking" : "Send request to host"}
         </button>
         <p className="mt-2 text-xs text-muted">
           {onlinePayment
