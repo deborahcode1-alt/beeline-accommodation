@@ -58,8 +58,15 @@ export function bankDetailsOf(host: HostPaymentFields | null | undefined): BankD
   };
 }
 
+/**
+ * Whether guests are offered card payment for this host. It stays off while Stripe is on a test key
+ * (a real card can't be charged), unless ALLOW_TEST_CARD_PAYMENTS=true is set to try it out.
+ */
 export function cardPaymentsOn(host: HostPaymentFields | null | undefined) {
-  return !!host?.acceptsCardPayments && !!process.env.STRIPE_SECRET_KEY;
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!host?.acceptsCardPayments || !key) return false;
+  const testKey = /^[rs]k_test_/.test(key);
+  return !testKey || process.env.ALLOW_TEST_CARD_PAYMENTS === "true";
 }
 
 /** The "how to pay" part of the confirmation email. Empty when the host has no online way to pay set up. */
