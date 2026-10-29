@@ -23,7 +23,7 @@ export function EnquiryActions({
   const [error, setError] = useState<string | null>(null);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
 
-  async function act(action: "approve" | "resend" | "decline", sendEmail?: boolean) {
+  async function act(action: "approve" | "resend" | "decline" | "delete", sendEmail?: boolean) {
     setBusy(action + (sendEmail ? "-email" : ""));
     setError(null);
     setMessage(null);
@@ -37,6 +37,7 @@ export function EnquiryActions({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Something went wrong");
       if (action === "decline") setMessage("Declined.");
+      else if (action === "delete") setMessage("Deleted.");
       else if (data.emailed) setMessage(`Done. ${name} has been emailed a link to set their password.`);
       else {
         setMessage("Done, but the email couldn't be sent. Send them this link yourself:");
@@ -102,6 +103,18 @@ export function EnquiryActions({
             </button>
           </>
         )}
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() =>
+            window.confirm(
+              `Delete ${name}'s request and its photos? ${status === "APPROVED" ? "Their host account stays." : "This can't be undone."}`
+            ) && act("delete")
+          }
+          className="ml-auto rounded-md px-3 py-2 text-sm font-medium text-red-600 hover:underline disabled:opacity-50"
+        >
+          {busy === "delete" ? "Deleting..." : "Delete request"}
+        </button>
       </div>
       {message && <p className="mt-2 text-sm text-accent-deep">{message}</p>}
       {inviteLink && (

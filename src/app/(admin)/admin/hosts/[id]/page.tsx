@@ -7,6 +7,7 @@ import { OwnerHostControls } from "@/components/admin/OwnerHostControls";
 import { getLiveChecklist } from "@/lib/getLive";
 import { GetLiveChecklist } from "@/components/admin/GetLiveChecklist";
 import { OwnerGetLive } from "@/components/admin/OwnerGetLive";
+import { DeleteHostSection } from "@/components/admin/DeleteHostSection";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ export default async function HostDetailPage({
   });
   if (!host) notFound();
   const getLive = await getLiveChecklist(host.id, { forOwner: true });
+  const bookingCount = await prisma.booking.count({ where: { listing: { hostId: host.id } } });
 
   return (
     <div>
@@ -102,6 +104,14 @@ export default async function HostDetailPage({
           canSetCardPayments
         />
       </div>
+
+      <DeleteHostSection
+        hostId={host.id}
+        hostName={host.name}
+        listings={host.listings.length}
+        bookings={bookingCount}
+        logins={host.adminUsers.length}
+      />
     </div>
   );
 }

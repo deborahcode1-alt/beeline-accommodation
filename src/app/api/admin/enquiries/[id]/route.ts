@@ -4,13 +4,15 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/adminAuth";
 import { createInviteLink, unusablePasswordHash } from "@/lib/hostInvite";
 import { sendEnquiryDeclinedEmail, sendHostInviteEmail } from "@/lib/notifications";
+import { del } from "@vercel/blob";
 
 // Owner only. One endpoint for the three things you can do with a host request:
 //   approve: creates the host and their login, and emails them a link to set their password
 //   resend:  a fresh set-password link for an already-approved request
 //   decline: marks it declined, optionally with a polite email
+//   delete:  removes the request and its photos (an approved host is not affected)
 const schema = z.object({
-  action: z.enum(["approve", "resend", "decline"]),
+  action: z.enum(["approve", "resend", "decline", "delete"]),
   sendEmail: z.boolean().optional(),
 });
 
@@ -25,6 +27,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const enquiry = await prisma.hostEnquiry.findUnique({ where: { id } });
   if (!enquiry) return NextResponse.json({ error: "Request not found" }, { status: 404 });
   const email = enquiry.email.trim().toLowerCase();
+
+  if (parsed.data.action === "delete") {
+    const urls: string[] = JSON.parse(enquiry.photoUrls || "[]");
+    await prisma.hostEnquiry.delete({ where: { id } });
+    if (urls.length) await del(urls).catch((err) => console.error("Could not delete request photos:", err));
+    return NextResponse.json({ ok: true });
+  }
 
   if (parsed.data.action === "decline") {
     if (enquiry.status === "APPROVED") {
