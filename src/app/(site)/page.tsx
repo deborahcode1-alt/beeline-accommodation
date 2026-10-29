@@ -76,19 +76,19 @@ export default async function HomePage() {
 
       <section id="areas" className="mx-auto max-w-6xl px-6 py-14">
         <h2 className="text-2xl font-bold">Where we are</h2>
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid gap-6">
           {areas.map((a) => (
             <Link
               key={a.id}
               href={`/${a.slug}`}
-              className="group relative block aspect-[4/3] overflow-hidden rounded-xl bg-header-bg"
+              className="group relative block aspect-[16/9] overflow-hidden rounded-xl bg-header-bg sm:aspect-[21/9]"
             >
               {a.heroImage && (
                 <Image
                   src={a.heroImage}
                   alt={`${a.name} accommodation`}
                   fill
-                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  sizes="(min-width: 1152px) 1152px, 100vw"
                   className="object-cover transition group-hover:scale-105"
                 />
               )}
@@ -101,15 +101,6 @@ export default async function HomePage() {
               </div>
             </Link>
           ))}
-          <div className="flex aspect-[4/3] items-center justify-center rounded-xl border border-dashed border-card-border p-6 text-center text-sm text-muted">
-            <span>
-              More areas coming soon. Want yours listed?{" "}
-              <Link href="/host" className="text-accent-deep underline">
-                Become a collaborator
-              </Link>
-              .
-            </span>
-          </div>
         </div>
       </section>
 
@@ -196,18 +187,15 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-header-bg text-header-fg">
-        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-6 py-14 sm:flex-row sm:items-center">
-          <div>
-            <h2 className="text-2xl font-bold">Host accommodation in your area?</h2>
-            <p className="mt-2 max-w-xl text-header-fg/80">
-              Become a Beeline collaborator and list your property for a simple subscription. No
-              commission, your own payment method, and guests contact you directly.
-            </p>
-          </div>
+      <section className="mx-auto max-w-6xl px-6 pb-12">
+        <div className="flex flex-col items-start justify-between gap-3 rounded-lg bg-header-bg px-5 py-4 text-header-fg sm:flex-row sm:items-center">
+          <p className="text-sm">
+            <strong>Host accommodation in your area?</strong>{" "}
+            <span className="text-header-fg/80">More areas coming soon. List your place for a simple subscription, with no commission.</span>
+          </p>
           <Link
             href="/host"
-            className="rounded-md bg-accent px-6 py-3 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover"
+            className="shrink-0 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover"
           >
             Become a collaborator
           </Link>
