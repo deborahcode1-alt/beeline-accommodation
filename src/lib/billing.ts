@@ -134,6 +134,7 @@ export async function createPortalSession(params: { hostId: string }): Promise<{
   const session = await stripeClient().billingPortal.sessions.create({
     customer: host.stripeCustomerId,
     return_url: `${SITE_URL}/admin/subscription`,
+    ...(process.env.STRIPE_PORTAL_CONFIG ? { configuration: process.env.STRIPE_PORTAL_CONFIG } : {}),
   });
   return { url: session.url };
 }
