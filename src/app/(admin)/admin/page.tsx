@@ -72,7 +72,7 @@ export default async function AdminDashboardPage({
       }),
       ctx.hostId ? prisma.host.findUnique({ where: { id: ctx.hostId } }) : null,
       // People who asked to become a collaborator (owner only).
-      ctx.isOwner ? prisma.hostEnquiry.findMany({ orderBy: { createdAt: "desc" }, take: 5 }) : [],
+      ctx.isOwner ? prisma.hostEnquiry.findMany({ where: { status: "NEW" }, orderBy: { createdAt: "desc" }, take: 5 }) : [],
     ]);
 
   const getLive = ctx.hostId ? await getLiveChecklist(ctx.hostId) : null;
@@ -83,6 +83,26 @@ export default async function AdminDashboardPage({
 
       {ctx.isOwner && (
         <OtherHostsToggle showAll={showAll} showHref="/admin?all=1" hideHref="/admin" />
+      )}
+
+      {ctx.isOwner && (
+        <Link
+          href="/admin/enquiries"
+          className={`mt-4 flex items-center justify-between rounded-lg border px-4 py-3 text-sm ${
+            enquiries.length > 0 ? "border-accent bg-accent/15 hover:bg-accent/25" : "border-card-border hover:border-accent"
+          }`}
+        >
+          <span>
+            <strong>New host requests:</strong>{" "}
+            {enquiries.length > 0
+              ? `${enquiries.length === 5 ? "5 or more" : enquiries.length} waiting. ${enquiries
+                  .slice(0, 3)
+                  .map((e) => e.name)
+                  .join(", ")}${enquiries.length > 3 ? " and more" : ""}`
+              : "none waiting"}
+          </span>
+          <span className="text-muted">{enquiries.length > 0 ? "Review and approve →" : "Open requests →"}</span>
+        </Link>
       )}
 
       {getLive && !getLive.approved && (
@@ -130,37 +150,6 @@ export default async function AdminDashboardPage({
           <p className="mt-1 text-2xl font-semibold">{listingCount}</p>
         </div>
       </div>
-
-      {ctx.isOwner && (
-        <section className="mt-10">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-lg font-semibold">Collaborator enquiries</h2>
-            <Link href="/admin/hosts" className="text-sm text-accent-deep underline">
-              All enquiries and hosts
-            </Link>
-          </div>
-          {enquiries.length === 0 ? (
-            <p className="mt-2 text-sm text-muted">No one has applied yet. New applications appear here and are emailed to you.</p>
-          ) : (
-            <div className="mt-3 space-y-3">
-              {enquiries.map((e) => (
-                <div key={e.id} className="rounded-lg border border-card-border p-4 text-sm">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-medium">
-                      {e.name} <span className="font-normal text-muted">&middot; {e.area}</span>
-                    </p>
-                    <span className="text-xs text-muted">{formatDateTime(e.createdAt)}</span>
-                  </div>
-                  {e.details && <p className="mt-2 whitespace-pre-line">{e.details}</p>}
-                  <div className="mt-3">
-                    <GuestContactLinks phone={e.phone} email={e.email} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
 
       {pending.length > 0 && (
         <section className="mt-10">

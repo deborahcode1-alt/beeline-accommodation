@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { getAdminContext } from "@/lib/adminAuth";
+import { prisma } from "@/lib/prisma";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,13 +23,14 @@ export const metadata: Metadata = {
 export default async function AdminRootLayout({ children }: { children: React.ReactNode }) {
   const ctx = await getAdminContext();
   const role = !ctx ? "guest" : ctx.isOwner ? "owner" : "host";
+  const requestCount = ctx?.isOwner ? await prisma.hostEnquiry.count({ where: { status: "NEW" } }) : 0;
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <AdminNav role={role} />
+        <AdminNav role={role} requestCount={requestCount} />
         <main className="flex-1">
           <div className="mx-auto w-full max-w-5xl px-6 py-8">{children}</div>
         </main>

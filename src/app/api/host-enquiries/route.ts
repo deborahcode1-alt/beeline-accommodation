@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { isEmailConfigured, sendEmail } from "@/lib/email";
+import { notifyEnquiryReceived, notifyOwnerOfEnquiry } from "@/lib/notifications";
 import { ENQUIRY_MAX_PHOTOS, isEnquiryPhotoUrl } from "@/lib/enquiryPhotos";
 
 const schema = z.object({
@@ -30,17 +30,12 @@ export async function POST(req: NextRequest) {
 
   await prisma.hostEnquiry.create({ data: { ...data, photoUrls: JSON.stringify(photoUrls) } });
 
-  // Best-effort alert to the platform owner; the enquiry is saved either way.
-  const to = process.env.ADMIN_EMAIL;
-  if (to && isEmailConfigured()) {
-    await sendEmail({
-      to,
-      subject: `New host enquiry: ${data.name} (${data.area})`,
-      text:
-        `${data.name} <${data.email}>${data.phone ? `, ${data.phone}` : ""}\nArea: ${data.area}\n\n${data.details ?? ""}` +
-        (photoUrls.length ? `\n\nPhotos (${photoUrls.length}):\n${photoUrls.join("\n")}` : ""),
-    }).catch((err) => console.error("Host enquiry email failed:", err));
-  }
+  // Best-effort emails; the request is saved either way. The owner gets a link straight to approving it,
+  // and the applicant gets an acknowledgement that says what happens next.
+  await Promise.all([
+    notifyOwnerOfEnquiry({ ...data, photoCount: photoUrls.length }),
+    notifyEnquiryReceived({ name: data.name, email: data.email }),
+  ]).catch((err) => console.error("Host enquiry emails failed:", err));
 
   return NextResponse.json({ ok: true }, { status: 201 });
 }

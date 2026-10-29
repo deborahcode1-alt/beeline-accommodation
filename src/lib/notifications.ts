@@ -314,3 +314,65 @@ export async function notifySyncFailed(params: { hostId: string | null; listingN
     );
   }
 }
+
+// ---- Host requests (Become a collaborator) ----------------------------------------------------
+
+/** The applicant gets an acknowledgement that says what happens next. */
+export async function notifyEnquiryReceived(params: { name: string; email: string }) {
+  await tryEmail(
+    params.email,
+    `We've got your request to join ${SITE_NAME}`,
+    `Hi ${params.name.split(" ")[0]},\n\nThanks for asking to list your place on ${SITE_NAME}. We have your request.\n\n` +
+      `What happens next:\n  1. We review it, usually within a day or two.\n  2. If it's a good fit, you'll get an email with a link to set your password.\n` +
+      `  3. You then work through a short checklist (your profile, bank details, listings and calendars), and we switch your listings on.\n\n` +
+      `Questions? Just reply to this email.\n\n- ${SITE_NAME}`
+  );
+}
+
+/** Tells the platform owner a request has come in, with a link that takes them straight to approving it. */
+export async function notifyOwnerOfEnquiry(params: {
+  name: string;
+  email: string;
+  phone?: string | null;
+  area: string;
+  details?: string | null;
+  photoCount: number;
+}) {
+  const to = process.env.ADMIN_EMAIL;
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://beelineaccommodation.com";
+  await tryEmail(
+    to,
+    `New host request: ${params.name} (${params.area})`,
+    `${params.name} wants to list on ${SITE_NAME}.\n\n` +
+      `Email: ${params.email}${params.phone ? `\nPhone: ${params.phone}` : ""}\nArea: ${params.area}\n` +
+      `${params.details ? `\n${params.details}\n` : ""}${params.photoCount ? `\nPhotos: ${params.photoCount} (see them in the admin)\n` : ""}\n` +
+      `Review and approve (or decline) with one click: ${site}/admin/enquiries\n\n` +
+      `Approving creates their host account and emails them a link to set their password and start the checklist.`
+  );
+}
+
+/** The invitation sent when a request is approved. */
+export async function sendHostInviteEmail(params: { to: string; name: string; link: string }) {
+  if (!isEmailConfigured()) return false;
+  await sendEmail({
+    to: params.to,
+    subject: `You're approved: set up your ${SITE_NAME} host account`,
+    text:
+      `Hi ${params.name.split(" ")[0]},\n\nGood news: we'd love to have you on ${SITE_NAME}.\n\n` +
+      `1. Choose your password (the link works for 7 days):\n   ${params.link}\n\n` +
+      `2. You'll land on your "Get live" checklist: your profile, bank details, listings and photos, cancellation policy, calendar links, the host agreement and your subscription. Each step ticks itself off.\n\n` +
+      `3. When every step is done we check it over and switch your listings on. There's no commission on your bookings.\n\n` +
+      `Any questions, reply to this email.\n\n- ${SITE_NAME}`,
+  });
+  return true;
+}
+
+/** A polite no, only sent when the owner chooses to. */
+export async function sendEnquiryDeclinedEmail(params: { to: string; name: string }) {
+  await tryEmail(
+    params.to,
+    `About your request to join ${SITE_NAME}`,
+    `Hi ${params.name.split(" ")[0]},\n\nThanks for your interest in listing on ${SITE_NAME}. We're not able to take your place on at the moment, ` +
+      `but we'd be glad to hear from you again as we add new areas.\n\n- ${SITE_NAME}`
+  );
+}

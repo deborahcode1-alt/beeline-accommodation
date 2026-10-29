@@ -14,6 +14,8 @@ model AdminUser {
   pendingCodeHash      String? // sha256 of the current email verification code, if one is pending
   pendingCodeExpiresAt DateTime?
   pendingCodeAttempts  Int       @default(0)
+  inviteTokenHash      String? // sha256 of the set-your-password link sent to a newly approved host
+  inviteExpiresAt      DateTime?
   host                 Host?     @relation(fields: [hostId], references: [id])
   hostId               String? // null = platform owner (sees everything); set = a host who only sees their own listings
 }
@@ -121,6 +123,9 @@ model HostEnquiry {
   area      String
   details   String?
   photoUrls String   @default("[]") // JSON array of uploaded house photo URLs
+  status    String   @default("NEW") // NEW, APPROVED or DECLINED
+  hostId    String? // the host created when this was approved
+  handledAt DateTime?
   createdAt DateTime @default(now())
 }
 

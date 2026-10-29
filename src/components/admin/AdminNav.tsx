@@ -6,7 +6,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 
 type Role = "owner" | "host" | "guest";
 
-export function AdminNav({ role }: { role: Role }) {
+export function AdminNav({ role, requestCount = 0 }: { role: Role; requestCount?: number }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -16,6 +16,7 @@ export function AdminNav({ role }: { role: Role }) {
           { href: "/admin", label: "Dashboard" },
           { href: "/admin/bookings", label: "Bookings" },
           { href: "/admin/listings", label: "Listings" },
+          { href: "/admin/enquiries", label: "Requests" },
           { href: "/admin/hosts", label: "Hosts" },
           { href: "/admin/areas", label: "Areas" },
           { href: "/admin/team", label: "Team" },
@@ -61,6 +62,11 @@ export function AdminNav({ role }: { role: Role }) {
                   }
                 >
                   {link.label}
+                  {link.href === "/admin/enquiries" && requestCount > 0 && (
+                    <span className="ml-1.5 rounded-full bg-accent px-1.5 py-0.5 text-xs font-bold text-accent-fg">
+                      {requestCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
