@@ -22,9 +22,22 @@ type Initial = {
   responseTime: string;
   notificationEmail: string;
   notificationPhone: string;
+  bankAccountName: string;
+  bankBsb: string;
+  bankAccountNumber: string;
+  acceptsCardPayments: boolean;
 };
 
-export function HostProfileForm({ hostId, initial }: { hostId: string; initial: Initial }) {
+export function HostProfileForm({
+  hostId,
+  initial,
+  canSetCardPayments = false,
+}: {
+  hostId: string;
+  initial: Initial;
+  /** Only the platform owner can switch on card payments for a host. */
+  canSetCardPayments?: boolean;
+}) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState(initial);
@@ -33,7 +46,7 @@ export function HostProfileForm({ hostId, initial }: { hostId: string; initial: 
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  function update<K extends keyof Initial>(key: K, value: string) {
+  function update<K extends keyof Initial>(key: K, value: Initial[K]) {
     setForm((f) => ({ ...f, [key]: value }));
     setSaved(false);
   }
@@ -62,7 +75,7 @@ export function HostProfileForm({ hostId, initial }: { hostId: string; initial: 
       const res = await fetch(`/api/admin/hosts/${hostId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(canSetCardPayments ? form : { ...form, acceptsCardPayments: undefined }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -251,6 +264,59 @@ export function HostProfileForm({ hostId, initial }: { hostId: string; initial: 
             className={input}
           />
         </label>
+      </fieldset>
+
+      <fieldset className="grid gap-4 rounded-lg border border-card-border p-4">
+        <legend className="px-1 text-sm font-semibold">
+          Where guests send a bank transfer (private)
+        </legend>
+        <p className="text-xs text-muted">
+          Guests only see these after they book, with a reference to put on their transfer. Paying by bank
+          transfer has no card surcharge, so it is the cheapest way for guests to pay.
+        </p>
+        <label className="flex flex-col gap-1 text-sm">
+          Account name
+          <input
+            value={form.bankAccountName}
+            onChange={(e) => update("bankAccountName", e.target.value)}
+            placeholder="e.g. The Gympie Empire"
+            className={input}
+          />
+        </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="flex flex-col gap-1 text-sm">
+            BSB
+            <input
+              value={form.bankBsb}
+              onChange={(e) => update("bankBsb", e.target.value)}
+              inputMode="numeric"
+              placeholder="000-000"
+              className={input}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            Account number
+            <input
+              value={form.bankAccountNumber}
+              onChange={(e) => update("bankAccountNumber", e.target.value)}
+              inputMode="numeric"
+              className={input}
+            />
+          </label>
+        </div>
+        {canSetCardPayments && (
+          <label className="flex items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.acceptsCardPayments}
+              onChange={(e) => update("acceptsCardPayments", e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              Let guests pay this host by card (through the Beeline Stripe account, with the card surcharge added)
+            </span>
+          </label>
+        )}
       </fieldset>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

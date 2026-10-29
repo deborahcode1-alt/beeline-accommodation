@@ -5,6 +5,7 @@ import { PaidCheckbox } from "@/components/admin/PaidCheckbox";
 import { GuestContactLinks } from "@/components/admin/GuestContactLinks";
 import Link from "next/link";
 import { keptUntil } from "@/lib/retention";
+import { bookingReference } from "@/lib/stayPaymentInfo";
 
 type Row = {
   id: string;
@@ -17,6 +18,10 @@ type Row = {
   totalPrice: number;
   status: string;
   paymentStatus: string;
+  paymentMethod?: string | null;
+  amountPaid?: number | null;
+  cardSurcharge?: number;
+  transferNotifiedAt?: Date | null;
   confirmationTextSentAt: Date | null;
   confirmationEmailSentAt: Date | null;
   listing: { name: string };
@@ -73,12 +78,25 @@ export function BookingsTable({
                 )}
               </td>
               <td className="px-4 py-3">{b.guests}</td>
-              <td className="px-4 py-3">{formatMoney(b.totalPrice)}</td>
+              <td className="px-4 py-3">
+                {formatMoney(b.totalPrice)}
+                <div className="mt-1 text-xs text-muted">Ref {bookingReference(b.id)}</div>
+              </td>
               <td className="px-4 py-3">
                 <StatusBadge status={b.status} />
                 {(b.status === "CONFIRMED" || b.status === "PENDING") && (
                   <div className="mt-2">
                     <PaidCheckbox bookingId={b.id} paymentStatus={b.paymentStatus} />
+                    {b.paymentStatus === "PAID" && b.paymentMethod === "CARD" && b.amountPaid ? (
+                      <div className="mt-1 text-xs text-muted">
+                        Paid by card {formatMoney(b.amountPaid)}
+                        {b.cardSurcharge ? ` (incl. ${formatMoney(b.cardSurcharge)} surcharge)` : ""}
+                      </div>
+                    ) : b.paymentStatus !== "PAID" && b.transferNotifiedAt ? (
+                      <div className="mt-1 text-xs font-medium text-accent-deep">
+                        Guest says transfer sent. Check your bank.
+                      </div>
+                    ) : null}
                   </div>
                 )}
               </td>

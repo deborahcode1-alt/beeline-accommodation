@@ -37,6 +37,10 @@ export default async function ProfilePage() {
             responseTime: host.responseTime ?? "",
             notificationEmail: host.notificationEmail ?? "",
             notificationPhone: host.notificationPhone ?? "",
+            bankAccountName: host.bankAccountName ?? "",
+            bankBsb: host.bankBsb ?? "",
+            bankAccountNumber: host.bankAccountNumber ?? "",
+            acceptsCardPayments: host.acceptsCardPayments,
           }}
         />
       </div>

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { formatMoney } from "@/lib/format";
+import { cardSurcharge, surchargeLabel } from "@/lib/stayPaymentInfo";
 
 type Props = {
   listingId: string;
@@ -19,6 +20,12 @@ type Props = {
   initialCheckIn: string;
   initialCheckOut: string;
   initialGuests: number;
+  /** The host has bank details, so guests can pay by direct transfer with no surcharge. */
+  bankTransfer?: boolean;
+  /** Guests can also pay by card, with a surcharge added. */
+  cardPayments?: boolean;
+  surchargePercent?: number;
+  surchargeFixed?: number;
 };
 
 function nightsBetween(checkIn: string, checkOut: string) {
@@ -41,6 +48,10 @@ export function BookingForm({
   initialCheckIn,
   initialCheckOut,
   initialGuests,
+  bankTransfer = false,
+  cardPayments = false,
+  surchargePercent = 1.7,
+  surchargeFixed = 0.3,
 }: Props) {
   const [checkIn, setCheckIn] = useState(initialCheckIn);
   const [checkOut, setCheckOut] = useState(initialCheckOut);
@@ -53,9 +64,13 @@ export function BookingForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [manageToken, setManageToken] = useState<string | null>(null);
+  const rate = { percent: surchargePercent, fixed: surchargeFixed };
+  const onlinePayment = bankTransfer || cardPayments;
 
   const nights = checkIn && checkOut ? nightsBetween(checkIn, checkOut) : 0;
   const total = nights > 0 ? basePrice * nights + cleaningFee : 0;
+  const surcharge = total > 0 ? cardSurcharge(total, rate) : 0;
   const meetsMinStay = nights <= 0 || nights >= minNights;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -96,6 +111,7 @@ export function BookingForm({
       if (!res.ok) {
         throw new Error(data?.error?.formErrors?.[0] ?? data?.error ?? "Something went wrong");
       }
+      setManageToken(data?.booking?.manageToken ?? null);
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -115,9 +131,17 @@ export function BookingForm({
         <h2 className="text-lg font-semibold">{instant ? "Booking confirmed" : "Request sent"}</h2>
         <p className="mt-2 text-sm text-muted">
           {instant
-            ? `Thanks, ${guestName.split(" ")[0] || "there"}! Your stay at ${listingName} is confirmed. We've emailed the details to ${guestEmail}, and the host will be in touch to arrange payment.`
-            : `Thanks, ${guestName.split(" ")[0] || "there"}! Your booking request for ${listingName} has been sent to the host. You'll hear back by email at ${guestEmail} to confirm dates and arrange payment.`}
+            ? `Thanks, ${guestName.split(" ")[0] || "there"}! Your stay at ${listingName} is confirmed. We've emailed the details to ${guestEmail}${onlinePayment ? ", including how to pay." : ", and the host will be in touch to arrange payment."}`
+            : `Thanks, ${guestName.split(" ")[0] || "there"}! Your booking request for ${listingName} has been sent to the host. You'll hear back by email at ${guestEmail} to confirm dates${onlinePayment ? ", and you can then pay online." : " and arrange payment."}`}
         </p>
+        {manageToken && (
+          <Link
+            href={`/manage/${manageToken}`}
+            className="mt-4 inline-block rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover"
+          >
+            {instant && onlinePayment ? "Pay for your stay" : "View your booking"}
+          </Link>
+        )}
         <p className="mt-3 text-sm">
           {signedIn ? (
             <>
@@ -264,8 +288,15 @@ export function BookingForm({
           {submitting ? (instant ? "Booking..." : "Sending request...") : instant ? "Confirm booking" : "Confirm request"}
         </button>
         <p className="mt-2 text-xs text-muted">
-          Online payment isn&apos;t connected for this listing yet &mdash; the host will confirm
-          your dates and arrange payment directly with you.
+          {onlinePayment
+            ? `${instant ? "After you book" : "Once the host confirms"}, you pay up front ${
+                bankTransfer && cardPayments
+                  ? "by direct bank transfer (no surcharge) or by card (a card surcharge applies)"
+                  : bankTransfer
+                    ? "by direct bank transfer"
+                    : "by card (a card surcharge applies)"
+              }.`
+            : "Online payment isn't connected for this listing yet — the host will confirm your dates and arrange payment directly with you."}
         </p>
         <Link href={`/`} className="mt-4 inline-block text-sm text-muted hover:underline">
           &larr; Return home
@@ -289,9 +320,26 @@ export function BookingForm({
               </div>
             )}
             <div className="flex justify-between border-t border-card-border pt-1 font-semibold">
-              <span>Total</span>
+              <span>{bankTransfer ? "Total (bank transfer)" : "Total"}</span>
               <span>{formatMoney(total)}</span>
             </div>
+            {cardPayments && (
+              <>
+                <div className="flex justify-between text-muted">
+                  <span>Card surcharge ({surchargeLabel(rate)})</span>
+                  <span>+{formatMoney(surcharge)}</span>
+                </div>
+                <div className="flex justify-between text-muted">
+                  <span>Total by card</span>
+                  <span>{formatMoney(total + surcharge)}</span>
+                </div>
+              </>
+            )}
+            {bankTransfer && cardPayments && (
+              <p className="pt-2 text-xs text-accent-deep">
+                Pay by bank transfer and save {formatMoney(surcharge)}.
+              </p>
+            )}
           </div>
         ) : (
           <p className="mt-3 text-sm text-muted">Enter your dates to see a price.</p>

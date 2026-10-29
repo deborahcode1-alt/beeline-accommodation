@@ -75,7 +75,12 @@ export default async function HostDetailPage({
             responseTime: host.responseTime ?? "",
             notificationEmail: host.notificationEmail ?? "",
             notificationPhone: host.notificationPhone ?? "",
+            bankAccountName: host.bankAccountName ?? "",
+            bankBsb: host.bankBsb ?? "",
+            bankAccountNumber: host.bankAccountNumber ?? "",
+            acceptsCardPayments: host.acceptsCardPayments,
           }}
+          canSetCardPayments
         />
       </div>
     </div>

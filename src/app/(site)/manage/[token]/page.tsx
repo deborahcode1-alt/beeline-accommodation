@@ -6,6 +6,15 @@ import { getUnavailableNights } from "@/lib/availability";
 import { getGuest } from "@/lib/guestSession";
 import { ManageBookingClient } from "@/components/ManageBookingClient";
 import { ClaimStayButton } from "@/components/guest/ClaimStayButton";
+import { StayPayment } from "@/components/StayPayment";
+import { confirmCheckoutSession } from "@/lib/stayPayment";
+import {
+  bankDetailsOf,
+  bookingReference,
+  cardPaymentsOn,
+  cardSurcharge,
+  surchargeLabel,
+} from "@/lib/stayPaymentInfo";
 
 export const dynamic = "force-dynamic";
 
@@ -16,14 +25,20 @@ export const metadata: Metadata = {
 
 export default async function ManageBookingPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ paid?: string; session_id?: string }>;
 }) {
   const { token } = await params;
+  const query = await searchParams;
+
+  // Back from the card payment page: check with Stripe now, in case the webhook is a moment slow.
+  if (query.paid === "card" && query.session_id) await confirmCheckoutSession(token, query.session_id);
 
   const booking = await prisma.booking.findUnique({
     where: { manageToken: token },
-    include: { listing: true },
+    include: { listing: { include: { host: true } } },
   });
   if (!booking) notFound();
 
@@ -88,6 +103,23 @@ export default async function ManageBookingPage({
         cleaningFee={booking.listing.cleaningFee}
         minNights={booking.listing.minNights}
         unavailableNights={[...unavailableSet]}
+        payment={
+          <StayPayment
+            token={token}
+            status={booking.status}
+            paymentStatus={booking.paymentStatus}
+            paymentMethod={booking.paymentMethod}
+            amountPaid={booking.amountPaid}
+            total={booking.totalPrice}
+            surcharge={cardSurcharge(booking.totalPrice)}
+            surchargeLabel={surchargeLabel()}
+            reference={bookingReference(booking.id)}
+            bank={bankDetailsOf(booking.listing.host)}
+            cardAvailable={cardPaymentsOn(booking.listing.host)}
+            transferNotified={!!booking.transferNotifiedAt}
+            returnedFrom={query.paid === "card" ? "card" : query.paid === "cancelled" ? "cancelled" : null}
+          />
+        }
       />
     </div>
   );

@@ -2,10 +2,13 @@ import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { SITE_URL } from "@/lib/site";
 import { HOST_TIERS, tierForListingCount, type TierKey } from "@/lib/pricing";
+import { stripeClient } from "@/lib/stripeClient";
+import { recordCardPayment } from "@/lib/stayPayment";
 
 // Host subscriptions are billed through Stripe Billing on the platform owner's own Stripe
-// account (not Stripe Connect: guest payments go to hosts by their own methods, and Beeline takes
-// no commission). To switch it on, set these in the environment:
+// account (not Stripe Connect, and Beeline takes no commission). Guests paying for a stay by card
+// go through the same account for hosts with acceptsCardPayments set (see stayPayment.ts); other
+// hosts are paid by bank transfer or their own method. To switch it on, set these in the environment:
 //   STRIPE_SECRET_KEY       the account's secret key (test key while testing)
 //   STRIPE_PRICE_T1_MONTHLY / STRIPE_PRICE_T1_YEARLY   prices for 1 to 3 listings (A$100 a month, A$1,100 a year)
 //   STRIPE_PRICE_T2_MONTHLY / STRIPE_PRICE_T2_YEARLY   prices for 4 to 10 listings (A$200 a month, A$2,200 a year)
@@ -49,13 +52,7 @@ export function isWebhookConfigured() {
   return !!(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET);
 }
 
-let client: Stripe | null = null;
-export function stripeClient() {
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) throw new Error("Billing isn't switched on yet. Stripe has not been connected.");
-  client ??= new Stripe(key);
-  return client;
-}
+export { stripeClient };
 
 const NOT_CONFIGURED = "Billing isn't switched on yet. Stripe has not been connected.";
 
@@ -207,6 +204,11 @@ export async function handleStripeEvent(event: Stripe.Event) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
+      if (session.mode === "payment") {
+        // A guest paying for a stay by card.
+        await recordCardPayment(session);
+        return;
+      }
       if (session.mode !== "subscription") return;
       const subId = idOf(session.subscription);
       if (!subId) return;

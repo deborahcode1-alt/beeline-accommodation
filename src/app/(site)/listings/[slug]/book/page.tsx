@@ -6,6 +6,7 @@ import { publicListingWhere } from "@/lib/visibility";
 import { getGuest } from "@/lib/guestSession";
 import { BookingForm } from "@/components/BookingForm";
 import { DEFAULT_CANCELLATION_POLICY } from "@/lib/site";
+import { bankDetailsOf, cardPaymentsOn, surchargeRate } from "@/lib/stayPaymentInfo";
 
 export const dynamic = "force-dynamic";
 
@@ -26,9 +27,11 @@ export default async function BookPage({
 
   const listing = await prisma.listing.findFirst({
     where: { slug, ...publicListingWhere() },
+    include: { host: true },
   });
   if (!listing) notFound();
   const guest = await getGuest();
+  const rate = surchargeRate();
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
@@ -55,6 +58,10 @@ export default async function BookPage({
           initialCheckIn={query.checkIn || ""}
           initialCheckOut={query.checkOut || ""}
           initialGuests={query.guests ? Number(query.guests) : 1}
+          bankTransfer={!!bankDetailsOf(listing.host)}
+          cardPayments={cardPaymentsOn(listing.host)}
+          surchargePercent={rate.percent}
+          surchargeFixed={rate.fixed}
         />
       </div>
 

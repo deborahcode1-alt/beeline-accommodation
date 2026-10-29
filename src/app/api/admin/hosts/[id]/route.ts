@@ -53,7 +53,23 @@ const profileSchema = z.object({
   responseTime: subjectField("responseTime"),
   notificationEmail: optionalText(200),
   notificationPhone: optionalText(50),
+  bankAccountName: optionalText(120),
+  bankBsb: z
+    .string()
+    .transform((v) => v.replace(/[s-]/g, ""))
+    .refine((v) => v === "" || /^d{6}$/.test(v), "BSB must be 6 digits, like 817-001")
+    .transform((v) => v || null)
+    .nullable()
+    .optional(),
+  bankAccountNumber: z
+    .string()
+    .transform((v) => v.replace(/[s-]/g, ""))
+    .refine((v) => v === "" || /^d{5,10}$/.test(v), "Account number must be 5 to 10 digits")
+    .transform((v) => v || null)
+    .nullable()
+    .optional(),
   // Platform-owner only:
+  acceptsCardPayments: z.boolean().optional(),
   subscriptionStatus: z.enum(["TRIAL", "ACTIVE", "PAST_DUE", "CANCELLED", "COMPLIMENTARY"]).optional(),
   trialEndsAt: z.coerce.date().nullable().optional(),
 });
@@ -74,12 +90,14 @@ export async function PATCH(
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { subscriptionStatus, trialEndsAt, ...profile } = parsed.data;
+  const { subscriptionStatus, trialEndsAt, acceptsCardPayments, ...profile } = parsed.data;
   const data: Record<string, unknown> = { ...profile };
   // Hosts can't change their own subscription state by hand; it follows billing.
   if (auth.ctx.isOwner) {
     if (subscriptionStatus !== undefined) data.subscriptionStatus = subscriptionStatus;
     if (trialEndsAt !== undefined) data.trialEndsAt = trialEndsAt;
+    // Card payments land in the platform Stripe account, so only the owner switches them on for a host.
+    if (acceptsCardPayments !== undefined) data.acceptsCardPayments = acceptsCardPayments;
   }
 
   const host = await prisma.host.update({ where: { id }, data });

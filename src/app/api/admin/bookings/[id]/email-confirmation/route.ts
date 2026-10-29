@@ -19,7 +19,7 @@ export async function GET(
   const booking = await prisma.booking.findUnique({ where: { id }, include });
   if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
 
-  const { subject, text } = confirmationEmailContent(booking);
+  const { subject, text } = await confirmationEmailContent(booking);
   return NextResponse.json({
     to: booking.guestEmail,
     subject,
@@ -58,7 +58,7 @@ export async function POST(
     );
   }
 
-  const draft = confirmationEmailContent(booking);
+  const draft = await confirmationEmailContent(booking);
   const subject = parsed.data.subject ?? draft.subject;
   const text = parsed.data.text ?? draft.text;
 

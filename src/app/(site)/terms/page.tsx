@@ -32,7 +32,9 @@ export default function TermsPage() {
         {
           heading: "Payments",
           body: [
-            "Payment is made to the host using the method the host provides. Beeline does not hold or process guest payments. Check the payment details with the host before you pay.",
+            "Payment is made up front, to the host, using a method the host offers. This is either a direct bank transfer to the host's account, or a card payment, or both. Check the payment details with the host before you pay.",
+            "Bank transfers have no surcharge. Card payments are processed securely by Stripe and have a card surcharge added to cover the cost of processing the card. The surcharge is shown to you before you pay and appears as its own line on your invoice and receipt. Paying by bank transfer avoids it.",
+            "Beeline does not take a commission on bookings and does not keep any part of what you pay for your stay. Refunds follow the host's cancellation terms shown when you book. [Lawyer to confirm surcharge and refund wording.]",
           ],
         },
         {

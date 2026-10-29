@@ -19,6 +19,8 @@ type Props = {
   cleaningFee: number;
   minNights: number;
   unavailableNights: string[];
+  /** The payment panel, rendered under the booking card. */
+  payment?: React.ReactNode;
 };
 
 function toISODate(d: Date) {
@@ -43,6 +45,7 @@ export function ManageBookingClient({
   cleaningFee,
   minNights,
   unavailableNights,
+  payment,
 }: Props) {
   const unavailableSet = useMemo(() => new Set(unavailableNights), [unavailableNights]);
   const [status, setStatus] = useState(initialStatus);
@@ -232,6 +235,8 @@ export function ManageBookingClient({
 
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       </div>
+
+      {payment}
 
       <div className="mt-6 flex flex-wrap gap-4 text-sm">
         <Link href={`/listings/${listingSlug}`} className="text-accent-deep hover:underline">

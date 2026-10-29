@@ -67,6 +67,12 @@ model Host {
   stripeCustomerId    String?
   stripeSubscriptionId String?
   planTier             String? // T1 (1 to 3 listings) or T2 (4 to 10), set from the Stripe price
+  // Where guests send a direct bank transfer for a stay (shown to them after they book)
+  bankAccountName      String?
+  bankBsb              String?
+  bankAccountNumber    String?
+  // Guests can pay this host by card through the platform Stripe account (set by the platform owner)
+  acceptsCardPayments  Boolean @default(false)
   createdAt           DateTime @default(now())
 
   listings   Listing[]
@@ -218,6 +224,12 @@ model Booking {
   agreedToTerms  Boolean       @default(false)
   paymentStatus  PaymentStatus @default(UNPAID)
   squarePaymentId String?
+  paymentMethod  String? // CARD or BANK, how the stay was paid
+  cardSurcharge  Float         @default(0)
+  amountPaid     Float?
+  paidAt         DateTime?
+  stripePaymentIntentId String?
+  transferNotifiedAt DateTime? // guest said they have sent a bank transfer
   confirmationTextSentAt DateTime?
   confirmationEmailSentAt DateTime?
   manageToken    String        @unique @default(cuid())

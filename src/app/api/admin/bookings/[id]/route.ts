@@ -45,7 +45,17 @@ export async function PATCH(
   if (data.message !== undefined) updateData.message = data.message;
   if (data.guests !== undefined) updateData.guests = data.guests;
   if (data.status !== undefined) updateData.status = data.status;
-  if (data.paymentStatus !== undefined) updateData.paymentStatus = data.paymentStatus;
+  if (data.paymentStatus !== undefined) {
+    updateData.paymentStatus = data.paymentStatus;
+    // Ticking "paid" by hand (bank transfer, cash) records when and how much; unticking clears it.
+    if (data.paymentStatus === "PAID" && existing.paymentStatus !== "PAID") {
+      updateData.paidAt = new Date();
+      updateData.amountPaid = existing.totalPrice;
+    } else if (data.paymentStatus === "UNPAID") {
+      updateData.paidAt = null;
+      updateData.amountPaid = null;
+    }
+  }
 
   const datesChanged = data.checkIn !== undefined || data.checkOut !== undefined;
   if (datesChanged) {
