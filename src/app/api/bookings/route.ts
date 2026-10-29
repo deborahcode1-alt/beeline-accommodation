@@ -5,6 +5,7 @@ import { publicListingWhere } from "@/lib/visibility";
 import { getGuest } from "@/lib/guestSession";
 import { calcTotalPrice, isRangeAvailable, nightsBetween } from "@/lib/availability";
 import { notifyNewBooking, notifyInstantBooking } from "@/lib/notifications";
+import { syncListingIfStale } from "@/lib/syncIcal";
 
 const bookingSchema = z.object({
   listingId: z.string().min(1),
@@ -47,6 +48,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Pull in anything booked on Airbnb, Booking.com etc. since the last check before deciding.
+  await syncListingIfStale(listing.id);
   const available = await isRangeAvailable(listing.id, data.checkIn, data.checkOut);
   if (!available) {
     return NextResponse.json(

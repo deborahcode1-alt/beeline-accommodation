@@ -46,3 +46,25 @@ export async function syncAllImports() {
     await syncListingImports(l.id);
   }
 }
+
+/**
+ * Refreshes a listing's connected calendars if they haven't been checked in the last few minutes.
+ * Called just before a booking is accepted, so a stay already taken on Airbnb or Booking.com is
+ * caught even if the scheduled sync hasn't run yet. Never throws and never waits long.
+ */
+export async function syncListingIfStale(listingId: string, maxAgeMs = 10 * 60 * 1000) {
+  try {
+    const imports = await prisma.icalImportUrl.findMany({
+      where: { listingId },
+      select: { lastSyncedAt: true },
+    });
+    const stale = imports.some((i) => !i.lastSyncedAt || Date.now() - i.lastSyncedAt.getTime() > maxAgeMs);
+    if (!stale) return;
+    await Promise.race([
+      syncListingImports(listingId),
+      new Promise((resolve) => setTimeout(resolve, 8000)),
+    ]);
+  } catch (err) {
+    console.error("calendar refresh before booking failed:", err);
+  }
+}
