@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { clientIp, rateLimit } from "@/lib/rateLimit";
 import { notifyEnquiryReceived, notifyOwnerOfEnquiry } from "@/lib/notifications";
 import { ENQUIRY_MAX_PHOTOS, isEnquiryPhotoUrl } from "@/lib/enquiryPhotos";
 
@@ -27,6 +28,17 @@ export async function POST(req: NextRequest) {
   }
   const { website: _honeypot, photoUrls, ...data } = parsed.data;
   void _honeypot;
+
+  // The acknowledgement goes to whatever address was typed in, so cap how often one visitor, or one
+  // address, can trigger it.
+  const blocked = await rateLimit(
+    [
+      { name: "enquiry-ip", subject: clientIp(req), limit: 5, windowSeconds: 60 * 60 },
+      { name: "enquiry-email", subject: data.email, limit: 3, windowSeconds: 24 * 60 * 60 },
+    ],
+    "We've received several requests already. Please try again later, or email us if it's urgent."
+  );
+  if (blocked) return blocked;
 
   await prisma.hostEnquiry.create({ data: { ...data, photoUrls: JSON.stringify(photoUrls) } });
 

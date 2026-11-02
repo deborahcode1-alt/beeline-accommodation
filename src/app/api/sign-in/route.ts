@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { clientIp, rateLimit } from "@/lib/rateLimit";
 import { createSession, destroySession } from "@/lib/session";
 import {
   createGuestSession,
@@ -21,6 +22,12 @@ export async function POST(req: NextRequest) {
   if (!email || !password) {
     return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
   }
+  // Slows password guessing against any account, admin accounts included (guests also lock out below).
+  const blocked = await rateLimit([
+    { name: "sign-in-ip", subject: clientIp(req), limit: 30, windowSeconds: 15 * 60 },
+    { name: "sign-in-email", subject: email, limit: 10, windowSeconds: 15 * 60 },
+  ]);
+  if (blocked) return blocked;
   const failure = () =>
     NextResponse.json({ error: "Incorrect email or password" }, { status: 401 });
 

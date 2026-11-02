@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { clientIp, rateLimit } from "@/lib/rateLimit";
 import { createSession } from "@/lib/session";
 import { destroyGuestSession } from "@/lib/guestSession";
 import { findInvitedLogin } from "@/lib/hostInvite";
@@ -14,6 +15,8 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Please choose a password of at least 8 characters." }, { status: 400 });
   }
+  const blocked = await rateLimit([{ name: "set-password-ip", subject: clientIp(req), limit: 20, windowSeconds: 60 * 60 }]);
+  if (blocked) return blocked;
   const login = await findInvitedLogin(parsed.data.token);
   if (!login) {
     return NextResponse.json(

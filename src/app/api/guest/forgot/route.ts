@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { clientIp, rateLimit } from "@/lib/rateLimit";
 import { sendGuestCode, checkGuestCode, clearCode } from "@/lib/guestCodes";
 import { MIN_PASSWORD_LENGTH } from "@/lib/guestSession";
 
@@ -25,6 +26,11 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    const blocked = await rateLimit([
+      { name: "reset-check-ip", subject: clientIp(req), limit: 20, windowSeconds: 60 * 60 },
+      { name: "reset-check-email", subject: parsed.data.email, limit: 10, windowSeconds: 60 * 60 },
+    ]);
+    if (blocked) return blocked;
     const guest = await prisma.guest.findUnique({ where: { email: parsed.data.email.toLowerCase() } });
     if (!guest) return NextResponse.json({ error: "That code is not right." }, { status: 400 });
     const result = await checkGuestCode(guest, parsed.data.code);
@@ -43,6 +49,12 @@ export async function POST(req: NextRequest) {
 
   const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
   if (!email) return NextResponse.json({ error: "Enter your email." }, { status: 400 });
+  // Counted whether or not the email has an account, so the answer never gives that away.
+  const blocked = await rateLimit([
+    { name: "reset-send-ip", subject: clientIp(req), limit: 10, windowSeconds: 60 * 60 },
+    { name: "reset-send-email", subject: email, limit: 3, windowSeconds: 60 * 60 },
+  ]);
+  if (blocked) return blocked;
   const guest = await prisma.guest.findUnique({ where: { email } });
   if (guest) {
     try {

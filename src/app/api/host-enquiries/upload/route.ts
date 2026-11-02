@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
+import { clientIp, rateLimit } from "@/lib/rateLimit";
 import {
   ENQUIRY_MAX_PHOTO_BYTES,
   ENQUIRY_PATH_PREFIX,
@@ -11,6 +12,10 @@ import {
 export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => null)) as HandleUploadBody | null;
   if (!body) return NextResponse.json({ error: "Bad request" }, { status: 400 });
+
+  // Public upload door: cap how many photo uploads one visitor can start (the form allows a handful per request).
+  const blocked = await rateLimit([{ name: "enquiry-upload", subject: clientIp(req), limit: 40, windowSeconds: 60 * 60 }]);
+  if (blocked) return blocked;
 
   try {
     const jsonResponse = await handleUpload({

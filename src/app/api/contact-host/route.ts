@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { clientIp, rateLimit } from "@/lib/rateLimit";
 import { publicListingWhere } from "@/lib/visibility";
 import { isEmailConfigured, sendEmail } from "@/lib/email";
 import { SITE_NAME } from "@/lib/site";
@@ -22,6 +23,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Please check your details and try again." }, { status: 400 });
   }
   const { listingId, name, email, phone, message } = parsed.data;
+
+  // Each message emails a host, so keep one visitor from flooding them.
+  const blocked = await rateLimit([
+    { name: "contact-ip", subject: clientIp(req), limit: 10, windowSeconds: 60 * 60 },
+    { name: "contact-email", subject: email, limit: 5, windowSeconds: 60 * 60 },
+  ]);
+  if (blocked) return blocked;
 
   const listing = await prisma.listing.findFirst({
     where: { id: listingId, ...publicListingWhere() },

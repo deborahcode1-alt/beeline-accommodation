@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { clientIp, rateLimit } from "@/lib/rateLimit";
 import { createGuestSession, destroyGuestSession, safeNext, MIN_PASSWORD_LENGTH } from "@/lib/guestSession";
 import { destroySession } from "@/lib/session";
 
@@ -21,6 +22,9 @@ export async function POST(req: NextRequest) {
     );
   }
   const email = parsed.data.email.toLowerCase();
+
+  const blocked = await rateLimit([{ name: "register-ip", subject: clientIp(req), limit: 10, windowSeconds: 60 * 60 }]);
+  if (blocked) return blocked;
 
   // Host and owner emails can never be used for a guest account.
   const taken =

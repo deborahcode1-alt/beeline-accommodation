@@ -271,3 +271,13 @@ model IcalImportUrl {
   lastSyncedAt DateTime?
   lastError    String?
 }
+
+// Counters for rate limiting public forms and sign-in. One row per limit key (e.g. "sign-in:ip:1.2.3.4").
+// Rows past resetAt are replaced on the next hit and swept up by the daily cleanup.
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}

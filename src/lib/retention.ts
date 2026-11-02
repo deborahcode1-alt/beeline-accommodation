@@ -1,5 +1,6 @@
 import { del } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
+import { purgeExpiredRateLimits } from "@/lib/rateLimit";
 
 // Customer details are kept for 7 years after their last stay. If a customer has not stayed (or
 // signed in) for 7 years, their personal details are deleted. The booking's dates, price and
@@ -27,6 +28,7 @@ export function startOfToday(now = new Date()) {
 }
 
 export async function purgeExpiredCustomerData(now = new Date()) {
+  await purgeExpiredRateLimits();
   const cutoff = retentionCutoff(now);
   let customers = 0;
   let bookings = 0;

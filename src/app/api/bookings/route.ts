@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { publicListingWhere } from "@/lib/visibility";
 import { getGuest } from "@/lib/guestSession";
+import { clientIp, rateLimit } from "@/lib/rateLimit";
 import { calcTotalPrice, isRangeAvailable, nightsBetween } from "@/lib/availability";
 import { notifyNewBooking, notifyInstantBooking } from "@/lib/notifications";
 import { syncListingIfStale } from "@/lib/syncIcal";
@@ -26,6 +27,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const data = parsed.data;
+
+  // A request holds a room's dates and emails the host, so cap how many one visitor can make.
+  const blocked = await rateLimit(
+    [
+      { name: "booking-ip", subject: clientIp(req), limit: 10, windowSeconds: 60 * 60 },
+      { name: "booking-email", subject: data.guestEmail, limit: 5, windowSeconds: 60 * 60 },
+    ],
+    "That's a lot of booking requests in a short time. Please wait a little while and try again."
+  );
+  if (blocked) return blocked;
 
   const listing = await prisma.listing.findFirst({
     where: { id: data.listingId, ...publicListingWhere() },
