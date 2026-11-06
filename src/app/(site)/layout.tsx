@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { Analytics } from "@/components/Analytics";
 import { SITE_NAME, SITE_TAGLINE, SITE_SLOGAN, SITE_URL } from "@/lib/site";
 
 const geistSans = Geist({
@@ -25,6 +26,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
   description: `${SITE_TAGLINE}. ${SITE_SLOGAN} Find local hosts, rooms, houses and farm stays across regional Australia and contact them directly.`,
+  // Search Console ownership check (set GOOGLE_SITE_VERIFICATION to the code Google gives you).
+  verification: { google: process.env.GOOGLE_SITE_VERIFICATION },
   openGraph: {
     title: SITE_NAME,
     description: SITE_TAGLINE,
@@ -42,6 +45,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />
+        <Analytics />
       </body>
     </html>
   );

@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== "production";
+// Google Analytics is only allowed through the policy when a measurement ID is configured.
+const analyticsOn = /^G-[A-Z0-9]{6,}$/.test(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "");
 
 // Content-Security-Policy. Scripts stay 'self' plus inline because Next.js injects its own inline bootstrap
 // scripts; the rest of the policy is what blocks injected content, framing, and posting forms elsewhere.
@@ -8,11 +10,13 @@ const isDev = process.env.NODE_ENV !== "production";
 // connect-src covers our own API and the browser-side photo upload to Vercel Blob.
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}${analyticsOn ? " https://www.googletagmanager.com" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  `connect-src 'self' https://vercel.com https://*.vercel-storage.com${isDev ? " ws: wss:" : ""}`,
+  `connect-src 'self' https://vercel.com https://*.vercel-storage.com${
+    analyticsOn ? " https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com" : ""
+  }${isDev ? " ws: wss:" : ""}`,
   "frame-ancestors 'none'",
   "object-src 'none'",
   "base-uri 'self'",

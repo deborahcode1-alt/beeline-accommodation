@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
 import { InstallAppButton } from "@/components/InstallAppButton";
+import { AnalyticsChoicesLink } from "@/components/AnalyticsChoicesLink";
 import { SITE_NAME, SITE_SLOGAN } from "@/lib/site";
 
 export function SiteFooter() {
@@ -19,6 +20,7 @@ export function SiteFooter() {
           <Link href="/privacy" className="hover:text-header-fg">Privacy policy</Link>
           <Link href="/host" className="hover:text-header-fg">Become a collaborator</Link>
           <Link href="/host-agreement" className="hover:text-header-fg">Host agreement</Link>
+          <AnalyticsChoicesLink className="text-left hover:text-header-fg" />
         </nav>
       </div>
       <div className="border-t border-white/10 py-4 text-center text-xs">

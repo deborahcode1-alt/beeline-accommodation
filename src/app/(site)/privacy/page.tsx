@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/LegalPage";
+import { GA_ENABLED } from "@/lib/analytics";
 
 export const metadata: Metadata = { title: "Privacy policy" };
 
@@ -60,7 +61,12 @@ export default function PrivacyPage() {
         {
           heading: "Cookies",
           body: [
-            "We use essential cookies to keep hosts signed in. [Update this section if analytics or advertising cookies are added.]",
+            "We use essential cookies to keep people signed in. These are needed for the site to work.",
+            ...(GA_ENABLED
+              ? [
+                  "If you press Accept on our banner, we also use Google Analytics to count visits and see which pages are used. Google sets cookies for this and receives the pages you view, your approximate location and your browser details. We do not send Google your name, email or booking details, we do not report pages that contain private booking or password links, and we do not use analytics for advertising. Google may store this data outside Australia. If you press No thanks, none of this happens. You can change your choice at any time with Analytics choices in the page footer.",
+                ]
+              : []),
           ],
         },
       ]}
