@@ -12,6 +12,12 @@ import {
   bedroomLabel,
   type ParkingType,
 } from "@/lib/listingFacts";
+import {
+  POLICY_CHOICES,
+  composeCancellationPolicy,
+  presetFor,
+  type PolicyType,
+} from "@/lib/cancellationPolicies";
 
 type Host = { id: string; name: string; squareConnected: boolean };
 
@@ -21,6 +27,8 @@ type Initial = {
   tagline: string;
   description: string;
   cancellationPolicy: string;
+  cancellationPolicyType: PolicyType | "";
+  cancellationNotes: string;
   address: string;
   stayType: "SHORT_TERM" | "LONG_TERM";
   propertyType: PropertyType;
@@ -45,6 +53,8 @@ const empty: Initial = {
   tagline: "",
   description: "",
   cancellationPolicy: "",
+  cancellationPolicyType: "",
+  cancellationNotes: "",
   address: "",
   stayType: "SHORT_TERM",
   propertyType: "HOUSE",
@@ -102,7 +112,10 @@ export function ListingForm({
 
     const payload = {
       ...form,
-      cancellationPolicy: form.cancellationPolicy || undefined,
+      // Nothing chosen yet: leave the policy alone. Otherwise send the choice and the server builds the text.
+      cancellationPolicy: form.cancellationPolicyType === "custom" ? form.cancellationPolicy : undefined,
+      cancellationPolicyType: form.cancellationPolicyType || undefined,
+      cancellationNotes: form.cancellationPolicyType && form.cancellationPolicyType !== "custom" ? form.cancellationNotes : undefined,
       hostId: isOwner ? form.hostId || undefined : undefined,
       areaId: form.areaId || null,
       amenities: amenitiesText
@@ -390,20 +403,93 @@ export function ListingForm({
         />
       </label>
 
-      <label className="flex flex-col gap-1 text-sm">
-        Payment &amp; cancellation terms
-        <textarea
-          value={form.cancellationPolicy}
-          onChange={(e) => update("cancellationPolicy", e.target.value)}
-          rows={4}
-          placeholder="Leave blank to use the site's default draft policy"
-          className={field}
-        />
-        <span className="text-xs text-muted">
-          Shown on the listing page and at booking. Leave blank to use the default draft policy
-          until you have real terms for this listing.
-        </span>
-      </label>
+      <fieldset className="flex flex-col gap-2 text-sm">
+        <legend className="font-medium">Cancellation policy</legend>
+        <p className="text-xs text-muted">
+          Pick a ready-made policy guests will recognise from Airbnb and Booking.com, or write your own. It is shown on
+          the listing page and again when someone books.
+        </p>
+        {POLICY_CHOICES.map((choice) => {
+          const preset = presetFor(choice.type);
+          const selected = form.cancellationPolicyType === choice.type;
+          return (
+            <label
+              key={choice.type}
+              className={`flex cursor-pointer items-start gap-3 rounded-md border p-3 ${
+                selected ? "border-accent bg-accent/10" : "border-card-border"
+              }`}
+            >
+              <input
+                type="radio"
+                name="cancellationPolicyType"
+                checked={selected}
+                onChange={() => update("cancellationPolicyType", choice.type)}
+                className="mt-1"
+              />
+              <span>
+                <span className="font-medium">{choice.name}</span>
+                {preset ? (
+                  <>
+                    <span> &mdash; {preset.summary}</span>
+                    <span className="block text-xs text-muted">{preset.suits}</span>
+                  </>
+                ) : (
+                  <span className="block text-xs text-muted">Write your own terms for this listing.</span>
+                )}
+              </span>
+            </label>
+          );
+        })}
+
+        {form.cancellationPolicyType === "custom" && (
+          <label className="flex flex-col gap-1">
+            Your cancellation terms
+            <textarea
+              value={form.cancellationPolicy}
+              onChange={(e) => update("cancellationPolicy", e.target.value)}
+              rows={6}
+              placeholder="For example: free cancellation up to 14 days before check-in..."
+              className={field}
+            />
+            <span className="text-xs text-muted">
+              Put a blank line between paragraphs. Say what is refunded and when. Guests agree to this when they book.
+            </span>
+          </label>
+        )}
+
+        {form.cancellationPolicyType && form.cancellationPolicyType !== "custom" && (
+          <>
+            <div className="rounded-md bg-header-bg/5 p-3">
+              <p className="text-xs font-medium text-muted">What guests will read</p>
+              {composeCancellationPolicy({ type: form.cancellationPolicyType, notes: form.cancellationNotes })
+                .split("\n\n")
+                .map((p, i) => (
+                  <p key={i} className="mt-2">
+                    {p}
+                  </p>
+                ))}
+            </div>
+            <label className="flex flex-col gap-1">
+              Extra terms (optional)
+              <textarea
+                value={form.cancellationNotes}
+                onChange={(e) => update("cancellationNotes", e.target.value)}
+                rows={3}
+                maxLength={2000}
+                placeholder="For example: check-in from 2pm, check-out by 11am. Guests are responsible for any damage during their stay."
+                className={field}
+              />
+              <span className="text-xs text-muted">Added after the policy above, for check-in times, damage or house rules.</span>
+            </label>
+          </>
+        )}
+
+        {!form.cancellationPolicyType && (
+          <p className="text-xs text-muted">
+            Until you choose one, guests see a draft policy. Choose one before you take real bookings.
+          </p>
+        )}
+      </fieldset>
 
       <label className="flex items-center gap-2 text-sm">
         <input

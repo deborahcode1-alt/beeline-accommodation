@@ -165,7 +165,9 @@ model Listing {
   slug               String   @unique
   tagline            String?
   description        String
-  cancellationPolicy String? // falls back to a site-wide default draft policy when null
+  cancellationPolicy String? // the text guests see; falls back to a site-wide default draft policy when null
+  cancellationPolicyType String? // flexible, moderate, firm, strict, nonrefundable or custom; null = written before the options existed
+  cancellationNotes  String? // the host's extra terms shown after a ready-made policy
   address            String?
   stayType           StayType @default(SHORT_TERM)
   propertyType       PropertyType @default(HOUSE)

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getAdminContext, canAccessHost } from "@/lib/adminAuth";
 import { startOfToday } from "@/lib/retention";
 import { ListingForm } from "@/components/admin/ListingForm";
+import { isPolicyType } from "@/lib/cancellationPolicies";
 import { PhotoManager } from "@/components/admin/PhotoManager";
 import { BookingsTable } from "@/components/admin/BookingsTable";
 import { DeleteListingButton } from "@/components/admin/DeleteListingButton";
@@ -85,6 +86,13 @@ export default async function EditListingPage({
               tagline: listing.tagline ?? "",
               description: listing.description,
               cancellationPolicy: listing.cancellationPolicy ?? "",
+              // Written before the options existed: keep the host's own text as "write my own".
+              cancellationPolicyType: isPolicyType(listing.cancellationPolicyType)
+                ? listing.cancellationPolicyType
+                : listing.cancellationPolicy
+                  ? "custom"
+                  : "",
+              cancellationNotes: listing.cancellationNotes ?? "",
               address: listing.address ?? "",
               stayType: listing.stayType,
               propertyType: listing.propertyType,

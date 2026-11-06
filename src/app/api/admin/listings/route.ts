@@ -4,12 +4,15 @@ import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { requireAdmin, listingScope } from "@/lib/adminAuth";
 import { listingLimitFor } from "@/lib/pricing";
+import { POLICY_TYPES, policyFieldsToStore } from "@/lib/cancellationPolicies";
 
 const listingSchema = z.object({
   name: z.string().min(1).max(200),
   tagline: z.string().max(300).optional(),
   description: z.string().min(1),
   cancellationPolicy: z.string().max(4000).optional(),
+  cancellationPolicyType: z.enum(POLICY_TYPES).optional(),
+  cancellationNotes: z.string().max(2000).optional(),
   address: z.string().max(300).optional(),
   stayType: z.enum(["SHORT_TERM", "LONG_TERM"]).default("SHORT_TERM"),
   propertyType: z.enum(["BUDGET", "LUXURY", "APARTMENT", "FARM_STAY", "BOUTIQUE_HOTEL", "HOUSE"]).default("HOUSE"),
@@ -48,7 +51,14 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const data = parsed.data;
+  const { cancellationPolicyType, cancellationNotes, ...data } = parsed.data;
+  let policyFields = {};
+  if (cancellationPolicyType) {
+    const policy = policyFieldsToStore({ type: cancellationPolicyType, notes: cancellationNotes, custom: data.cancellationPolicy });
+    if ("error" in policy) return NextResponse.json({ error: policy.error }, { status: 400 });
+    policyFields = policy;
+    delete data.cancellationPolicy;
+  }
   // A host can only create listings under their own host account.
   if (!auth.ctx.isOwner) data.hostId = auth.ctx.hostId ?? undefined;
 
@@ -82,6 +92,7 @@ export async function POST(req: NextRequest) {
   const listing = await prisma.listing.create({
     data: {
       ...data,
+      ...policyFields,
       amenities: JSON.stringify(data.amenities),
       slug,
     },

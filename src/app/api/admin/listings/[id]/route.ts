@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireListingAccess } from "@/lib/adminAuth";
+import { POLICY_TYPES, policyFieldsToStore } from "@/lib/cancellationPolicies";
 
 const updateSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   tagline: z.string().max(300).optional(),
   description: z.string().min(1).optional(),
   cancellationPolicy: z.string().max(4000).optional(),
+  cancellationPolicyType: z.enum(POLICY_TYPES).optional(),
+  cancellationNotes: z.string().max(2000).optional(),
   address: z.string().max(300).optional(),
   stayType: z.enum(["SHORT_TERM", "LONG_TERM"]).optional(),
   propertyType: z.enum(["BUDGET", "LUXURY", "APARTMENT", "FARM_STAY", "BOUTIQUE_HOTEL", "HOUSE"]).optional(),
@@ -60,7 +63,15 @@ export async function PATCH(
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { amenities, ...rest } = parsed.data;
+  const { amenities, cancellationPolicyType, cancellationNotes, ...rest } = parsed.data;
+  // A chosen policy (ready-made or written by the host) sets the text guests see.
+  let policyFields = {};
+  if (cancellationPolicyType) {
+    const policy = policyFieldsToStore({ type: cancellationPolicyType, notes: cancellationNotes, custom: rest.cancellationPolicy });
+    if ("error" in policy) return NextResponse.json({ error: policy.error }, { status: 400 });
+    policyFields = policy;
+    delete rest.cancellationPolicy;
+  }
   // Only the platform owner can move a listing to a different host.
   if (!access.ctx.isOwner) delete rest.hostId;
 
@@ -68,6 +79,7 @@ export async function PATCH(
     where: { id },
     data: {
       ...rest,
+      ...policyFields,
       ...(amenities ? { amenities: JSON.stringify(amenities) } : {}),
     },
   });
