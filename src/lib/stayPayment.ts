@@ -38,7 +38,7 @@ export async function createStayCheckout(token: string): Promise<{ url: string }
     mode: "payment",
     // Cards only (Apple Pay and Google Pay run on cards). The surcharge is sized to the card fee, and
     // buy-now-pay-later methods the live account switches on cost more than that.
-    payment_method_types: ["card"],
+    allowed_payment_method_types: ["card"],
     customer_email: booking.guestEmail,
     client_reference_id: booking.id,
     line_items: [
