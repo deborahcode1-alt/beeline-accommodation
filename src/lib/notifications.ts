@@ -31,7 +31,7 @@ function fmtDate(d: Date) {
 }
 
 export function manageUrl(token: string) {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://beelineaccommodation.com";
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://bookonbeeline.com";
   return `${base}/manage/${token}`;
 }
 
@@ -265,7 +265,7 @@ async function hostLoginEmails(hostId: string) {
 /** The owner has approved a host: their listings are now on the site. */
 export async function notifyHostLive(hostId: string) {
   const { name, emails } = await hostLoginEmails(hostId);
-  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://beelineaccommodation.com";
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://bookonbeeline.com";
   for (const to of emails) {
     await tryEmail(
       to,
@@ -279,7 +279,7 @@ export async function notifyHostLive(hostId: string) {
 /** The owner sends a host their setup checklist, with what is still to do. */
 export async function sendHostChecklistEmail(hostId: string, remaining: string[]) {
   const { name, emails } = await hostLoginEmails(hostId);
-  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://beelineaccommodation.com";
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://bookonbeeline.com";
   const todo = remaining.length
     ? `Still to do:\n${remaining.map((r) => `  - ${r}`).join("\n")}`
     : "Every step is already done. We'll check it over and switch your listings on.";
@@ -304,7 +304,7 @@ export async function sendHostChecklistEmail(hostId: string, remaining: string[]
 export async function notifySyncFailed(params: { hostId: string | null; listingName: string; label: string; error: string }) {
   if (!params.hostId) return;
   const { emails } = await hostLoginEmails(params.hostId);
-  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://beelineaccommodation.com";
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://bookonbeeline.com";
   for (const to of emails) {
     await tryEmail(
       to,
@@ -339,7 +339,7 @@ export async function notifyOwnerOfEnquiry(params: {
   photoCount: number;
 }) {
   const to = process.env.ADMIN_EMAIL;
-  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://beelineaccommodation.com";
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://bookonbeeline.com";
   await tryEmail(
     to,
     `New host request: ${params.name} (${params.area})`,

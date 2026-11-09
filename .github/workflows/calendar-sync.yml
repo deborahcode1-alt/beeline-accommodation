@@ -19,4 +19,4 @@ jobs:
         run: |
           curl --fail --silent --show-error --max-time 120 \
             -H "Authorization: Bearer ${CRON_SECRET}" \
-            https://beelineaccommodation.com/api/cron/sync-ical
+            https://bookonbeeline.com/api/cron/sync-ical

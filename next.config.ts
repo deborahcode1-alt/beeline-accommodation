@@ -44,6 +44,24 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // The site lives at bookonbeeline.com. The old address sends visitors there, but its /api/ routes keep
+  // answering, because calendar links pasted into Airbnb and Booking.com, and the webhooks, may still point at it.
+  async redirects() {
+    return [
+      {
+        source: "/:path((?!api/).*)",
+        has: [{ type: "host" as const, value: "(www\\.)?beelineaccommodation\\.com" }],
+        destination: "https://bookonbeeline.com/:path",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host" as const, value: "www\\.bookonbeeline\\.com" }],
+        destination: "https://bookonbeeline.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

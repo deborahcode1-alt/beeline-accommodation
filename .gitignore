@@ -51,3 +51,6 @@ next-env.d.ts
 # local testing artifacts
 cookies.txt
 *.cookies.txt
+
+# Never commit account backup codes
+stripe_backup_code.txt
