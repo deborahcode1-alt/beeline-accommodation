@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { syncListingImports } from "@/lib/syncIcal";
 import { fetchImportedBlocks } from "@/lib/ical";
 import { requireListingAccess } from "@/lib/adminAuth";
+import { refreshReadyForReview } from "@/lib/readyForReview";
 
 const addSchema = z.object({
   url: z.string().url(),
@@ -52,6 +53,7 @@ export async function POST(
   });
 
   await syncListingImports(id);
+  await refreshReadyForReview(access.listing.hostId);
 
   return NextResponse.json({ importUrl, found }, { status: 201 });
 }
@@ -73,5 +75,6 @@ export async function DELETE(
     prisma.blockedDate.deleteMany({ where: { source: importId } }),
     prisma.icalImportUrl.delete({ where: { id: importId } }),
   ]);
+  await refreshReadyForReview(access.listing.hostId);
   return NextResponse.json({ ok: true });
 }

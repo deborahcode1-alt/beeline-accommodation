@@ -4,6 +4,7 @@ import { SITE_URL } from "@/lib/site";
 import { HOST_TIERS, TRIAL_DAYS, tierForListingCount, type TierKey } from "@/lib/pricing";
 import { stripeClient } from "@/lib/stripeClient";
 import { recordCardPayment } from "@/lib/stayPayment";
+import { refreshReadyForReview } from "@/lib/readyForReview";
 
 // Host subscriptions are billed through Stripe Billing on the platform owner's own Stripe
 // account (not Stripe Connect, and Beeline takes no commission). Guests paying for a stay by card
@@ -221,6 +222,8 @@ async function applySubscription(sub: Stripe.Subscription) {
       ...(sub.trial_end && !host.trialUsedAt ? { trialUsedAt: new Date() } : {}),
     },
   });
+  // Starting a subscription finishes the last Get live step for many hosts.
+  await refreshReadyForReview(host.id);
 }
 
 /** Applies one event from Stripe. Safe to run twice: each one just sets the current state. */

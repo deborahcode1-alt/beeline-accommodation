@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, canAccessHost } from "@/lib/adminAuth";
+import { refreshReadyForReview } from "@/lib/readyForReview";
 import { PROFILE_SUBJECTS, BLURB_MAX } from "@/lib/hostProfile";
 import { notifyHostLive } from "@/lib/notifications";
 import { stripeClient } from "@/lib/stripeClient";
@@ -122,6 +123,8 @@ export async function PATCH(
   const host = await prisma.host.update({ where: { id }, data });
   // Tell the host the moment they go live (not when an already-live host is saved again).
   if (auth.ctx.isOwner && liveApproved && !before?.liveApprovedAt) await notifyHostLive(id);
+  // A saved profile may have finished the checklist; an approval clears the "waiting" mark.
+  await refreshReadyForReview(id);
   return NextResponse.json({ host });
 }
 

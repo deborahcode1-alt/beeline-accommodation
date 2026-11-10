@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireListingAccess } from "@/lib/adminAuth";
+import { refreshReadyForReview } from "@/lib/readyForReview";
 import { POLICY_TYPES, policyFieldsToStore } from "@/lib/cancellationPolicies";
 
 const updateSchema = z.object({
@@ -84,6 +85,9 @@ export async function PATCH(
     },
   });
 
+  // Saving details may finish (or undo) a checklist step. If the owner moved it, both hosts are affected.
+  await refreshReadyForReview(listing.hostId);
+  if (access.listing.hostId !== listing.hostId) await refreshReadyForReview(access.listing.hostId);
   return NextResponse.json({ listing });
 }
 
@@ -95,5 +99,6 @@ export async function DELETE(
   const access = await requireListingAccess(id);
   if (access.error) return access.error;
   await prisma.listing.delete({ where: { id } });
+  await refreshReadyForReview(access.listing.hostId);
   return NextResponse.json({ ok: true });
 }

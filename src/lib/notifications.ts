@@ -329,6 +329,29 @@ export async function notifyEnquiryReceived(params: { name: string; email: strin
   );
 }
 
+/** Tells the platform owner a host has finished every Get live step and is waiting to be approved. */
+export async function notifyOwnerHostReady(params: { hostId: string; hostName: string }) {
+  const to = process.env.ADMIN_EMAIL;
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://bookonbeeline.com";
+  const link = `${site}/admin/hosts/${params.hostId}`;
+  await tryEmail(
+    to,
+    `Ready to go live: ${params.hostName}`,
+    `${params.hostName} has finished every step on their Get live checklist.\n\n` +
+      `Have a look over their profile, listings, photos and calendars, then approve them to switch their listings on:\n${link}\n\n` +
+      `They'll get an email as soon as you approve.`,
+    buttonEmailHtml({
+      heading: `Ready to go live: ${params.hostName}`,
+      paragraphs: [
+        `${params.hostName} has finished every step on their Get live checklist.`,
+        `Have a look over their profile, listings, photos and calendars, then approve them to switch their listings on. They'll get an email as soon as you approve.`,
+      ],
+      buttonLabel: "Review and approve",
+      buttonUrl: link,
+    })
+  );
+}
+
 /** Tells the platform owner a request has come in, with a link that takes them straight to approving it. */
 export async function notifyOwnerOfEnquiry(params: {
   name: string;

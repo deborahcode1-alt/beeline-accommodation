@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { syncAllImports } from "@/lib/syncIcal";
+import { refreshAllReadyForReview } from "@/lib/readyForReview";
 
 // Runs daily (see vercel.json) and can be pinged more often from outside. Vercel sends
 // "Authorization: Bearer <CRON_SECRET>"; the ?secret= form works for an outside pinger or by hand.
@@ -12,5 +13,7 @@ export async function GET(req: NextRequest) {
   }
 
   await syncAllImports();
+  // Safety net: catches any host who finished their checklist some way the saves above did not notice.
+  await refreshAllReadyForReview();
   return NextResponse.json({ ok: true });
 }

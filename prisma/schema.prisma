@@ -82,6 +82,7 @@ model Host {
   acceptsCardPayments  Boolean @default(false)
   // Going live: the host works through the Get live checklist; the platform owner approves it
   liveApprovedAt       DateTime?
+  readyForReviewAt     DateTime? // every Get live step is done and the owner has not approved yet; set when that first happens
   agreedHostTermsAt    DateTime? // accepted the host agreement
   calendarsSkippedAt   DateTime? // confirmed they do not list anywhere else, so no calendar link is needed
   createdAt           DateTime @default(now())

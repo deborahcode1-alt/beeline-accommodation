@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/adminAuth";
 import { createCheckoutSession, createPortalSession } from "@/lib/billing";
 import { startStartingUp } from "@/lib/startingUp";
+import { refreshReadyForReview } from "@/lib/readyForReview";
 
 const schema = z.object({
   action: z.enum(["checkout", "portal", "startingUp"]),
@@ -23,6 +24,7 @@ export async function POST(req: NextRequest) {
   if (parsed.data.action === "startingUp") {
     try {
       await startStartingUp(auth.ctx.hostId);
+      await refreshReadyForReview(auth.ctx.hostId);
       return NextResponse.json({ ok: true });
     } catch (err) {
       return NextResponse.json({ error: err instanceof Error ? err.message : "Could not start that" }, { status: 400 });

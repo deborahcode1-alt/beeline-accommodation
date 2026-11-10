@@ -34,7 +34,7 @@ export default async function AdminDashboardPage({
   const scope = bookingScope(ctx, showAll);
   const withListing = { listing: { select: { name: true } } };
 
-  const [pending, soon, monthBookings, upcomingCount, listingCount, messages, host, enquiries] =
+  const [pending, soon, monthBookings, upcomingCount, listingCount, messages, host, enquiries, readyHosts] =
     await Promise.all([
       prisma.booking.findMany({
         where: { status: "PENDING", checkOut: { gte: today }, ...scope },
@@ -73,6 +73,14 @@ export default async function AdminDashboardPage({
       ctx.hostId ? prisma.host.findUnique({ where: { id: ctx.hostId } }) : null,
       // People who asked to become a collaborator (owner only).
       ctx.isOwner ? prisma.hostEnquiry.findMany({ where: { status: "NEW" }, orderBy: { createdAt: "desc" }, take: 5 }) : [],
+      // Hosts who have finished every Get live step and are waiting for the owner to approve them.
+      ctx.isOwner
+        ? prisma.host.findMany({
+            where: { readyForReviewAt: { not: null }, liveApprovedAt: null },
+            orderBy: { readyForReviewAt: "asc" },
+            select: { id: true, name: true },
+          })
+        : [],
     ]);
 
   const getLive = ctx.hostId ? await getLiveChecklist(ctx.hostId) : null;
@@ -102,6 +110,24 @@ export default async function AdminDashboardPage({
               : "none waiting"}
           </span>
           <span className="text-muted">{enquiries.length > 0 ? "Review and approve →" : "Open requests →"}</span>
+        </Link>
+      )}
+
+      {ctx.isOwner && readyHosts.length > 0 && (
+        <Link
+          href={readyHosts.length === 1 ? `/admin/hosts/${readyHosts[0].id}` : "/admin/hosts"}
+          className="mt-4 flex items-center justify-between rounded-lg border border-accent bg-accent/15 px-4 py-3 text-sm hover:bg-accent/25"
+        >
+          <span>
+            <strong>Ready to go live:</strong>{" "}
+            {readyHosts.length === 1
+              ? `${readyHosts[0].name} has finished every step.`
+              : `${readyHosts.length} hosts have finished every step. ${readyHosts
+                  .slice(0, 3)
+                  .map((h) => h.name)
+                  .join(", ")}${readyHosts.length > 3 ? " and more" : ""}`}
+          </span>
+          <span className="text-muted">Review and approve &rarr;</span>
         </Link>
       )}
 

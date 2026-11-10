@@ -6,7 +6,16 @@ import { BrandLogo } from "@/components/BrandLogo";
 
 type Role = "owner" | "host" | "guest";
 
-export function AdminNav({ role, requestCount = 0 }: { role: Role; requestCount?: number }) {
+export function AdminNav({
+  role,
+  requestCount = 0,
+  readyCount = 0,
+}: {
+  role: Role;
+  requestCount?: number;
+  /** Hosts who have finished their Get live checklist and are waiting for approval. */
+  readyCount?: number;
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -65,6 +74,14 @@ export function AdminNav({ role, requestCount = 0 }: { role: Role; requestCount?
                   {link.href === "/admin/enquiries" && requestCount > 0 && (
                     <span className="ml-1.5 rounded-full bg-accent px-1.5 py-0.5 text-xs font-bold text-accent-fg">
                       {requestCount}
+                    </span>
+                  )}
+                  {link.href === "/admin/hosts" && readyCount > 0 && (
+                    <span
+                      title={`${readyCount} host${readyCount === 1 ? "" : "s"} ready to go live`}
+                      className="ml-1.5 rounded-full bg-accent px-1.5 py-0.5 text-xs font-bold text-accent-fg"
+                    >
+                      {readyCount}
                     </span>
                   )}
                 </Link>

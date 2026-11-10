@@ -56,7 +56,14 @@ export default async function HostsPage() {
             className="flex items-center justify-between rounded-lg border border-card-border p-4 hover:border-accent"
           >
             <div>
-              <p className="font-medium">{h.name}</p>
+              <p className="font-medium">
+                {h.name}{" "}
+                {h.readyForReviewAt && !h.liveApprovedAt && (
+                  <span className="rounded bg-accent px-1.5 py-0.5 text-xs font-semibold text-accent-fg">
+                    Ready to go live
+                  </span>
+                )}
+              </p>
               <p className="text-sm text-muted">
                 {h._count.listings} listing(s) &middot; {h._count.adminUsers} sign-in(s)
               </p>

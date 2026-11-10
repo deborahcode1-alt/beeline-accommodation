@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { requireAdmin, listingScope } from "@/lib/adminAuth";
 import { listingLimitFor } from "@/lib/pricing";
+import { refreshReadyForReview } from "@/lib/readyForReview";
 import { POLICY_TYPES, policyFieldsToStore } from "@/lib/cancellationPolicies";
 
 const listingSchema = z.object({
@@ -98,5 +99,6 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  await refreshReadyForReview(listing.hostId);
   return NextResponse.json({ listing }, { status: 201 });
 }

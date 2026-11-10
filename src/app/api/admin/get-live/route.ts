@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/adminAuth";
+import { refreshReadyForReview } from "@/lib/readyForReview";
 
 const schema = z.object({ action: z.enum(["agree", "noCalendars", "undoNoCalendars"]) });
 
@@ -22,5 +23,6 @@ export async function POST(req: Request) {
         ? { calendarsSkippedAt: new Date() }
         : { calendarsSkippedAt: null };
   await prisma.host.update({ where: { id: auth.ctx.hostId }, data });
+  await refreshReadyForReview(auth.ctx.hostId);
   return NextResponse.json({ ok: true });
 }

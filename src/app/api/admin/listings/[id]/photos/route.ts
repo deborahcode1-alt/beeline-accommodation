@@ -3,6 +3,7 @@ import { z } from "zod";
 import { del } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { requireListingAccess } from "@/lib/adminAuth";
+import { refreshReadyForReview } from "@/lib/readyForReview";
 
 const addSchema = z.object({
   url: z.string().url(),
@@ -32,6 +33,7 @@ export async function POST(
     },
   });
 
+  await refreshReadyForReview(access.listing.hostId);
   return NextResponse.json({ photo }, { status: 201 });
 }
 
@@ -57,5 +59,6 @@ export async function DELETE(
     });
   }
 
+  await refreshReadyForReview(access.listing.hostId);
   return NextResponse.json({ ok: true });
 }
