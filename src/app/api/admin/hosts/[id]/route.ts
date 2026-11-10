@@ -59,15 +59,15 @@ const profileSchema = z.object({
   bankAccountName: optionalText(120),
   bankBsb: z
     .string()
-    .transform((v) => v.replace(/[s-]/g, ""))
-    .refine((v) => v === "" || /^d{6}$/.test(v), "BSB must be 6 digits, like 817-001")
+    .transform((v) => v.replace(/[\s-]/g, ""))
+    .refine((v) => v === "" || /^\d{6}$/.test(v), "BSB must be 6 digits, like 817-001")
     .transform((v) => v || null)
     .nullable()
     .optional(),
   bankAccountNumber: z
     .string()
-    .transform((v) => v.replace(/[s-]/g, ""))
-    .refine((v) => v === "" || /^d{5,10}$/.test(v), "Account number must be 5 to 10 digits")
+    .transform((v) => v.replace(/[\s-]/g, ""))
+    .refine((v) => v === "" || /^\d{5,10}$/.test(v), "Account number must be 5 to 10 digits")
     .transform((v) => v || null)
     .nullable()
     .optional(),

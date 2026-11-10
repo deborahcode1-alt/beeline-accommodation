@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
   const { state, headline, heroImage } = parsed.data;
   // The site adds "Accommodation" itself, so keep just the place name (also catches the usual misspelling).
-  const name = parsed.data.name.replace(/s+accom+odw*s*$/i, "").trim();
+  const name = parsed.data.name.replace(/\s+accom+od\w*\s*$/i, "").trim();
   if (!name) return NextResponse.json({ error: "Enter the name of the town or area" }, { status: 400 });
   const slug = slugify(name);
   if (!slug || RESERVED.has(slug)) {
