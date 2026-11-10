@@ -23,12 +23,33 @@ export default async function EditListingPage({
     include: {
       photos: { orderBy: { order: "asc" } },
       bookings: { where: { checkOut: { gte: startOfToday() } }, orderBy: { checkIn: "asc" } },
+      icalImports: { select: { lastSyncedAt: true, lastError: true } },
+      host: { select: { calendarsSkippedAt: true } },
     },
   });
   if (!listing || !canAccessHost(ctx, listing.hostId)) notFound();
   const areas = await prisma.area.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } });
-  // A host who is still setting up gets a Next button after saving. The owner's view has none.
-  const next = !ctx.isOwner && ctx.hostId ? await getNextStep(ctx.hostId) : undefined;
+  // What this listing still needs before the host can go live: the same rules as the Get live checklist.
+  const gaps: { text: string; href: string }[] = [];
+  if (listing.photos.length < 1) gaps.push({ text: "Add at least one photo", href: "#photos" });
+  if (listing.description.trim().length < 40) {
+    gaps.push({ text: "Write a description of a few sentences", href: "#details" });
+  }
+  if (!(listing.basePrice > 0)) gaps.push({ text: "Set a nightly price", href: "#details" });
+  if (!listing.cancellationPolicy?.trim()) gaps.push({ text: "Choose a cancellation policy", href: "#details" });
+  const calendarDone =
+    !!listing.host?.calendarsSkippedAt || listing.icalImports.some((i) => i.lastSyncedAt && !i.lastError);
+  if (!calendarDone) {
+    gaps.push({
+      text: "Connect your other calendars, or say you don't list anywhere else",
+      href: `/admin/listings/${listing.id}/calendar`,
+    });
+  }
+
+  // A host who is setting up gets a Next button after saving, once this listing has everything it needs.
+  // The owner's view has none.
+  const isHostView = !ctx.isOwner && !!ctx.hostId;
+  const next = isHostView && gaps.length === 0 ? await getNextStep(ctx.hostId!) : undefined;
 
   return (
     <div>
@@ -51,6 +72,37 @@ export default async function EditListingPage({
         </Link>
       </div>
 
+      {isHostView && (
+        <div
+          className={`mt-6 rounded-lg border p-4 text-sm ${gaps.length === 0 ? "border-accent bg-soft" : "border-card-border"}`}
+        >
+          {gaps.length === 0 ? (
+            <p>
+              <strong>This listing has everything it needs.</strong> Press Save changes below if you have edited
+              anything, then use the Next button.
+            </p>
+          ) : (
+            <>
+              <p className="font-medium">Still to do on this listing:</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5">
+                {gaps.map((g) => (
+                  <li key={g.text}>
+                    <Link href={g.href} className="text-accent-deep underline">
+                      {g.text}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          <p className="mt-3">
+            <Link href="/admin/get-live" className="text-muted hover:underline">
+              &larr; Back to your checklist
+            </Link>
+          </p>
+        </div>
+      )}
+
       <section className="mt-8">
         <h2 className="text-lg font-semibold">Bookings</h2>
         <p className="mt-1 text-sm text-muted">
@@ -70,14 +122,14 @@ export default async function EditListingPage({
         </div>
       </section>
 
-      <section className="mt-10">
+      <section id="photos" className="mt-10 scroll-mt-4">
         <h2 className="text-lg font-semibold">Photos</h2>
         <div className="mt-3">
           <PhotoManager listingId={listing.id} photos={listing.photos} />
         </div>
       </section>
 
-      <section className="mt-10 max-w-2xl">
+      <section id="details" className="mt-10 max-w-2xl scroll-mt-4">
         <h2 className="text-lg font-semibold">Details</h2>
         <div className="mt-3">
           <ListingForm

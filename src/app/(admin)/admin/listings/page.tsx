@@ -68,6 +68,14 @@ export default async function AdminListingsPage({
         </Link>
       </div>
 
+      {!ctx.isOwner && (
+        <p className="mt-2 text-sm">
+          <Link href="/admin/get-live" className="text-muted hover:underline">
+            &larr; Back to your Get live checklist
+          </Link>
+        </p>
+      )}
+
       <form method="get" className="mt-4 flex flex-wrap gap-2">
         <input
           name="q"

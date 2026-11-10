@@ -108,7 +108,7 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
       label: "Add at least one listing",
       detail: "Each room, house or unit guests can book is one listing.",
       done: listings.length > 0,
-      href: "/admin/listings",
+      href: listings.length > 0 ? "/admin/listings" : "/admin/listings/new",
     },
     {
       key: "details",
@@ -120,7 +120,8 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
             ? "Photos, description and price are all in."
             : `Still needs photos, a description or a price: ${names(needsDetails)}.`,
       done: listings.length > 0 && needsDetails.length === 0,
-      href: "/admin/listings",
+      // Straight to the first listing that still needs something, not the general list.
+      href: needsDetails[0] ? `/admin/listings/${needsDetails[0].id}` : "/admin/listings",
     },
     {
       key: "policy",
@@ -132,7 +133,7 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
             ? "Every listing has its own policy."
             : `Missing on: ${names(needsPolicy)}.`,
       done: listings.length > 0 && needsPolicy.length === 0,
-      href: "/admin/listings",
+      href: needsPolicy[0] ? `/admin/listings/${needsPolicy[0].id}` : "/admin/listings",
     },
     {
       key: "calendars",
@@ -145,7 +146,9 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
             ? "Every listing is connected and syncing."
             : `Not connected yet: ${names(needsCalendar)}.`,
       done: !!host.calendarsSkippedAt || (listings.length > 0 && needsCalendar.length === 0),
-      href: listings[0] ? `/admin/listings/${listings[0].id}/calendar` : "/admin/listings",
+      href: listings[0]
+        ? `/admin/listings/${(needsCalendar[0] ?? listings[0]).id}/calendar`
+        : "/admin/listings",
       action: host.calendarsSkippedAt ? undefined : "noCalendars",
     },
     {
