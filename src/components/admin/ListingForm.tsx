@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PROPERTY_TYPES, type PropertyType } from "@/lib/propertyType";
+import { NextStepLink } from "@/components/admin/NextStepLink";
+import type { NextStepInfo } from "@/lib/getLive";
 import {
   BATHROOM_CHOICES,
   BEDROOM_CHOICES,
@@ -82,12 +84,16 @@ export function ListingForm({
   initial,
   areas = [],
   isOwner = true,
+  next,
 }: {
   initial?: Initial;
   areas?: AreaOption[];
   isOwner?: boolean;
+  /** On a host's own screen: where the Next button goes after saving. Left out (undefined) on the owner's view. */
+  next?: NextStepInfo;
 }) {
   const router = useRouter();
+  const [saved, setSaved] = useState(false);
   const [form, setForm] = useState<Initial>(initial ?? empty);
   const [amenitiesText, setAmenitiesText] = useState((initial?.amenities ?? []).join(", "));
   const [hosts, setHosts] = useState<Host[]>([]);
@@ -103,6 +109,7 @@ export function ListingForm({
 
   function update<K extends keyof Initial>(key: K, value: Initial[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+    setSaved(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -143,6 +150,7 @@ export function ListingForm({
       if (!form.id) {
         router.push(`/admin/listings/${data.listing.id}`);
       } else {
+        setSaved(true);
         router.refresh();
       }
     } catch (err) {
@@ -501,14 +509,22 @@ export function ListingForm({
       </label>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
+      {saved && <p className="text-sm text-accent-deep">Changes saved.</p>}
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="mt-2 w-fit rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-accent-fg transition hover:bg-accent-hover disabled:opacity-50"
-      >
-        {submitting ? "Saving..." : form.id ? "Save changes" : "Create listing"}
-      </button>
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        <button
+          type="submit"
+          disabled={submitting}
+          className={`w-fit rounded-md px-4 py-2.5 text-sm font-medium transition disabled:opacity-50 ${
+            saved && next !== undefined
+              ? "border border-card-border hover:border-accent"
+              : "bg-accent text-accent-fg hover:bg-accent-hover"
+          }`}
+        >
+          {submitting ? "Saving..." : form.id ? "Save changes" : "Create listing"}
+        </button>
+        {saved && form.id && next !== undefined && <NextStepLink next={next} />}
+      </div>
     </form>
   );
 }

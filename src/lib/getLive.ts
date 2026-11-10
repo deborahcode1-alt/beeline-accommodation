@@ -26,6 +26,22 @@ export type GetLiveResult = {
   listings: { id: string; name: string; exportToken: string }[];
 };
 
+/** Where to send a host after they save something: the next unfinished checklist step, or null when none is left. */
+export type NextStepInfo = { label: string; href: string } | null;
+
+/**
+ * The first checklist step that is still to do, ignoring the steps the host has just been working on
+ * (`skipKeys`). Steps they confirm with a button on the checklist itself are included, because the
+ * checklist page is where they press it.
+ */
+export async function getNextStep(hostId: string, skipKeys: string[] = []): Promise<NextStepInfo> {
+  const result = await getLiveChecklist(hostId);
+  if (!result) return null;
+  const next = result.items.find((i) => !i.done && !skipKeys.includes(i.key));
+  if (!next) return null;
+  return { label: next.label, href: next.action ? "/admin/get-live" : (next.href ?? "/admin/get-live") };
+}
+
 export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolean } = {}): Promise<GetLiveResult | null> {
   const host = await prisma.host.findUnique({
     where: { id: hostId },

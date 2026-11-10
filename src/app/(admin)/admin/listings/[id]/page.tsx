@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getAdminContext, canAccessHost } from "@/lib/adminAuth";
 import { startOfToday } from "@/lib/retention";
 import { ListingForm } from "@/components/admin/ListingForm";
+import { getNextStep } from "@/lib/getLive";
 import { isPolicyType } from "@/lib/cancellationPolicies";
 import { PhotoManager } from "@/components/admin/PhotoManager";
 import { BookingsTable } from "@/components/admin/BookingsTable";
@@ -26,6 +27,8 @@ export default async function EditListingPage({
   });
   if (!listing || !canAccessHost(ctx, listing.hostId)) notFound();
   const areas = await prisma.area.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } });
+  // A host who is still setting up gets a Next button after saving. The owner's view has none.
+  const next = !ctx.isOwner && ctx.hostId ? await getNextStep(ctx.hostId) : undefined;
 
   return (
     <div>
@@ -80,6 +83,7 @@ export default async function EditListingPage({
           <ListingForm
             areas={areas}
             isOwner={ctx.isOwner}
+            next={next}
             initial={{
               id: listing.id,
               name: listing.name,

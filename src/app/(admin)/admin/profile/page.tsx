@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getAdminContext } from "@/lib/adminAuth";
 import { HostProfileForm } from "@/components/admin/HostProfileForm";
+import { getNextStep } from "@/lib/getLive";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,9 @@ export default async function ProfilePage() {
   const host = await prisma.host.findUnique({ where: { id: ctx.hostId } });
   if (!host) redirect("/admin");
 
+  // The profile, alert and bank-details steps are all on this one form, so "Next" skips past them.
+  const next = await getNextStep(host.id, ["profile", "alerts", "bank"]);
+
   return (
     <div>
       <h1 className="text-2xl font-semibold">Your host profile</h1>
@@ -21,6 +25,7 @@ export default async function ProfilePage() {
       <div className="mt-6">
         <HostProfileForm
           hostId={host.id}
+          next={next}
           initial={{
             name: host.name,
             bio: host.bio ?? "",

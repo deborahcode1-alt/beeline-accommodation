@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
 import { PROFILE_SUBJECTS, BLURB_MAX } from "@/lib/hostProfile";
+import { NextStepLink } from "@/components/admin/NextStepLink";
+import type { NextStepInfo } from "@/lib/getLive";
 
 type Initial = {
   name: string;
@@ -32,11 +34,14 @@ export function HostProfileForm({
   hostId,
   initial,
   canSetCardPayments = false,
+  next,
 }: {
   hostId: string;
   initial: Initial;
   /** Only the platform owner can switch on card payments for a host. */
   canSetCardPayments?: boolean;
+  /** On a host's own screen: where the Next button goes after saving. Left out (undefined) on the owner's view. */
+  next?: NextStepInfo;
 }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -321,13 +326,20 @@ export function HostProfileForm({
 
       {error && <p className="text-sm text-red-600">{error}</p>}
       {saved && <p className="text-sm text-accent-deep">Profile saved.</p>}
-      <button
-        type="submit"
-        disabled={saving || uploading}
-        className="w-fit rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover disabled:opacity-50"
-      >
-        {saving ? "Saving..." : "Save profile"}
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="submit"
+          disabled={saving || uploading}
+          className={`w-fit rounded-md px-5 py-2.5 text-sm font-semibold transition disabled:opacity-50 ${
+            saved && next !== undefined
+              ? "border border-card-border hover:border-accent"
+              : "bg-accent text-accent-fg hover:bg-accent-hover"
+          }`}
+        >
+          {saving ? "Saving..." : "Save profile"}
+        </button>
+        {saved && next !== undefined && <NextStepLink next={next} />}
+      </div>
     </form>
   );
 }
