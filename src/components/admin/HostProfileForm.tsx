@@ -233,7 +233,7 @@ export function HostProfileForm({
           <input
             value={form.website}
             onChange={(e) => update("website", e.target.value)}
-            placeholder="https://"
+            placeholder="mysite.com.au"
             className={input}
           />
         </label>

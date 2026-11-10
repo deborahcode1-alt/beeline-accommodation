@@ -32,8 +32,20 @@ const profileSchema = z.object({
   website: z
     .string()
     .max(300)
-    .transform((v) => v.trim())
-    .refine((v) => v === "" || /^https?:\/\//i.test(v), "Website must start with http:// or https://")
+    // Hosts often type just "mysite.com.au": add https:// for them. Anything that is not a plain web address is refused.
+    .transform((v) => {
+      const t = v.trim();
+      return t && !/^[a-z][a-z0-9+.-]*:\/\//i.test(t) ? `https://${t}` : t;
+    })
+    .refine((v) => {
+      if (v === "") return true;
+      try {
+        const u = new URL(v);
+        return (u.protocol === "https:" || u.protocol === "http:") && u.hostname.includes(".");
+      } catch {
+        return false;
+      }
+    }, "Enter a website address like mysite.com.au")
     .transform((v) => v || null)
     .nullable()
     .optional(),
