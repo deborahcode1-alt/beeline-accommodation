@@ -31,6 +31,8 @@ export default async function AreasPage() {
             state: a.state,
             published: a.published,
             listingCount: a._count.listings,
+            headline: a.headline ?? "",
+            heroImage: a.heroImage ?? "",
           }))}
         />
       </div>

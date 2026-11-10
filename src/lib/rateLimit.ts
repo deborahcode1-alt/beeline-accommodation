@@ -42,7 +42,7 @@ async function overLimit(rule: Rule): Promise<boolean> {
 
 /**
  * Checks every rule and returns a ready-made 429 response if any is over its limit, otherwise null.
- * Usage: `const blocked = await rateLimit(req, [{ name: "enquiry", subject: clientIp(req), limit: 5, windowSeconds: 3600 }]);
+ * Usage: `const blocked = await rateLimit([{ name: "enquiry", subject: clientIp(req), limit: 5, windowSeconds: 3600 }]);
  *         if (blocked) return blocked;`
  */
 export async function rateLimit(

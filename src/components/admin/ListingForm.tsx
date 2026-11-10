@@ -95,6 +95,11 @@ export function ListingForm({
   const router = useRouter();
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState<Initial>(initial ?? empty);
+  const [areaList, setAreaList] = useState<AreaOption[]>(areas);
+  const [addingArea, setAddingArea] = useState(false);
+  const [newArea, setNewArea] = useState({ name: "", state: "QLD" });
+  const [areaBusy, setAreaBusy] = useState(false);
+  const [areaMsg, setAreaMsg] = useState<string | null>(null);
   const [amenitiesText, setAmenitiesText] = useState((initial?.amenities ?? []).join(", "));
   const [hosts, setHosts] = useState<Host[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -110,6 +115,45 @@ export function ListingForm({
   function update<K extends keyof Initial>(key: K, value: Initial[K]) {
     setForm((f) => ({ ...f, [key]: value }));
     setSaved(false);
+  }
+
+  function selectArea(area: AreaOption, message: string) {
+    setAreaList((list) =>
+      (list.some((a) => a.id === area.id) ? list : [...list, area]).sort((a, b) => a.name.localeCompare(b.name))
+    );
+    update("areaId", area.id);
+    setNewArea({ name: "", state: "QLD" });
+    setAddingArea(false);
+    setAreaMsg(message);
+  }
+
+  async function addArea() {
+    if (!newArea.name.trim()) return;
+    setAreaBusy(true);
+    setAreaMsg(null);
+    try {
+      const res = await fetch("/api/admin/areas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newArea.name.trim(), state: newArea.state.trim() || "QLD" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 409 && data.existing) {
+        selectArea(data.existing, `${data.existing.name} is already there, so it's been selected for you.`);
+        return;
+      }
+      if (!res.ok) throw new Error(typeof data.error === "string" ? data.error : "Could not add that area");
+      selectArea(
+        { id: data.area.id, name: data.area.name },
+        data.area.published
+          ? `${data.area.name} added and selected.`
+          : `${data.area.name} added and selected. Beeline will check it and switch on its page soon.`
+      );
+    } catch (err) {
+      setAreaMsg(err instanceof Error ? err.message : "Could not add that area");
+    } finally {
+      setAreaBusy(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -289,21 +333,81 @@ export function ListingForm({
       </label>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm">
-          Area
-          <select
-            value={form.areaId ?? ""}
-            onChange={(e) => update("areaId", e.target.value || null)}
-            className={field}
-          >
-            <option value="">No area (will not appear on an area page)</option>
-            {areas.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="flex flex-col gap-1 text-sm">
+          <label className="flex flex-col gap-1">
+            Area
+            <select
+              value={form.areaId ?? ""}
+              onChange={(e) => update("areaId", e.target.value || null)}
+              className={field}
+            >
+              <option value="">No area (will not appear on an area page)</option>
+              {areaList.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          {!addingArea ? (
+            <button
+              type="button"
+              onClick={() => {
+                setAddingArea(true);
+                setAreaMsg(null);
+              }}
+              className="w-fit text-xs font-medium text-accent-deep hover:underline"
+            >
+              + Add a new area
+            </button>
+          ) : (
+            <div className="mt-1 grid gap-2 rounded-md border border-card-border p-3">
+              <p className="text-xs text-muted">
+                Just the place name, like Maryborough. The site adds &quot;Accommodation&quot; itself.
+              </p>
+              <div className="flex gap-2">
+                <input
+                  value={newArea.name}
+                  onChange={(e) => setNewArea((a) => ({ ...a, name: e.target.value }))}
+                  onKeyDown={(e) => {
+                    // Enter here adds the area; it must not save the whole listing.
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      void addArea();
+                    }
+                  }}
+                  placeholder="Place name"
+                  className={`${field} min-w-0 flex-1`}
+                />
+                <input
+                  value={newArea.state}
+                  onChange={(e) => setNewArea((a) => ({ ...a, state: e.target.value }))}
+                  maxLength={3}
+                  aria-label="State"
+                  className={`${field} w-16`}
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  disabled={areaBusy || !newArea.name.trim()}
+                  onClick={() => void addArea()}
+                  className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-fg transition hover:bg-accent-hover disabled:opacity-50"
+                >
+                  {areaBusy ? "Adding..." : "Add area"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAddingArea(false)}
+                  className="text-xs text-muted hover:underline"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+          {areaMsg && <p className="text-xs text-accent-deep">{areaMsg}</p>}
+        </div>
         <label className="flex flex-col gap-1 text-sm">
           How guests book
           <select
