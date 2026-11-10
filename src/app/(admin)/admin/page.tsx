@@ -9,6 +9,7 @@ import { GuestContactLinks } from "@/components/admin/GuestContactLinks";
 import { MarkHandledButton } from "@/components/admin/MarkHandledButton";
 import { SubscriptionBadge } from "@/components/admin/SubscriptionBadge";
 import { getLiveChecklist } from "@/lib/getLive";
+import { refreshAllReadyForReview } from "@/lib/readyForReview";
 import { formatDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +34,10 @@ export default async function AdminDashboardPage({
   const monthEnd = new Date(Date.UTC(year, month + 1, 1));
   const scope = bookingScope(ctx, showAll);
   const withListing = { listing: { select: { name: true } } };
+
+  // Opening the owner's dashboard re-checks which hosts have finished their checklist, so the "Ready to go live"
+  // notice is right even if the scheduled check has not run lately. Safe to repeat: it emails once per host.
+  if (ctx.isOwner) await refreshAllReadyForReview();
 
   const [pending, soon, monthBookings, upcomingCount, listingCount, messages, host, enquiries, readyHosts] =
     await Promise.all([
