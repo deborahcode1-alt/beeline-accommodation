@@ -61,7 +61,7 @@ export function StartingUpAdmin({ offered, rows, months }: { offered: boolean; r
 
   const small = "rounded-md border border-card-border px-3 py-1.5 text-xs font-medium hover:border-accent disabled:opacity-50";
   return (
-    <div className="mt-6 rounded-lg border border-card-border p-4">
+    <div className="mt-6 rounded-2xl border border-card-border p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-semibold">Starting up (free for {months} months)</p>

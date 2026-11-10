@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatMoney } from "@/lib/format";
 import { getAdminContext, listingScope } from "@/lib/adminAuth";
+import { BedIcon, IconBadge, MapPinIcon, PageHeader, rowCard } from "@/components/admin/DashUI";
 
 export const dynamic = "force-dynamic";
 
@@ -58,15 +59,18 @@ export default async function AdminListingsPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Listings</h1>
-        <Link
-          href="/admin/listings/new"
-          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg transition hover:bg-accent-hover"
-        >
-          New listing
-        </Link>
-      </div>
+      <PageHeader
+        icon={<BedIcon />}
+        title="Listings"
+        action={
+          <Link
+            href="/admin/listings/new"
+            className="rounded-full bg-header-bg px-5 py-2 text-sm font-semibold text-header-fg shadow-sm transition hover:bg-black/80"
+          >
+            + New listing
+          </Link>
+        }
+      />
 
       {!ctx.isOwner && (
         <p className="mt-2 text-sm">
@@ -81,18 +85,18 @@ export default async function AdminListingsPage({
           name="q"
           defaultValue={q}
           placeholder="Search by area, host name or listing, e.g. Gympie or Reuben"
-          className="min-w-64 flex-1 rounded-md border border-card-border px-3 py-2 text-sm"
+          className="min-w-64 flex-1 rounded-full border border-card-border bg-white px-4 py-2 text-sm shadow-sm"
         />
         <button
           type="submit"
-          className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover"
+          className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover"
         >
           Search
         </button>
         {q && (
           <Link
             href="/admin/listings"
-            className="rounded-md border border-card-border px-4 py-2 text-sm font-medium hover:border-accent"
+            className="rounded-full border border-card-border bg-white px-4 py-2 text-sm font-medium hover:border-accent"
           >
             Clear
           </Link>
@@ -107,7 +111,12 @@ export default async function AdminListingsPage({
       <div className="mt-6 space-y-8">
         {sortedAreas.map(([areaKey, area]) => (
           <section key={areaKey}>
-            <h2 className="border-b border-card-border pb-1 text-lg font-semibold">{area.title}</h2>
+            <h2 className="flex items-center gap-2 border-b border-card-border pb-2 text-lg font-semibold">
+              <IconBadge className="h-7 w-7 rounded-lg">
+                <MapPinIcon />
+              </IconBadge>
+              {area.title}
+            </h2>
             <div className="mt-4 space-y-5">
               {[...area.hosts.entries()]
                 .sort(([ak, a], [bk, b]) =>
@@ -131,7 +140,7 @@ export default async function AdminListingsPage({
                           <Link
                             key={l.id}
                             href={`/admin/listings/${l.id}`}
-                            className="flex items-center justify-between rounded-lg border border-card-border p-4 hover:border-accent"
+                            className={`flex items-center justify-between ${rowCard}`}
                           >
                             <div>
                               <p className="font-medium">

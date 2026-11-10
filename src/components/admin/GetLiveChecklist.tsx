@@ -35,7 +35,7 @@ export function GetLiveChecklist({ items, canConfirm }: { items: GetLiveItem[]; 
         {items.map((item, i) => (
           <li
             key={item.key}
-            className={`flex gap-3 rounded-lg border p-4 ${item.done ? "border-card-border bg-soft" : "border-card-border"}`}
+            className={`flex gap-3 rounded-2xl border p-4 ${item.done ? "border-card-border bg-soft" : "border-card-border"}`}
           >
             <span
               aria-hidden

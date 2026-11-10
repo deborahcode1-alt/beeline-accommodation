@@ -5,6 +5,7 @@ import { getAdminContext } from "@/lib/adminAuth";
 import { formatDateTime } from "@/lib/format";
 import { GuestContactLinks } from "@/components/admin/GuestContactLinks";
 import { EnquiryActions } from "@/components/admin/EnquiryActions";
+import { InboxIcon, PageHeader } from "@/components/admin/DashUI";
 
 export const dynamic = "force-dynamic";
 
@@ -22,12 +23,17 @@ export default async function EnquiriesPage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-2xl font-semibold">Host requests</h1>
-      <p className="mt-1 text-sm text-muted">
-        People who filled in Become a collaborator. <strong>Approve and invite</strong> creates their host account and
-        emails them a link to choose a password and start their Get live checklist.
-        {newCount > 0 ? ` ${newCount} waiting for you.` : " Nothing waiting."}
-      </p>
+      <PageHeader
+        icon={<InboxIcon />}
+        title="Host requests"
+        subtitle={
+          <>
+            People who filled in Become a collaborator. <strong>Approve and invite</strong> creates their host account
+            and emails them a link to choose a password and start their Get live checklist.
+            {newCount > 0 ? ` ${newCount} waiting for you.` : " Nothing waiting."}
+          </>
+        }
+      />
 
       <div className="mt-6 space-y-4">
         {sorted.length === 0 && <p className="text-sm text-muted">No requests yet.</p>}
@@ -36,7 +42,11 @@ export default async function EnquiriesPage() {
           return (
             <div
               key={e.id}
-              className={`rounded-lg border p-4 text-sm ${e.status === "NEW" ? "border-accent bg-soft" : "border-card-border"}`}
+              className={`rounded-2xl border p-4 text-sm shadow-sm ${
+                e.status === "NEW"
+                  ? "border-accent/70 bg-gradient-to-r from-accent/20 via-soft to-white shadow-[0_10px_28px_-18px_rgba(245,158,11,0.8)]"
+                  : "border-card-border bg-white"
+              }`}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-base font-medium">

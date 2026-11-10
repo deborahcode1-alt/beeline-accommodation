@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getAdminContext } from "@/lib/adminAuth";
 import { HostProfileForm } from "@/components/admin/HostProfileForm";
 import { getNextStep } from "@/lib/getLive";
+import { PageHeader, UserIcon } from "@/components/admin/DashUI";
 
 export const dynamic = "force-dynamic";
 
@@ -18,10 +19,11 @@ export default async function ProfilePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Your host profile</h1>
-      <p className="mt-1 text-sm text-muted">
-        This appears on every one of your listings so guests know who they are booking with.
-      </p>
+      <PageHeader
+        icon={<UserIcon />}
+        title="Your host profile"
+        subtitle="This appears on every one of your listings so guests know who they are booking with."
+      />
       <div className="mt-6">
         <HostProfileForm
           hostId={host.id}

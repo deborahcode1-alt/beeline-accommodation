@@ -77,6 +77,84 @@ export const ListIcon = () => (
   </Icon>
 );
 
+export const UsersIcon = () => (
+  <Icon>
+    <circle cx="9" cy="8" r="3.2" />
+    <path d="M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" />
+    <path d="M16 5.2a3 3 0 010 5.6M18 14c1.7.6 3 2.2 3 5" />
+  </Icon>
+);
+export const MapPinIcon = () => (
+  <Icon>
+    <path d="M12 21s7-6.2 7-11.5a7 7 0 10-14 0C5 14.8 12 21 12 21z" />
+    <circle cx="12" cy="9.5" r="2.6" />
+  </Icon>
+);
+export const InboxIcon = () => (
+  <Icon>
+    <path d="M3 13l2.6-7.2A2 2 0 017.5 4.5h9a2 2 0 011.9 1.3L21 13" />
+    <path d="M3 13v5a2 2 0 002 2h14a2 2 0 002-2v-5h-5l-1.5 2.5h-5L8 13H3z" />
+  </Icon>
+);
+export const UserIcon = () => (
+  <Icon>
+    <circle cx="12" cy="8" r="3.6" />
+    <path d="M4.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5" />
+  </Icon>
+);
+export const CardIcon = () => (
+  <Icon>
+    <rect x="3" y="5" width="18" height="14" rx="2.5" />
+    <path d="M3 10h18M7 15h3" />
+  </Icon>
+);
+export const RocketIcon = () => (
+  <Icon>
+    <path d="M12 3c3.5 1.5 6 5 6 9l-2.5 3h-7L6 12c0-4 2.5-7.5 6-9z" />
+    <circle cx="12" cy="10" r="1.6" />
+    <path d="M9 18l-2 3M15 18l2 3" />
+  </Icon>
+);
+export const KeyIcon = () => (
+  <Icon>
+    <circle cx="8" cy="14" r="4" />
+    <path d="M11 11l8-8M16 6l2.5 2.5M14 8l2 2" />
+  </Icon>
+);
+
+/** The title at the top of a page: icon badge, bold title with a honey underline, an optional action on the right. */
+export function PageHeader({
+  icon,
+  title,
+  subtitle,
+  action,
+}: {
+  icon: ReactNode;
+  title: string;
+  subtitle?: ReactNode;
+  action?: ReactNode;
+}) {
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <IconBadge className="h-11 w-11">{icon}</IconBadge>
+          <div>
+            <h1 className="text-3xl font-bold leading-none tracking-tight">{title}</h1>
+            <div className="mt-2 h-1 w-12 rounded-full bg-accent" />
+          </div>
+        </div>
+        {action}
+      </div>
+      {subtitle && <p className="mt-3 text-sm text-muted">{subtitle}</p>}
+    </div>
+  );
+}
+
+/** A clickable row in a list (a host, a listing...): rounded, soft shadow, lifts a little on hover. */
+export const rowCard =
+  "rounded-2xl border border-card-border bg-white p-4 shadow-sm transition hover:-translate-y-px hover:border-accent hover:shadow-md";
+
 /** A rounded square icon: black with a honey icon, echoing the Beeline logo. */
 export function IconBadge({
   children,

@@ -117,7 +117,7 @@ function AreaCard({ area }: { area: AreaRow }) {
   const changed = headline !== area.headline || heroImage !== area.heroImage;
 
   return (
-    <div className="rounded-lg border border-card-border p-4">
+    <div className="rounded-2xl border border-card-border p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-medium">
@@ -210,7 +210,7 @@ export function AreaManager({ areas }: { areas: AreaRow[] }) {
 
   return (
     <div>
-      <form onSubmit={addArea} className="grid gap-3 rounded-lg border border-card-border p-4 sm:grid-cols-4">
+      <form onSubmit={addArea} className="grid gap-3 rounded-2xl border border-card-border p-4 sm:grid-cols-4">
         <h2 className="text-base font-semibold sm:col-span-4">Add a new area</h2>
         <input
           value={name}

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { BookingsTable } from "@/components/admin/BookingsTable";
 import { getAdminContext, bookingScope } from "@/lib/adminAuth";
 import { OtherHostsToggle } from "@/components/admin/OtherHostsToggle";
+import { CalendarCheckIcon, PageHeader } from "@/components/admin/DashUI";
 import { RETENTION_YEARS, startOfToday } from "@/lib/retention";
 
 export const dynamic = "force-dynamic";
@@ -63,27 +64,30 @@ export default async function AdminBookingsPage({
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">{archive ? "Archived stays" : "Bookings"}</h1>
-        <div className="flex gap-1 rounded-lg border border-card-border p-1 text-sm">
-          <Link
-            href={href({})}
-            className={`rounded-md px-3 py-1.5 font-medium ${
-              !archive ? "bg-accent text-accent-fg" : "text-muted hover:text-foreground"
-            }`}
-          >
-            Current &amp; upcoming
-          </Link>
-          <Link
-            href={href({ view: "archive" })}
-            className={`rounded-md px-3 py-1.5 font-medium ${
-              archive ? "bg-accent text-accent-fg" : "text-muted hover:text-foreground"
-            }`}
-          >
-            Archive
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        icon={<CalendarCheckIcon />}
+        title={archive ? "Archived stays" : "Bookings"}
+        action={
+          <div className="flex gap-1 rounded-full border border-card-border bg-white p-1 text-sm shadow-sm">
+            <Link
+              href={href({})}
+              className={`rounded-full px-4 py-1.5 font-medium ${
+                !archive ? "bg-accent text-accent-fg" : "text-muted hover:text-foreground"
+              }`}
+            >
+              Current &amp; upcoming
+            </Link>
+            <Link
+              href={href({ view: "archive" })}
+              className={`rounded-full px-4 py-1.5 font-medium ${
+                archive ? "bg-accent text-accent-fg" : "text-muted hover:text-foreground"
+              }`}
+            >
+              Archive
+            </Link>
+          </div>
+        }
+      />
 
       {ctx.isOwner && (
         <OtherHostsToggle
@@ -107,18 +111,18 @@ export default async function AdminBookingsPage({
               name="q"
               defaultValue={q}
               placeholder="Search by customer name, email, phone or listing"
-              className="min-w-64 flex-1 rounded-md border border-card-border px-3 py-2 text-sm"
+              className="min-w-64 flex-1 rounded-full border border-card-border bg-white px-4 py-2 text-sm shadow-sm"
             />
             <button
               type="submit"
-              className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover"
+              className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover"
             >
               Search
             </button>
             {q && (
               <Link
                 href={href({ view: "archive", status: activeStatus })}
-                className="rounded-md border border-card-border px-4 py-2 text-sm font-medium hover:border-accent"
+                className="rounded-full border border-card-border bg-white px-4 py-2 text-sm font-medium hover:border-accent"
               >
                 Clear
               </Link>
@@ -131,15 +135,15 @@ export default async function AdminBookingsPage({
         </p>
       )}
 
-      <div className="mt-4 flex gap-1 border-b border-card-border">
+      <div className="mt-4 flex flex-wrap gap-2">
         {TABS.map((tab) => (
           <Link
             key={tab.value}
             href={href({ view: archive ? "archive" : "", status: tab.value, q })}
-            className={`rounded-t-md px-3 py-2 text-sm font-medium ${
+            className={`rounded-full border px-4 py-1.5 text-sm font-medium transition ${
               activeStatus === tab.value
-                ? "border-b-2 border-accent text-accent-deep"
-                : "text-muted hover:text-foreground"
+                ? "border-header-bg bg-header-bg text-header-fg"
+                : "border-card-border bg-white text-muted hover:border-accent hover:text-foreground"
             }`}
           >
             {tab.label}
@@ -147,7 +151,7 @@ export default async function AdminBookingsPage({
         ))}
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 rounded-2xl border border-card-border bg-white p-3 shadow-sm sm:p-4">
         {archive && bookings.length === 200 && (
           <p className="mb-2 text-xs text-muted">Showing the 200 most recent. Search to narrow it down.</p>
         )}

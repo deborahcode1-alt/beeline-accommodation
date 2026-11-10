@@ -17,10 +17,10 @@ import {
   CalendarIcon,
   CheckIcon,
   HomeIcon,
-  IconBadge,
   ListIcon,
   MailIcon,
   NoticeBar,
+  PageHeader,
   SectionCard,
   StatTile,
 } from "@/components/admin/DashUI";
@@ -105,15 +105,7 @@ export default async function AdminDashboardPage({
 
   return (
     <div>
-      <div className="flex items-center gap-3">
-        <IconBadge className="h-11 w-11">
-          <HomeIcon />
-        </IconBadge>
-        <div>
-          <h1 className="text-3xl font-bold leading-none tracking-tight">Dashboard</h1>
-          <div className="mt-2 h-1 w-12 rounded-full bg-accent" />
-        </div>
-      </div>
+      <PageHeader icon={<HomeIcon />} title="Dashboard" />
 
       {ctx.isOwner && (
         <OtherHostsToggle showAll={showAll} showHref="/admin?all=1" hideHref="/admin" />

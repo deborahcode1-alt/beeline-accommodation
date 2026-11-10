@@ -3,6 +3,7 @@ import { getAdminContext } from "@/lib/adminAuth";
 import { getLiveChecklist } from "@/lib/getLive";
 import { GetLiveChecklist } from "@/components/admin/GetLiveChecklist";
 import { CalendarLinksLookup } from "@/components/admin/CalendarLinksLookup";
+import { PageHeader, RocketIcon } from "@/components/admin/DashUI";
 
 export const dynamic = "force-dynamic";
 
@@ -17,13 +18,14 @@ export default async function GetLivePage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-semibold">Get live</h1>
-      <p className="mt-1 text-sm text-muted">
-        Work through these steps and your listings appear on Beeline. Each one ticks itself off as you finish it.
-      </p>
+      <PageHeader
+        icon={<RocketIcon />}
+        title="Get live"
+        subtitle="Work through these steps and your listings appear on Beeline. Each one ticks itself off as you finish it."
+      />
 
       <div
-        className={`mt-5 rounded-lg border p-4 text-sm ${
+        className={`mt-5 rounded-2xl border p-4 text-sm ${
           approved ? "border-accent bg-soft" : "border-card-border"
         }`}
       >

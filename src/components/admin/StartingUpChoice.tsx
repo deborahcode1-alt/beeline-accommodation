@@ -40,7 +40,7 @@ export function StartingUpChoice({
 
   if (onIt) {
     return (
-      <div className="rounded-lg border border-accent bg-soft p-5 text-sm">
+      <div className="rounded-2xl border border-accent bg-soft p-5 text-sm">
         <p className="font-semibold">You&apos;re on Starting up</p>
         <p className="mt-1">
           It&apos;s free{endsLabel ? ` until ${endsLabel}` : ""}, with no card needed. Your listings stay on the site.
@@ -51,7 +51,7 @@ export function StartingUpChoice({
   }
 
   return (
-    <div className="rounded-lg border border-card-border p-5 text-sm">
+    <div className="rounded-2xl border border-card-border p-5 text-sm">
       <p className="font-semibold">Just getting started? Choose Starting up</p>
       <p className="mt-1">
         Free for {months} months, with no card needed and no commission on your bookings. Your listings go on the

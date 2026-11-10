@@ -10,6 +10,7 @@ import { canChooseStartingUp, isOnStartingUp } from "@/lib/startingUp";
 import { SubscriptionBadge } from "@/components/admin/SubscriptionBadge";
 import { SubscriptionActions } from "@/components/admin/SubscriptionActions";
 import { StartingUpChoice } from "@/components/admin/StartingUpChoice";
+import { CardIcon, PageHeader } from "@/components/admin/DashUI";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ export default async function SubscriptionPage({
   if (!ctx.hostId) {
     return (
       <div>
-        <h1 className="text-2xl font-semibold">Subscription</h1>
+        <PageHeader icon={<CardIcon />} title="Subscription" />
         <p className="mt-3 text-sm text-muted">
           You&apos;re the platform owner. Manage each host&apos;s subscription from the{" "}
           <Link href="/admin/hosts" className="text-accent-deep underline">
@@ -66,21 +67,21 @@ export default async function SubscriptionPage({
 
   return (
     <div className="max-w-xl">
-      <h1 className="text-2xl font-semibold">Subscription</h1>
+      <PageHeader icon={<CardIcon />} title="Subscription" />
 
       {checkout === "success" && (
-        <p className="mt-4 rounded-lg border border-accent bg-soft p-4 text-sm">
+        <p className="mt-4 rounded-2xl border border-accent bg-soft p-4 text-sm">
           Thanks, your subscription is being set up. The status below updates within a minute. If
           it still shows the old status, refresh the page.
         </p>
       )}
       {checkout === "cancelled" && (
-        <p className="mt-4 rounded-lg border border-card-border p-4 text-sm text-muted">
+        <p className="mt-4 rounded-2xl border border-card-border p-4 text-sm text-muted">
           Checkout was cancelled and you have not been charged.
         </p>
       )}
 
-      <div className="mt-6 rounded-lg border border-card-border p-5">
+      <div className="mt-6 rounded-2xl border border-card-border p-5">
         <p className="text-sm text-muted">Status</p>
         <p className="mt-1">
           <SubscriptionBadge status={host.subscriptionStatus} startingUp={onStartingUp} />
@@ -96,7 +97,7 @@ export default async function SubscriptionPage({
       </div>
 
       {host.subscriptionStatus !== "COMPLIMENTARY" && (
-        <div className="mt-6 rounded-lg border border-card-border p-5 text-sm">
+        <div className="mt-6 rounded-2xl border border-card-border p-5 text-sm">
           <p className="font-semibold">Your plan</p>
           {hasSubscription && currentTier ? (
             <>

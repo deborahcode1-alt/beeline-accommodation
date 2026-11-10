@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getAdminContext } from "@/lib/adminAuth";
 import { AreaManager } from "@/components/admin/AreaManager";
+import { MapPinIcon, PageHeader } from "@/components/admin/DashUI";
 
 export const dynamic = "force-dynamic";
 
@@ -17,11 +18,11 @@ export default async function AreasPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Areas</h1>
-      <p className="mt-1 text-sm text-muted">
-        Each area gets its own page, for example Gympie Accommodation, and appears in the search
-        on the home page.
-      </p>
+      <PageHeader
+        icon={<MapPinIcon />}
+        title="Areas"
+        subtitle="Each area gets its own page, for example Gympie Accommodation, and appears in the search on the home page."
+      />
       <div className="mt-6">
         <AreaManager
           areas={areas.map((a) => ({
