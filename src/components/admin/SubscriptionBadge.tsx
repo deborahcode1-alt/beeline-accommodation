@@ -14,7 +14,13 @@ const labels: Record<string, string> = {
   COMPLIMENTARY: "Owner (no charge)",
 };
 
-export function SubscriptionBadge({ status }: { status: string }) {
+export function SubscriptionBadge({ status, startingUp = false }: { status: string; startingUp?: boolean }) {
+  // A host on the free Starting up tier is shown as that, not as a plain free trial.
+  if (startingUp && status === "TRIAL") {
+    return (
+      <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-800">Starting up (free)</span>
+    );
+  }
   return (
     <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status] ?? ""}`}>
       {labels[status] ?? status}

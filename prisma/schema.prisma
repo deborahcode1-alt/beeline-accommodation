@@ -69,6 +69,11 @@ model Host {
   stripeCustomerId    String?
   stripeSubscriptionId String?
   planTier             String? // T1 (1 to 3 listings) or T2 (4 to 10), set from the Stripe price
+  trialUsedAt          DateTime? // the free first month has been used, so a later subscription starts charging straight away
+  // "Starting up": a free tier for 3 months with no card. The listings stay visible until the owner acts.
+  startingUpAt         DateTime?
+  startingUpEndsAt     DateTime?
+  startingUpInvitedAt  DateTime? // when the owner last invited them to subscribe
   // Where guests send a direct bank transfer for a stay (shown to them after they book)
   bankAccountName      String?
   bankBsb              String?
@@ -272,6 +277,12 @@ model IcalImportUrl {
   label        String    @default("Calendar")
   lastSyncedAt DateTime?
   lastError    String?
+}
+
+// Small switches the platform owner can flip, e.g. whether the Starting up tier is offered to new hosts.
+model SiteSetting {
+  key   String @id
+  value String
 }
 
 // Counters for rate limiting public forms and sign-in. One row per limit key (e.g. "sign-in:ip:1.2.3.4").

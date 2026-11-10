@@ -390,6 +390,38 @@ export async function sendHostInviteEmail(params: { to: string; name: string; li
   return true;
 }
 
+/** Invites a host on the free Starting up tier to subscribe, so their listings can stay on the site. */
+export async function sendStartingUpInviteEmail(params: { to: string; name: string; endsAt: Date | null; link: string }) {
+  if (!isEmailConfigured()) return false;
+  const first = params.name.split(" ")[0];
+  const ends = params.endsAt
+    ? params.endsAt.toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })
+    : null;
+  const intro = ends
+    ? `Your free Starting up period on ${SITE_NAME} runs to ${ends}.`
+    : `Your free Starting up period on ${SITE_NAME} is coming to an end.`;
+  await sendEmail({
+    to: params.to,
+    subject: `Keep your listings on ${SITE_NAME}: choose a plan`,
+    text:
+      `Hi ${first},\n\n${intro} Thanks for being one of our first hosts.\n\n` +
+      `To keep your listings on the site, please choose a plan. There's no commission on your bookings, and it takes a couple of minutes:\n${params.link}\n\n` +
+      `Any questions, reply to this email.\n\n- ${SITE_NAME}`,
+    html: buttonEmailHtml({
+      heading: `Keep your listings on ${SITE_NAME}`,
+      paragraphs: [
+        `Hi ${first},`,
+        `${intro} Thanks for being one of our first hosts.`,
+        `To keep your listings on the site, please choose a plan. There's no commission on your bookings, and it takes a couple of minutes.`,
+      ],
+      buttonLabel: "Choose my plan",
+      buttonUrl: params.link,
+      footer: "Any questions, just reply to this email.",
+    }),
+  });
+  return true;
+}
+
 /** A polite no, only sent when the owner chooses to. */
 export async function sendEnquiryDeclinedEmail(params: { to: string; name: string }) {
   await tryEmail(

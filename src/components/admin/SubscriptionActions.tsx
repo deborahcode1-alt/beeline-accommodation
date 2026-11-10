@@ -7,11 +7,14 @@ export function SubscriptionActions({
   monthlyLabel,
   yearlyLabel,
   canSubscribe = true,
+  trialDays,
 }: {
   hasSubscription: boolean;
   monthlyLabel?: string;
   yearlyLabel?: string;
   canSubscribe?: boolean;
+  /** When the host gets free days first, so the buttons say so. */
+  trialDays?: number;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,10 +57,14 @@ export function SubscriptionActions({
         ) : (
           <>
             <button disabled={busy || !canSubscribe} onClick={() => go("checkout", "monthly")} className={primary}>
-              Subscribe monthly{monthlyLabel ? ` (${monthlyLabel})` : ""}
+              {trialDays
+                ? `Start ${trialDays}-day free trial, then ${monthlyLabel ?? "monthly"}`
+                : `Subscribe monthly${monthlyLabel ? ` (${monthlyLabel})` : ""}`}
             </button>
             <button disabled={busy || !canSubscribe} onClick={() => go("checkout", "yearly")} className={secondary}>
-              Subscribe yearly{yearlyLabel ? ` (${yearlyLabel})` : ""}
+              {trialDays
+                ? `Start ${trialDays}-day free trial, then ${yearlyLabel ?? "yearly"}`
+                : `Subscribe yearly${yearlyLabel ? ` (${yearlyLabel})` : ""}`}
             </button>
           </>
         )}

@@ -19,6 +19,12 @@ export const HOST_TIERS: Tier[] = [
 
 export const MAX_LISTINGS_ON_PLANS = 10;
 
+/** The free first month on a paid plan: the card is entered up front and the first payment is taken after this. */
+export const TRIAL_DAYS = 30;
+
+/** The "Starting up" tier: free, no card, for this many months. */
+export const STARTING_UP_MONTHS = 3;
+
 /** The plan that covers a host with this many listings, or null if they need a custom arrangement. */
 export function tierForListingCount(count: number): Tier | null {
   return HOST_TIERS.find((t) => count <= t.maxListings) ?? null;

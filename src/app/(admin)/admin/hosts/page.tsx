@@ -5,6 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { getAdminContext } from "@/lib/adminAuth";
 import { AddHostForm } from "@/components/admin/AddHostForm";
 import { SubscriptionBadge } from "@/components/admin/SubscriptionBadge";
+import { StartingUpAdmin } from "@/components/admin/StartingUpAdmin";
+import { formatDate } from "@/lib/format";
+import { STARTING_UP_MONTHS } from "@/lib/pricing";
+import { startingUpOffered } from "@/lib/settings";
+import { daysUntil, isOnStartingUp } from "@/lib/startingUp";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +26,18 @@ export default async function HostsPage() {
     prisma.hostEnquiry.findMany({ orderBy: { createdAt: "desc" }, take: 10 }),
   ]);
 
+  const offered = await startingUpOffered();
+  const startingUpRows = hosts
+    .filter((h) => isOnStartingUp(h))
+    .sort((a, b) => (a.startingUpEndsAt?.getTime() ?? 0) - (b.startingUpEndsAt?.getTime() ?? 0))
+    .map((h) => ({
+      id: h.id,
+      name: h.name,
+      endsLabel: h.startingUpEndsAt ? `free until ${formatDate(h.startingUpEndsAt)}` : "free",
+      daysLeft: h.startingUpEndsAt ? daysUntil(h.startingUpEndsAt) : null,
+      invitedLabel: h.startingUpInvitedAt ? formatDate(h.startingUpInvitedAt) : null,
+    }));
+
   return (
     <div>
       <h1 className="text-2xl font-semibold">Hosts</h1>
@@ -28,6 +45,8 @@ export default async function HostsPage() {
       <div className="mt-4">
         <AddHostForm />
       </div>
+
+      <StartingUpAdmin offered={offered} rows={startingUpRows} months={STARTING_UP_MONTHS} />
 
       <div className="mt-6 space-y-3">
         {hosts.map((h) => (
@@ -42,7 +61,7 @@ export default async function HostsPage() {
                 {h._count.listings} listing(s) &middot; {h._count.adminUsers} sign-in(s)
               </p>
             </div>
-            <SubscriptionBadge status={h.subscriptionStatus} />
+            <SubscriptionBadge status={h.subscriptionStatus} startingUp={isOnStartingUp(h)} />
           </Link>
         ))}
       </div>

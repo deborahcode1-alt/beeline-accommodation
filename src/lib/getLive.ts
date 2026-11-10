@@ -79,7 +79,9 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
   const subscribed =
     host.subscriptionStatus === "ACTIVE" ||
     host.subscriptionStatus === "COMPLIMENTARY" ||
-    (host.subscriptionStatus === "TRIAL" && !!host.stripeSubscriptionId);
+    (host.subscriptionStatus === "TRIAL" && !!host.stripeSubscriptionId) ||
+    // Chose the free Starting up tier, which needs no card.
+    (host.subscriptionStatus === "TRIAL" && !!host.startingUpAt);
 
   const items: GetLiveItem[] = [
     {
@@ -162,7 +164,9 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
     {
       key: "subscription",
       label: "Start your subscription",
-      detail: "Billed monthly or yearly through Stripe, with no commission on bookings.",
+      detail: host.startingUpAt
+        ? "You're on the free Starting up tier. We'll invite you to choose a plan near the end."
+        : "Your first 30 days are free: you enter your card now and the first payment is taken after the month. Just getting started? You can choose the free Starting up tier instead. No commission on bookings either way.",
       done: subscribed,
       href: opts.forOwner ? `/admin/hosts/${host.id}` : "/admin/subscription",
     },

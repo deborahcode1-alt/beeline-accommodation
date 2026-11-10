@@ -3,10 +3,13 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getAdminContext } from "@/lib/adminAuth";
 import { formatDate } from "@/lib/format";
-import { isBillingConfigured } from "@/lib/billing";
-import { formatAud, tierByKey, tierForListingCount } from "@/lib/pricing";
+import { isBillingConfigured, trialTerms } from "@/lib/billing";
+import { STARTING_UP_MONTHS, TRIAL_DAYS, formatAud, tierByKey, tierForListingCount } from "@/lib/pricing";
+import { startingUpOffered } from "@/lib/settings";
+import { canChooseStartingUp, isOnStartingUp } from "@/lib/startingUp";
 import { SubscriptionBadge } from "@/components/admin/SubscriptionBadge";
 import { SubscriptionActions } from "@/components/admin/SubscriptionActions";
+import { StartingUpChoice } from "@/components/admin/StartingUpChoice";
 
 export const dynamic = "force-dynamic";
 
@@ -39,11 +42,17 @@ export default async function SubscriptionPage({
   const listingCount = await prisma.listing.count({ where: { hostId: host.id } });
   const suggestedTier = tierForListingCount(listingCount);
   const currentTier = tierByKey(host.planTier);
+  const trial = trialTerms(host);
+  const offered = await startingUpOffered();
+  const onStartingUp = isOnStartingUp(host);
+  const canPickStartingUp = canChooseStartingUp(host, offered);
   const note: Record<string, string> = {
     COMPLIMENTARY: "These listings belong to the platform owner, so there is no subscription charge.",
-    TRIAL: host.trialEndsAt
-      ? `Your free trial ends ${formatDate(host.trialEndsAt)}. Subscribe before then to keep your listings visible.`
-      : "You are on a free trial. Subscribe to keep your listings visible.",
+    TRIAL: onStartingUp
+      ? `You are on Starting up${host.startingUpEndsAt ? `, free until ${formatDate(host.startingUpEndsAt)}` : ""}. Your listings stay on the site. Subscribe whenever you are ready.`
+      : host.trialEndsAt
+        ? `Your free trial ends ${formatDate(host.trialEndsAt)}. Subscribe before then to keep your listings visible.`
+        : "You have not started a subscription yet. Choose a plan below to keep your listings visible.",
     ACTIVE: host.subscriptionRenewsAt
       ? `Your subscription renews ${formatDate(host.subscriptionRenewsAt)}.`
       : "Your subscription is active.",
@@ -74,7 +83,7 @@ export default async function SubscriptionPage({
       <div className="mt-6 rounded-lg border border-card-border p-5">
         <p className="text-sm text-muted">Status</p>
         <p className="mt-1">
-          <SubscriptionBadge status={host.subscriptionStatus} />
+          <SubscriptionBadge status={host.subscriptionStatus} startingUp={onStartingUp} />
         </p>
         <p className="mt-3 text-sm">
           {trialWithSubscription && host.trialEndsAt
@@ -103,16 +112,35 @@ export default async function SubscriptionPage({
               )}
             </>
           ) : suggestedTier ? (
-            <p className="mt-1">
-              You have {listingCount} listing{listingCount === 1 ? "" : "s"}, so the{" "}
-              {suggestedTier.label} plan applies: {formatAud(suggestedTier.monthly)} a month, or{" "}
-              {formatAud(suggestedTier.yearly)} a year (one month free).
-            </p>
+            <>
+              <p className="mt-1">
+                You have {listingCount} listing{listingCount === 1 ? "" : "s"}, so the {suggestedTier.label} plan
+                applies: {formatAud(suggestedTier.monthly)} a month, or {formatAud(suggestedTier.yearly)} a year (one
+                month free).
+              </p>
+              {!hasSubscription && trial.kind === "freeMonth" && (
+                <p className="mt-2">
+                  <strong>Your first {TRIAL_DAYS} days are free.</strong> You enter your card on Stripe now, but nothing
+                  is charged for {TRIAL_DAYS} days. After that the first payment is taken, unless you cancel before
+                  then, in which case you pay nothing. You can cancel any time with Manage billing.
+                </p>
+              )}
+            </>
           ) : (
             <p className="mt-1">
               You have more than 10 listings, which needs a custom plan. Please contact us.
             </p>
           )}
+        </div>
+      )}
+
+      {host.subscriptionStatus !== "COMPLIMENTARY" && !hasSubscription && (canPickStartingUp || onStartingUp) && (
+        <div className="mt-6">
+          <StartingUpChoice
+            months={STARTING_UP_MONTHS}
+            onIt={onStartingUp}
+            endsLabel={host.startingUpEndsAt ? formatDate(host.startingUpEndsAt) : undefined}
+          />
         </div>
       )}
 
@@ -123,6 +151,7 @@ export default async function SubscriptionPage({
             monthlyLabel={suggestedTier ? `${formatAud(suggestedTier.monthly)} a month` : undefined}
             yearlyLabel={suggestedTier ? `${formatAud(suggestedTier.yearly)} a year` : undefined}
             canSubscribe={!!suggestedTier}
+            trialDays={trial.kind === "freeMonth" ? trial.days : undefined}
           />
           {!isBillingConfigured() && (
             <p className="mt-3 text-xs text-muted">

@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { SITE_URL } from "@/lib/site";
-import { HOST_TIERS, tierForListingCount, type TierKey } from "@/lib/pricing";
+import { HOST_TIERS, TRIAL_DAYS, tierForListingCount, type TierKey } from "@/lib/pricing";
 import { stripeClient } from "@/lib/stripeClient";
 import { recordCardPayment } from "@/lib/stayPayment";
 
@@ -70,6 +70,27 @@ async function customerFor(hostId: string) {
   return { host, customerId: customer.id };
 }
 
+/**
+ * What free time a host gets when they subscribe:
+ *  - "owner": the platform owner gave them a trial end date that is still comfortably ahead, so first payment waits for it
+ *  - "freeMonth": the standard 30 days free, card entered now, first payment after. Once per host, and not for a host
+ *    who has already had the Starting up tier.
+ *  - "none": no free time; the first payment is taken straight away.
+ * The subscription page uses this too, so what it promises matches what checkout does.
+ */
+export function trialTerms(host: {
+  trialEndsAt: Date | null;
+  trialUsedAt: Date | null;
+  startingUpAt: Date | null;
+}): { kind: "owner"; trialEnd: number } | { kind: "freeMonth"; days: number } | { kind: "none" } {
+  // Stripe needs the trial end to be at least 48 hours away, so allow a little extra.
+  if (host.trialEndsAt && host.trialEndsAt.getTime() > Date.now() + 72 * 60 * 60 * 1000) {
+    return { kind: "owner", trialEnd: Math.floor(host.trialEndsAt.getTime() / 1000) };
+  }
+  if (!host.trialUsedAt && !host.startingUpAt) return { kind: "freeMonth", days: TRIAL_DAYS };
+  return { kind: "none" };
+}
+
 /** A Stripe-hosted page where the host enters their card and starts the subscription. */
 export async function createCheckoutSession(params: {
   hostId: string;
@@ -95,12 +116,8 @@ export async function createCheckoutSession(params: {
   }
   const price = priceIdFor(tier.key, params.plan);
 
-  // If the host still has free trial left, Stripe waits until it ends before the first charge.
-  // Stripe needs the trial end to be at least 48 hours away, so allow a little extra.
-  const trialEnd =
-    host.trialEndsAt && host.trialEndsAt.getTime() > Date.now() + 72 * 60 * 60 * 1000
-      ? Math.floor(host.trialEndsAt.getTime() / 1000)
-      : undefined;
+  // Free time before the first payment (see trialTerms). The card is always collected now.
+  const trial = trialTerms(host);
 
   const session = await stripeClient().checkout.sessions.create({
     mode: "subscription",
@@ -108,9 +125,14 @@ export async function createCheckoutSession(params: {
     client_reference_id: host.id,
     line_items: [{ price, quantity: 1 }],
     allow_promotion_codes: true,
+    payment_method_collection: "always",
     subscription_data: {
       metadata: { hostId: host.id },
-      ...(trialEnd ? { trial_end: trialEnd } : {}),
+      ...(trial.kind === "owner"
+        ? { trial_end: trial.trialEnd }
+        : trial.kind === "freeMonth"
+          ? { trial_period_days: trial.days }
+          : {}),
     },
     success_url: `${SITE_URL}/admin/subscription?checkout=success`,
     cancel_url: `${SITE_URL}/admin/subscription?checkout=cancelled`,
@@ -195,6 +217,8 @@ async function applySubscription(sub: Stripe.Subscription) {
       planTier: ended ? null : (tier ?? host.planTier),
       subscriptionRenewsAt: !ended && periodEnd ? new Date(periodEnd * 1000) : null,
       ...(status === "TRIAL" && sub.trial_end ? { trialEndsAt: new Date(sub.trial_end * 1000) } : {}),
+      // Remember that the free month has been given, so cancelling and re-subscribing does not earn another.
+      ...(sub.trial_end && !host.trialUsedAt ? { trialUsedAt: new Date() } : {}),
     },
   });
 }
