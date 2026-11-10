@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getAdminContext, listingScope, bookingScope, messageScope } from "@/lib/adminAuth";
@@ -10,7 +9,21 @@ import { MarkHandledButton } from "@/components/admin/MarkHandledButton";
 import { SubscriptionBadge } from "@/components/admin/SubscriptionBadge";
 import { getLiveChecklist } from "@/lib/getLive";
 import { refreshAllReadyForReview } from "@/lib/readyForReview";
-import { formatDateTime } from "@/lib/format";
+import { isOnStartingUp } from "@/lib/startingUp";
+import {
+  BedIcon,
+  BellIcon,
+  CalendarCheckIcon,
+  CalendarIcon,
+  CheckIcon,
+  HomeIcon,
+  IconBadge,
+  ListIcon,
+  MailIcon,
+  NoticeBar,
+  SectionCard,
+  StatTile,
+} from "@/components/admin/DashUI";
 
 export const dynamic = "force-dynamic";
 
@@ -92,137 +105,112 @@ export default async function AdminDashboardPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      <div className="flex items-center gap-3">
+        <IconBadge className="h-11 w-11">
+          <HomeIcon />
+        </IconBadge>
+        <div>
+          <h1 className="text-3xl font-bold leading-none tracking-tight">Dashboard</h1>
+          <div className="mt-2 h-1 w-12 rounded-full bg-accent" />
+        </div>
+      </div>
 
       {ctx.isOwner && (
         <OtherHostsToggle showAll={showAll} showHref="/admin?all=1" hideHref="/admin" />
       )}
 
       {ctx.isOwner && (
-        <Link
+        <NoticeBar
+          icon={<BellIcon />}
+          tone={enquiries.length > 0 ? "alert" : "calm"}
           href="/admin/enquiries"
-          className={`mt-4 flex items-center justify-between rounded-lg border px-4 py-3 text-sm ${
-            enquiries.length > 0 ? "border-accent bg-accent/15 hover:bg-accent/25" : "border-card-border hover:border-accent"
-          }`}
+          action={enquiries.length > 0 ? "Review and approve" : "Open requests"}
         >
-          <span>
-            <strong>New host requests:</strong>{" "}
-            {enquiries.length > 0
-              ? `${enquiries.length === 5 ? "5 or more" : enquiries.length} waiting. ${enquiries
-                  .slice(0, 3)
-                  .map((e) => e.name)
-                  .join(", ")}${enquiries.length > 3 ? " and more" : ""}`
-              : "none waiting"}
-          </span>
-          <span className="text-muted">{enquiries.length > 0 ? "Review and approve →" : "Open requests →"}</span>
-        </Link>
+          <strong>New host requests:</strong>{" "}
+          {enquiries.length > 0
+            ? `${enquiries.length === 5 ? "5 or more" : enquiries.length} waiting. ${enquiries
+                .slice(0, 3)
+                .map((e) => e.name)
+                .join(", ")}${enquiries.length > 3 ? " and more" : ""}`
+            : "none waiting"}
+        </NoticeBar>
       )}
 
       {ctx.isOwner && readyHosts.length > 0 && (
-        <Link
+        <NoticeBar
+          icon={<CheckIcon />}
+          tone="alert"
           href={readyHosts.length === 1 ? `/admin/hosts/${readyHosts[0].id}` : "/admin/hosts"}
-          className="mt-4 flex items-center justify-between rounded-lg border border-accent bg-accent/15 px-4 py-3 text-sm hover:bg-accent/25"
+          action="Review and approve"
         >
-          <span>
-            <strong>Ready to go live:</strong>{" "}
-            {readyHosts.length === 1
-              ? `${readyHosts[0].name} has finished every step.`
-              : `${readyHosts.length} hosts have finished every step. ${readyHosts
-                  .slice(0, 3)
-                  .map((h) => h.name)
-                  .join(", ")}${readyHosts.length > 3 ? " and more" : ""}`}
-          </span>
-          <span className="text-muted">Review and approve &rarr;</span>
-        </Link>
+          <strong>Ready to go live:</strong>{" "}
+          {readyHosts.length === 1
+            ? `${readyHosts[0].name} has finished every step.`
+            : `${readyHosts.length} hosts have finished every step. ${readyHosts
+                .slice(0, 3)
+                .map((h) => h.name)
+                .join(", ")}${readyHosts.length > 3 ? " and more" : ""}`}
+        </NoticeBar>
       )}
 
       {getLive && !getLive.approved && (
-        <Link
-          href="/admin/get-live"
-          className="mt-4 flex items-center justify-between rounded-lg border border-accent bg-soft px-4 py-3 text-sm hover:bg-accent/10"
-        >
-          <span>
-            <strong>Get your listings live:</strong>{" "}
-            {getLive.allDone
-              ? "all steps done. We’re checking everything over."
-              : `${getLive.doneCount} of ${getLive.items.length} steps done.`}
-          </span>
-          <span className="text-muted">Open checklist &rarr;</span>
-        </Link>
+        <NoticeBar icon={<ListIcon />} tone="alert" href="/admin/get-live" action="Open checklist">
+          <strong>Get your listings live:</strong>{" "}
+          {getLive.allDone
+            ? "all steps done. We’re checking everything over."
+            : `${getLive.doneCount} of ${getLive.items.length} steps done.`}
+        </NoticeBar>
       )}
 
       {host && (
-        <Link
-          href="/admin/subscription"
-          className="mt-4 flex items-center justify-between rounded-lg border border-card-border bg-soft px-4 py-3 text-sm hover:border-accent"
-        >
-          <span>
-            Your Beeline subscription: <SubscriptionBadge status={host.subscriptionStatus} />
-          </span>
-          <span className="text-muted">Manage &rarr;</span>
-        </Link>
+        <NoticeBar icon={<CalendarCheckIcon />} href="/admin/subscription" action="Manage">
+          Your Beeline subscription:{" "}
+          <SubscriptionBadge status={host.subscriptionStatus} startingUp={isOnStartingUp(host)} />
+        </NoticeBar>
       )}
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-lg border border-card-border p-4">
-          <p className="text-xs uppercase text-muted">Pending requests</p>
-          <p className="mt-1 text-2xl font-semibold">{pending.length}</p>
-        </div>
-        <div className="rounded-lg border border-card-border p-4">
-          <p className="text-xs uppercase text-muted">Upcoming stays</p>
-          <p className="mt-1 text-2xl font-semibold">{upcomingCount}</p>
-        </div>
-        <div className="rounded-lg border border-card-border p-4">
-          <p className="text-xs uppercase text-muted">New messages</p>
-          <p className="mt-1 text-2xl font-semibold">{messages.length}</p>
-        </div>
-        <div className="rounded-lg border border-card-border p-4">
-          <p className="text-xs uppercase text-muted">Listings</p>
-          <p className="mt-1 text-2xl font-semibold">{listingCount}</p>
-        </div>
+        <StatTile label="Pending requests" value={pending.length} icon={<CalendarIcon />} tone="honey" href="/admin/bookings" />
+        <StatTile label="Upcoming stays" value={upcomingCount} icon={<CalendarCheckIcon />} tone="dark" href="/admin/bookings" />
+        <StatTile label="New messages" value={messages.length} icon={<MailIcon />} tone="cream" href="#messages" />
+        <StatTile label="Listings" value={listingCount} icon={<BedIcon />} tone="dark" href="/admin/listings" />
       </div>
 
       {pending.length > 0 && (
-        <section className="mt-10">
-          <h2 className="text-lg font-semibold">Needs your response</h2>
-          <div className="mt-3">
-            <BookingsTable bookings={pending} />
-          </div>
-        </section>
+        <SectionCard icon={<BellIcon />} title="Needs your response" subtitle="Booking requests waiting for a yes or no.">
+          <BookingsTable bookings={pending} />
+        </SectionCard>
       )}
 
-      <section className="mt-10">
-        <h2 className="text-lg font-semibold">Next 30 days</h2>
-        <p className="mt-1 text-sm text-muted">Stays arriving or in progress, soonest first.</p>
-        <div className="mt-3">
-          <BookingsTable bookings={soon} />
-        </div>
-      </section>
+      <SectionCard
+        icon={<CalendarCheckIcon />}
+        title="Next 30 days"
+        subtitle="Stays arriving or in progress, soonest first."
+        decorated
+      >
+        <BookingsTable bookings={soon} />
+      </SectionCard>
 
-      <section id="calendar" className="mt-10">
-        <h2 className="text-lg font-semibold">Calendar</h2>
-        <div className="mt-3">
-          <MonthCalendar
-            year={year}
-            month={month}
-            bookings={monthBookings.map((b) => ({
-              id: b.id,
-              checkIn: b.checkIn,
-              checkOut: b.checkOut,
-              guestName: b.guestName,
-              listingName: b.listing.name,
-              status: b.status,
-            }))}
-          />
-        </div>
-      </section>
+      <SectionCard id="calendar" icon={<CalendarIcon />} title="Calendar">
+        <MonthCalendar
+          year={year}
+          month={month}
+          bookings={monthBookings.map((b) => ({
+            id: b.id,
+            checkIn: b.checkIn,
+            checkOut: b.checkOut,
+            guestName: b.guestName,
+            listingName: b.listing.name,
+            status: b.status,
+          }))}
+        />
+      </SectionCard>
 
       {messages.length > 0 && (
-        <section className="mt-10">
-          <h2 className="text-lg font-semibold">Messages from guests</h2>
-          <div className="mt-3 space-y-3">
+        <SectionCard id="messages" icon={<MailIcon />} title="Messages from guests">
+          <div className="space-y-3">
             {messages.map((m) => (
-              <div key={m.id} className="rounded-lg border border-card-border p-4 text-sm">
+              <div key={m.id} className="rounded-xl border border-card-border bg-soft/40 p-4 text-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-medium">
                     {m.name}
@@ -239,7 +227,7 @@ export default async function AdminDashboardPage({
               </div>
             ))}
           </div>
-        </section>
+        </SectionCard>
       )}
     </div>
   );
