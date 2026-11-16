@@ -5,6 +5,7 @@ import { getAdminContext, canAccessHost } from "@/lib/adminAuth";
 import { startOfToday } from "@/lib/retention";
 import { ListingForm } from "@/components/admin/ListingForm";
 import { getNextStep } from "@/lib/getLive";
+import { cardPaymentsOn } from "@/lib/stayPaymentInfo";
 import { isPolicyType } from "@/lib/cancellationPolicies";
 import { PhotoManager } from "@/components/admin/PhotoManager";
 import { BookingsTable } from "@/components/admin/BookingsTable";
@@ -24,7 +25,7 @@ export default async function EditListingPage({
       photos: { orderBy: { order: "asc" } },
       bookings: { where: { checkOut: { gte: startOfToday() } }, orderBy: { checkIn: "asc" } },
       icalImports: { select: { lastSyncedAt: true, lastError: true } },
-      host: { select: { calendarsSkippedAt: true } },
+      host: true,
     },
   });
   if (!listing || !canAccessHost(ctx, listing.hostId)) notFound();
@@ -136,6 +137,7 @@ export default async function EditListingPage({
             areas={areas}
             isOwner={ctx.isOwner}
             next={next}
+            canInstant={listing.host ? cardPaymentsOn(listing.host) : undefined}
             initial={{
               id: listing.id,
               name: listing.name,

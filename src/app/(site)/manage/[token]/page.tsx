@@ -103,6 +103,10 @@ export default async function ManageBookingPage({
         cleaningFee={booking.listing.cleaningFee}
         minNights={booking.listing.minNights}
         unavailableNights={[...unavailableSet]}
+        cardPaid={booking.paymentStatus === "PAID" && booking.paymentMethod === "CARD"}
+        hostName={booking.listing.host?.name ?? null}
+        hostPhone={booking.listing.host?.publicPhone ?? null}
+        hostEmail={booking.listing.host?.publicEmail ?? null}
         payment={
           <StayPayment
             token={token}

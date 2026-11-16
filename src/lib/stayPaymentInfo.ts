@@ -2,7 +2,7 @@ import { formatMoney } from "@/lib/format";
 
 // How a guest pays for a stay. Two ways, both up front:
 //   - Direct bank transfer into the host's account: no extra charge.
-//   - Card through Stripe: a surcharge that covers the card fee is added to the invoice.
+//   - Card through Stripe: a service fee that covers the card fee is added to the invoice.
 // Nothing here touches the database or Stripe, so the booking page can use it too.
 
 export type SurchargeRate = { percent: number; fixed: number };
@@ -23,7 +23,7 @@ export function cardSurcharge(amount: number, rate: SurchargeRate = surchargeRat
   return Math.round((cents * rate.percent) / 100 + rate.fixed * 100) / 100;
 }
 
-/** "1.7% + 30c", for telling the guest exactly what the surcharge is. */
+/** "1.7% + 30c", for telling the guest exactly what the service fee is. */
 export function surchargeLabel(rate: SurchargeRate = surchargeRate()) {
   const percent = Number(rate.percent.toFixed(2));
   const fixed = Math.round(rate.fixed * 100);
@@ -47,7 +47,17 @@ type HostPaymentFields = {
   bankBsb: string | null;
   bankAccountNumber: string | null;
   acceptsCardPayments: boolean;
+  /** The host's own Stripe account, when they have linked one. */
+  stripeAccountId?: string | null;
+  stripeChargesEnabled?: boolean;
 };
+
+/** Card payments for this host go to their own linked Stripe account, not the main one. */
+export function paysIntoOwnStripe(
+  host: { stripeAccountId?: string | null; stripeChargesEnabled?: boolean } | null | undefined
+) {
+  return !!host?.stripeAccountId && !!host.stripeChargesEnabled;
+}
 
 export function bankDetailsOf(host: HostPaymentFields | null | undefined): BankDetails | null {
   if (!host?.bankAccountName || !host.bankBsb || !host.bankAccountNumber) return null;
@@ -64,7 +74,9 @@ export function bankDetailsOf(host: HostPaymentFields | null | undefined): BankD
  */
 export function cardPaymentsOn(host: HostPaymentFields | null | undefined) {
   const key = process.env.STRIPE_SECRET_KEY;
-  if (!host?.acceptsCardPayments || !key) return false;
+  // A host with their own linked Stripe account takes cards there. Otherwise the owner can switch cards on for
+  // them through the main account (the original arrangement).
+  if (!key || !(paysIntoOwnStripe(host) || host?.acceptsCardPayments)) return false;
   const testKey = /^[rs]k_test_/.test(key);
   return !testKey || process.env.ALLOW_TEST_CARD_PAYMENTS === "true";
 }
@@ -85,7 +97,7 @@ export function paymentInstructionsText(params: {
   let n = 1;
   if (bank) {
     lines.push(
-      `${n++}. Direct bank transfer: ${formatMoney(total)}, no surcharge`,
+      `${n++}. Direct bank transfer: ${formatMoney(total)}, no service fee`,
       `   Account name: ${bank.accountName}`,
       `   BSB: ${bank.bsb}`,
       `   Account number: ${bank.accountNumber}`,
@@ -94,7 +106,7 @@ export function paymentInstructionsText(params: {
   }
   if (cardAvailable) {
     lines.push(
-      `${n++}. Credit or debit card: ${formatMoney(total + surcharge)} (${formatMoney(total)} plus a ${formatMoney(surcharge)} card surcharge)`,
+      `${n++}. Credit or debit card: ${formatMoney(total + surcharge)} (${formatMoney(total)} plus a ${formatMoney(surcharge)} service fee)`,
       `   Pay securely online: ${payLink}`
     );
   }

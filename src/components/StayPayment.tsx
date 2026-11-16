@@ -19,7 +19,7 @@ type Props = {
   returnedFrom: "card" | "cancelled" | null;
 };
 
-// How the guest pays up front: bank transfer with no surcharge, or card with the surcharge on the invoice.
+// How the guest pays up front: bank transfer with no service fee, or card with the service fee on the invoice.
 export function StayPayment({
   token,
   status,
@@ -38,6 +38,7 @@ export function StayPayment({
   const [busy, setBusy] = useState<"card" | "transfer" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notified, setNotified] = useState(initialNotified);
+  const [agreed, setAgreed] = useState(false);
 
   if (status === "CANCELLED" || status === "DECLINED") return null;
   if (!bank && !cardAvailable && paymentStatus !== "PAID") return null;
@@ -73,7 +74,11 @@ export function StayPayment({
     setBusy("card");
     setError(null);
     try {
-      const res = await fetch(`/api/manage/${token}/pay`, { method: "POST" });
+      const res = await fetch(`/api/manage/${token}/pay`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agreed }),
+      });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error ?? "Could not start the payment");
       window.location.href = data.url;
@@ -124,7 +129,7 @@ export function StayPayment({
             <h3 className="mt-1 font-semibold">Direct bank transfer</h3>
             <p className="mt-1 text-2xl font-extrabold">{formatMoney(total)}</p>
             <p className="text-xs text-muted">
-              {cardAvailable ? `No surcharge. You save ${formatMoney(surcharge)}.` : "No surcharge."}
+              {cardAvailable ? `No service fee. You save ${formatMoney(surcharge)}.` : "No service fee."}
             </p>
             <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
               <dt className="text-muted">Account name</dt>
@@ -160,14 +165,30 @@ export function StayPayment({
             <h3 className="mt-1 font-semibold">Credit or debit card</h3>
             <p className="mt-1 text-2xl font-extrabold">{formatMoney(total + surcharge)}</p>
             <p className="text-xs text-muted">
-              {formatMoney(total)} + {formatMoney(surcharge)} card surcharge ({surchargeLabel})
+              {formatMoney(total)} + {formatMoney(surcharge)} service fee ({surchargeLabel})
             </p>
             <p className="mt-3 text-sm text-muted">
-              Secure payment by Stripe. The surcharge appears as its own line on your invoice and receipt.
+              Secure payment by Stripe. The service fee appears as its own line on your invoice and receipt.
             </p>
+            <p className="mt-3 rounded-md bg-soft px-3 py-2 text-sm">
+              <strong>Card payments are final: there is no refund policy.</strong> If something changes, contact your
+              host. They can arrange a refund or a change. This does not affect your rights under the Australian
+              Consumer Law.
+            </p>
+            <label className="mt-3 flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5"
+              />
+              <span>
+                I understand a card payment is final, and that I should contact my host if something changes.
+              </span>
+            </label>
             <button
               type="button"
-              disabled={busy !== null}
+              disabled={busy !== null || !agreed}
               onClick={payByCard}
               className="mt-3 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover disabled:opacity-50"
             >

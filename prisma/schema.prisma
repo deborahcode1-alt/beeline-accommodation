@@ -80,6 +80,10 @@ model Host {
   bankAccountNumber    String?
   // Guests can pay this host by card through the platform Stripe account (set by the platform owner)
   acceptsCardPayments  Boolean @default(false)
+  // Stripe Connect: the host's own Stripe account, so guests' card payments go straight to them.
+  stripeAccountId      String?  @unique
+  stripeChargesEnabled Boolean  @default(false) // Stripe says this account can take card payments
+  stripeDetailsSubmitted Boolean @default(false) // the host finished Stripe's sign-up form
   // Going live: the host works through the Get live checklist; the platform owner approves it
   liveApprovedAt       DateTime?
   readyForReviewAt     DateTime? // every Get live step is done and the owner has not approved yet; set when that first happens
@@ -247,6 +251,7 @@ model Booking {
   paidAt         DateTime?
   stripePaymentIntentId String?
   transferNotifiedAt DateTime? // guest said they have sent a bank transfer
+  cardTermsAgreedAt  DateTime? // guest ticked "card payments are final" before paying by card
   confirmationTextSentAt DateTime?
   confirmationEmailSentAt DateTime?
   manageToken    String        @unique @default(cuid())

@@ -180,7 +180,7 @@ export async function notifyPaymentReceived(
     `Payment received for ${booking.listing.name}`,
     `Hi ${booking.guestName.split(" ")[0]},\n\nThanks, we've received your card payment of ${formatMoney(paid.amount)} ` +
       `for ${booking.listing.name} (${dates}). That is ${formatMoney(paid.amount - paid.surcharge)} for your stay plus a ` +
-      `${formatMoney(paid.surcharge)} card surcharge. Reference ${ref}.\n\nStripe will also email you a receipt.\n\n` +
+      `${formatMoney(paid.surcharge)} service fee. Reference ${ref}.\n\nStripe will also email you a receipt.\n\n` +
       `Manage your booking: ${manageUrl(booking.manageToken)}\n\n- ${SITE_NAME}`
   );
   const host = await hostContact(booking.listing.hostId);
@@ -188,7 +188,7 @@ export async function notifyPaymentReceived(
     host.email,
     `Paid by card: ${booking.listing.name}`,
     `${booking.guestName} paid ${formatMoney(paid.amount)} by card for ${booking.listing.name}, ${dates} ` +
-      `(includes a ${formatMoney(paid.surcharge)} surcharge). Reference ${ref}. The booking is marked paid.`
+      `(includes a ${formatMoney(paid.surcharge)} service fee). Reference ${ref}. The booking is marked paid.`
   );
   await trySms(host.phone, `${booking.guestName} paid ${formatMoney(paid.amount)} by card for ${booking.listing.name}, ${dates}.`);
 }

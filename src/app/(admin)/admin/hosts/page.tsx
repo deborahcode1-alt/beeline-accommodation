@@ -63,6 +63,11 @@ export default async function HostsPage() {
             <div>
               <p className="font-medium">
                 {h.name}{" "}
+                {h.stripeChargesEnabled && (
+                  <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800">
+                    Stripe connected
+                  </span>
+                )}{" "}
                 {h.readyForReviewAt && !h.liveApprovedAt && (
                   <span className="rounded-full bg-header-bg px-2 py-0.5 text-xs font-semibold text-accent">
                     Ready to go live

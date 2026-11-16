@@ -277,7 +277,7 @@ export function HostProfileForm({
         </legend>
         <p className="text-xs text-muted">
           Guests only see these after they book, with a reference to put on their transfer. Paying by bank
-          transfer has no card surcharge, so it is the cheapest way for guests to pay.
+          transfer has no service fee, so it is the cheapest way for guests to pay.
         </p>
         <label className="flex flex-col gap-1 text-sm">
           Account name
@@ -318,7 +318,7 @@ export function HostProfileForm({
               className="mt-0.5"
             />
             <span>
-              Let guests pay this host by card (through the Beeline Stripe account, with the card surcharge added)
+              Let guests pay this host by card (through the Beeline Stripe account, with the service fee added)
             </span>
           </label>
         )}

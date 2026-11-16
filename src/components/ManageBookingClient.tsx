@@ -21,6 +21,11 @@ type Props = {
   unavailableNights: string[];
   /** The payment panel, rendered under the booking card. */
   payment?: React.ReactNode;
+  /** Paid by card: the booking is final, so changes and refunds go through the host instead of this page. */
+  cardPaid?: boolean;
+  hostName?: string | null;
+  hostPhone?: string | null;
+  hostEmail?: string | null;
 };
 
 function toISODate(d: Date) {
@@ -46,6 +51,10 @@ export function ManageBookingClient({
   minNights,
   unavailableNights,
   payment,
+  cardPaid = false,
+  hostName,
+  hostPhone,
+  hostEmail,
 }: Props) {
   const unavailableSet = useMemo(() => new Set(unavailableNights), [unavailableNights]);
   const [status, setStatus] = useState(initialStatus);
@@ -154,7 +163,41 @@ export function ManageBookingClient({
           </p>
         )}
 
-        {isActive && !cancelled && !confirmingCancel && (
+        {cardPaid && isActive && !cancelled && (
+          <div className="mt-5 border-t border-card-border pt-5 text-sm">
+            <p className="font-medium">Need to change or cancel?</p>
+            <p className="mt-1 text-muted">
+              Card payments are final, so there is nothing to change on this page. Contact{" "}
+              {hostName ? hostName : "your host"} and they can arrange a refund or a change if they are able to.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {hostPhone && (
+                <a
+                  href={`tel:${hostPhone.replace(/[^\d+]/g, "")}`}
+                  className="rounded-md border border-card-border px-4 py-2 font-medium hover:border-accent"
+                >
+                  Call {hostPhone}
+                </a>
+              )}
+              {hostEmail && (
+                <a
+                  href={`mailto:${hostEmail}`}
+                  className="rounded-md border border-card-border px-4 py-2 font-medium hover:border-accent"
+                >
+                  Email {hostEmail}
+                </a>
+              )}
+              <Link
+                href={`/listings/${listingSlug}`}
+                className="rounded-md border border-card-border px-4 py-2 font-medium hover:border-accent"
+              >
+                Message the host
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {isActive && !cancelled && !confirmingCancel && !cardPaid && (
           <div className="mt-5 flex flex-wrap gap-2 border-t border-card-border pt-5">
             <button
               type="button"

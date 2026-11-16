@@ -85,10 +85,13 @@ export function ListingForm({
   areas = [],
   isOwner = true,
   next,
+  canInstant,
 }: {
   initial?: Initial;
   areas?: AreaOption[];
   isOwner?: boolean;
+  /** False when this listing's host cannot take card payments yet, so instant booking is not available. */
+  canInstant?: boolean;
   /** On a host's own screen: where the Next button goes after saving. Left out (undefined) on the owner's view. */
   next?: NextStepInfo;
 }) {
@@ -416,8 +419,15 @@ export function ListingForm({
             className={field}
           >
             <option value="REQUEST">Request to book (you approve each one)</option>
-            <option value="INSTANT">Instant booking (confirmed straight away)</option>
+            <option value="INSTANT" disabled={canInstant === false && form.bookingMode !== "INSTANT"}>
+              Instant booking (confirmed straight away)
+            </option>
           </select>
+          {canInstant === false && form.bookingMode !== "INSTANT" && (
+            <span className="text-xs text-muted">
+              Instant booking needs card payments. Connect your Stripe account from the Payments tab to switch it on.
+            </span>
+          )}
         </label>
         <label className="flex flex-col gap-1 text-sm">
           Stay type
@@ -519,7 +529,8 @@ export function ListingForm({
         <legend className="font-medium">Cancellation policy</legend>
         <p className="text-xs text-muted">
           Pick a ready-made policy guests will recognise from Airbnb and Booking.com, or write your own. It is shown on
-          the listing page and again when someone books.
+          the listing page and again when someone books. It applies to bookings that are not paid by card: card
+          payments are final, and guests contact you if something changes.
         </p>
         {POLICY_CHOICES.map((choice) => {
           const preset = presetFor(choice.type);

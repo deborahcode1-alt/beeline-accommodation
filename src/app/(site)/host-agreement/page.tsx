@@ -12,7 +12,7 @@ export default function HostAgreementPage() {
         {
           heading: "The service",
           body: [
-            "Beeline provides hosts with a listing on the platform, a bookings dashboard and tools to contact guests. Beeline does not take a commission on bookings. Hosts pay the subscription fee, and guests who pay by card pay a service charge that covers card processing costs (see \"Card payments through Stripe\").",
+            "Beeline provides hosts with a listing on the platform, a bookings dashboard and tools to contact guests. Beeline does not take a commission on bookings. Hosts pay the subscription fee, and guests who pay by card pay a service fee that covers card processing costs (see \"Card payments through Stripe\").",
           ],
         },
         {
@@ -43,7 +43,7 @@ export default function HostAgreementPage() {
             "This section applies when card payments are switched on for your account. Guests then pay by card through Stripe, and the payment goes directly to your own Stripe account. Beeline never holds the guest's money.",
             "There is no refund policy for card payments. The guest is told this and agrees before they pay. If a guest wants to cancel or change a card booking, they contact you, and you decide whether to refund or reschedule. That is between you and the guest. Your listing's cancellation policy applies only to bookings that are not paid by card.",
             "This does not limit anyone's rights under the Australian Consumer Law. If you cancel a booking, cannot provide the stay, or the listing is not as described, you must refund the guest promptly.",
-            "You are the seller. You are responsible for refunds, payment disputes and chargebacks, and you settle them with the guest directly. Beeline takes no commission and no deduction from your booking payment, and takes no part in refunds or cancellations. The guest pays a separate service charge that covers card processing costs. [Lawyer to confirm the service charge, surcharge and no-refund wording.]",
+            "You are the seller. You are responsible for refunds, payment disputes and chargebacks, and you settle them with the guest directly. Beeline takes no commission and no deduction from your booking payment, and takes no part in refunds or cancellations. The guest pays a separate service fee that covers card processing costs. [Lawyer to confirm the service fee and no-refund wording, including whether the service fee counts as a card surcharge under Australian rules.]",
             "You must complete Stripe's setup and identity checks and keep your details correct. Stripe's terms apply to you.",
           ],
         },

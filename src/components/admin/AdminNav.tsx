@@ -39,6 +39,7 @@ export function AdminNav({
             { href: "/admin/get-live", label: "Get live" },
             { href: "/admin/profile", label: "Profile" },
             { href: "/admin/subscription", label: "Subscription" },
+            { href: "/admin/payments", label: "Payments" },
             { href: "/admin/account", label: "Account" },
           ]
         : [];

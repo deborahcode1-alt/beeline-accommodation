@@ -5,6 +5,7 @@ import { slugify } from "@/lib/slugify";
 import { requireAdmin, listingScope } from "@/lib/adminAuth";
 import { listingLimitFor } from "@/lib/pricing";
 import { refreshReadyForReview } from "@/lib/readyForReview";
+import { instantBookingProblem } from "@/lib/instantBooking";
 import { POLICY_TYPES, policyFieldsToStore } from "@/lib/cancellationPolicies";
 
 const listingSchema = z.object({
@@ -81,6 +82,12 @@ export async function POST(req: NextRequest) {
         );
       }
     }
+  }
+
+  // Instant booking needs card payments, which need a connected Stripe account.
+  if (data.bookingMode === "INSTANT") {
+    const problem = await instantBookingProblem(data.hostId);
+    if (problem) return NextResponse.json({ error: problem }, { status: 400 });
   }
 
   const baseSlug = slugify(data.name) || "listing";

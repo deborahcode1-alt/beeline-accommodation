@@ -90,7 +90,7 @@ export function BookingsTable({
                     {b.paymentStatus === "PAID" && b.paymentMethod === "CARD" && b.amountPaid ? (
                       <div className="mt-1 text-xs text-muted">
                         Paid by card {formatMoney(b.amountPaid)}
-                        {b.cardSurcharge ? ` (incl. ${formatMoney(b.cardSurcharge)} surcharge)` : ""}
+                        {b.cardSurcharge ? ` (incl. ${formatMoney(b.cardSurcharge)} service fee)` : ""}
                       </div>
                     ) : b.paymentStatus !== "PAID" && b.transferNotifiedAt ? (
                       <div className="mt-1 text-xs font-medium text-accent-deep">

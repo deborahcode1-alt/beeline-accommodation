@@ -20,9 +20,9 @@ type Props = {
   initialCheckIn: string;
   initialCheckOut: string;
   initialGuests: number;
-  /** The host has bank details, so guests can pay by direct transfer with no surcharge. */
+  /** The host has bank details, so guests can pay by direct transfer with no service fee. */
   bankTransfer?: boolean;
-  /** Guests can also pay by card, with a surcharge added. */
+  /** Guests can also pay by card, with a service fee added. */
   cardPayments?: boolean;
   surchargePercent?: number;
   surchargeFixed?: number;
@@ -266,6 +266,12 @@ export function BookingForm({
             {policyParagraphs.map((p, i) => (
               <p key={i}>{p}</p>
             ))}
+            {cardPayments && (
+              <p className="font-medium text-foreground">
+                Paying by card: card payments are final, with no refund policy. If something changes, contact the host.
+                The policy above applies to bookings not paid by card.
+              </p>
+            )}
           </div>
           <label className="mt-3 flex items-start gap-2 text-sm">
             <input
@@ -298,10 +304,10 @@ export function BookingForm({
           {onlinePayment
             ? `${instant ? "After you book" : "Once the host confirms"}, you pay up front ${
                 bankTransfer && cardPayments
-                  ? "by direct bank transfer (no surcharge) or by card (a card surcharge applies)"
+                  ? "by direct bank transfer (no service fee) or by card (a service fee applies)"
                   : bankTransfer
                     ? "by direct bank transfer"
-                    : "by card (a card surcharge applies)"
+                    : "by card (a service fee applies)"
               }.`
             : "Online payment isn't connected for this listing yet — the host will confirm your dates and arrange payment directly with you."}
         </p>
@@ -333,7 +339,7 @@ export function BookingForm({
             {cardPayments && (
               <>
                 <div className="flex justify-between text-muted">
-                  <span>Card surcharge ({surchargeLabel(rate)})</span>
+                  <span>Service fee ({surchargeLabel(rate)})</span>
                   <span>+{formatMoney(surcharge)}</span>
                 </div>
                 <div className="flex justify-between text-muted">

@@ -7,7 +7,7 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of use"
-      updated="October 2026"
+      updated="November 2026"
       sections={[
         {
           heading: "Who we are",
@@ -33,8 +33,9 @@ export default function TermsPage() {
           heading: "Payments",
           body: [
             "Payment is made up front, to the host, using a method the host offers. This is either a direct bank transfer to the host's account, or a card payment, or both. Check the payment details with the host before you pay.",
-            "Bank transfers have no surcharge. Card payments are processed securely by Stripe and have a card surcharge added to cover the cost of processing the card. The surcharge is shown to you before you pay and appears as its own line on your invoice and receipt. Paying by bank transfer avoids it.",
-            "Beeline does not take a commission on bookings and does not keep any part of what you pay for your stay. Refunds follow the host's cancellation terms shown when you book. [Lawyer to confirm surcharge and refund wording.]",
+            "Bank transfers have no service fee. Card payments are processed securely by Stripe and have a service fee added to cover the cost of processing the card. The service fee is shown to you before you pay and appears as its own line on your invoice and receipt. Paying by bank transfer avoids it.",
+            "Beeline does not take a commission on bookings and does not keep any part of what you pay for your stay. For bookings paid by bank transfer, refunds follow the host's cancellation terms shown when you book.",
+            "Card payments are final: there is no refund policy for a booking paid by card, and you are asked to agree to this before you pay. If something changes, contact your host, who can arrange a refund or a change. This does not limit your rights under the Australian Consumer Law, and if the host cancels, cannot provide the stay or the listing is not as described, you are entitled to a refund from the host. [Lawyer to confirm service fee and refund wording, including whether the service fee counts as a card surcharge under Australian rules.]",
           ],
         },
         {

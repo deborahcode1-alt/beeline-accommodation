@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireListingAccess } from "@/lib/adminAuth";
 import { refreshReadyForReview } from "@/lib/readyForReview";
+import { instantBookingProblem } from "@/lib/instantBooking";
 import { POLICY_TYPES, policyFieldsToStore } from "@/lib/cancellationPolicies";
 
 const updateSchema = z.object({
@@ -75,6 +76,16 @@ export async function PATCH(
   }
   // Only the platform owner can move a listing to a different host.
   if (!access.ctx.isOwner) delete rest.hostId;
+
+  // Switching a listing TO instant booking needs card payments, which need a connected Stripe account.
+  // (Listings already on instant booking can still be saved.)
+  if (rest.bookingMode === "INSTANT") {
+    const current = await prisma.listing.findUnique({ where: { id }, select: { bookingMode: true } });
+    if (current?.bookingMode !== "INSTANT") {
+      const problem = await instantBookingProblem(rest.hostId ?? access.listing.hostId);
+      if (problem) return NextResponse.json({ error: problem }, { status: 400 });
+    }
+  }
 
   const listing = await prisma.listing.update({
     where: { id },
