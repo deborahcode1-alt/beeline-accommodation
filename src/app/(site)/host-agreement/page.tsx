@@ -7,12 +7,12 @@ export default function HostAgreementPage() {
   return (
     <LegalPage
       title="Host agreement"
-      updated="October 2026"
+      updated="November 2026"
       sections={[
         {
           heading: "The service",
           body: [
-            "Beeline provides hosts with a listing on the platform, a bookings dashboard and tools to contact guests. Beeline does not take a commission on bookings. The only charge is the subscription fee.",
+            "Beeline provides hosts with a listing on the platform, a bookings dashboard and tools to contact guests. Beeline does not take a commission on bookings. Hosts pay the subscription fee, and guests who pay by card pay a service charge that covers card processing costs (see \"Card payments through Stripe\").",
           ],
         },
         {
@@ -33,8 +33,18 @@ export default function HostAgreementPage() {
         {
           heading: "Bookings and payments",
           body: [
-            "You decide for each listing whether bookings are instant or request-only, and you set your own prices and cancellation terms. Guests pay you directly using the method you provide. Beeline does not hold guest money or resolve payment disputes.",
+            "You decide for each listing whether bookings are instant or request-only, and you set your own prices and cancellation terms. Guests pay you directly, by bank transfer or, when card payments are switched on for your account, by card through Stripe. Beeline does not hold guest money or resolve payment disputes.",
             "Keep your calendar accurate. If you use instant booking, you are responsible for honouring the bookings it confirms.",
+          ],
+        },
+        {
+          heading: "Card payments through Stripe",
+          body: [
+            "This section applies when card payments are switched on for your account. Guests then pay by card through Stripe, and the payment goes directly to your own Stripe account. Beeline never holds the guest's money.",
+            "There is no refund policy for card payments. The guest is told this and agrees before they pay. If a guest wants to cancel or change a card booking, they contact you, and you decide whether to refund or reschedule. That is between you and the guest. Your listing's cancellation policy applies only to bookings that are not paid by card.",
+            "This does not limit anyone's rights under the Australian Consumer Law. If you cancel a booking, cannot provide the stay, or the listing is not as described, you must refund the guest promptly.",
+            "You are the seller. You are responsible for refunds, payment disputes and chargebacks, and you settle them with the guest directly. Beeline takes no commission and no deduction from your booking payment, and takes no part in refunds or cancellations. The guest pays a separate service charge that covers card processing costs. [Lawyer to confirm the service charge, surcharge and no-refund wording.]",
+            "You must complete Stripe's setup and identity checks and keep your details correct. Stripe's terms apply to you.",
           ],
         },
         {
