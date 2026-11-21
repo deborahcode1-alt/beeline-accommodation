@@ -31,6 +31,20 @@ export async function POST(
     return NextResponse.json({ error: "This booking is no longer active" }, { status: 400 });
   }
 
+  // Dates being held while the guest pays can't be changed, and a card-paid booking is final: changes go through the host.
+  if (existing.holdExpiresAt && existing.paymentStatus !== "PAID") {
+    return NextResponse.json(
+      { error: "Finish paying to confirm these dates, or cancel and start a new booking." },
+      { status: 400 }
+    );
+  }
+  if (existing.paymentStatus === "PAID" && existing.paymentMethod === "CARD") {
+    return NextResponse.json(
+      { error: "Card payments are final. Please contact your host to ask about changing your dates." },
+      { status: 400 }
+    );
+  }
+
   const { checkIn, checkOut } = parsed.data;
   const nights = nightsBetween(checkIn, checkOut);
   if (nights < existing.listing.minNights) {

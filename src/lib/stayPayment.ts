@@ -1,9 +1,17 @@
 import type Stripe from "stripe";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { SITE_URL } from "@/lib/site";
 import { formatDate } from "@/lib/format";
 import { stripeClient } from "@/lib/stripeClient";
-import { notifyPaymentReceived, notifyTransferSent } from "@/lib/notifications";
+import {
+  notifyInstantBooking,
+  notifyPaidAfterRelease,
+  notifyPaymentReceived,
+  notifyTransferSent,
+} from "@/lib/notifications";
+import { isRangeAvailable } from "@/lib/availability";
+import { releaseHoldIfExpired } from "@/lib/holds";
 import {
   bookingReference,
   cardPaymentsOn,
@@ -29,8 +37,17 @@ export async function createStayCheckout(token: string, agreedToCardTerms: boole
     include: { listing: { include: { host: true } } },
   });
   if (!booking) throw new Error("We couldn't find that booking.");
-  if (booking.status !== "CONFIRMED") throw new Error("You can pay once the host has confirmed your booking.");
   if (booking.paymentStatus === "PAID") throw new Error("This booking is already paid. Thank you!");
+  // A payment hold (instant booking, paid at booking) can be paid while it lasts. Once it has run out the dates are
+  // released, so the guest has to book again.
+  const wasHold = !!booking.holdExpiresAt;
+  if (wasHold && (booking.status !== "PENDING" || booking.holdExpiresAt! <= new Date())) {
+    await releaseHoldIfExpired(booking.id);
+    throw new Error("Your 30 minute hold has ended and the dates were released. Please book again.");
+  }
+  if (!wasHold && booking.status !== "CONFIRMED") {
+    throw new Error("You can pay once the host has confirmed your booking.");
+  }
   if (!cardPaymentsOn(booking.listing.host)) {
     throw new Error("Card payment isn't available for this stay. Please pay by bank transfer.");
   }
@@ -52,6 +69,11 @@ export async function createStayCheckout(token: string, agreedToCardTerms: boole
   const session = await stripeClient().checkout.sessions.create(
     {
     mode: "payment",
+    // The payment page lapses with the hold. Stripe needs at least 30 minutes, so it can run a little past the hold,
+    // and a payment that lands after the hold is handled when it arrives (see settlePaidHold).
+    ...(wasHold
+      ? { expires_at: Math.floor(Math.max(booking.holdExpiresAt!.getTime(), Date.now() + 31 * 60 * 1000) / 1000) }
+      : {}),
     // Cards only (Apple Pay and Google Pay run on cards). The service fee is sized to the card fee, and
     // buy-now-pay-later methods the live account switches on cost more than that.
     allowed_payment_method_types: ["card"],
@@ -127,7 +149,56 @@ export async function recordCardPayment(session: Stripe.Checkout.Session) {
   if (changed.count === 0) return;
 
   const booking = await prisma.booking.findUnique({ where: { id: bookingId }, include: bookingInclude });
-  if (booking) await notifyPaymentReceived(booking, { amount, surcharge });
+  if (!booking) return;
+
+  // Pay at booking: this payment is what confirms the held dates. If the hold had run out and the dates were taken
+  // meanwhile, the guest is refunded instead.
+  if (booking.holdExpiresAt) {
+    if ((await settlePaidHold(booking)) === "refunded") return;
+    await notifyInstantBooking(booking);
+  }
+  await notifyPaymentReceived(booking, { amount, surcharge });
+}
+
+type BookingRow = Prisma.BookingGetPayload<{ include: typeof bookingInclude }>;
+
+/** Refunds a card payment in full, on the host's own Stripe account when that is where it was taken. */
+async function refundCardPayment(bookingId: string): Promise<boolean> {
+  const b = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: { listing: { include: { host: true } } },
+  });
+  if (!b?.stripePaymentIntentId) return false;
+  const account = paysIntoOwnStripe(b.listing.host) ? b.listing.host?.stripeAccountId : null;
+  try {
+    await stripeClient().refunds.create(
+      { payment_intent: b.stripePaymentIntentId },
+      account ? { stripeAccount: account } : undefined
+    );
+    return true;
+  } catch (err) {
+    console.error("Automatic refund failed:", bookingId, err);
+    return false;
+  }
+}
+
+/**
+ * A held booking has just been paid. If its dates are still free, confirm it. If the hold had run out and someone
+ * else took the dates, refund the guest and tell them and the host.
+ */
+async function settlePaidHold(booking: BookingRow): Promise<"confirmed" | "refunded"> {
+  const stillFree = await isRangeAvailable(booking.listingId, booking.checkIn, booking.checkOut, booking.id);
+  if (stillFree) {
+    await prisma.booking.update({ where: { id: booking.id }, data: { status: "CONFIRMED", holdExpiresAt: null } });
+    return "confirmed";
+  }
+  const refunded = await refundCardPayment(booking.id);
+  await prisma.booking.update({
+    where: { id: booking.id },
+    data: { status: "CANCELLED", ...(refunded ? { paymentStatus: "REFUNDED" } : {}) },
+  });
+  await notifyPaidAfterRelease(booking, refunded);
+  return "refunded";
 }
 
 /** Called when the guest lands back on the manage page: asks Stripe directly in case the webhook is slow. */

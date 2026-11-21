@@ -6,7 +6,8 @@ import { publicListingWhere } from "@/lib/visibility";
 import { getGuest } from "@/lib/guestSession";
 import { BookingForm } from "@/components/BookingForm";
 import { DEFAULT_CANCELLATION_POLICY } from "@/lib/site";
-import { bankDetailsOf, cardPaymentsOn, surchargeRate } from "@/lib/stayPaymentInfo";
+import { HOLD_MINUTES, bankDetailsOf, cardPaymentsOn, surchargeRate } from "@/lib/stayPaymentInfo";
+import { takesPaymentAtBooking } from "@/lib/holds";
 
 export const dynamic = "force-dynamic";
 
@@ -32,12 +33,16 @@ export default async function BookPage({
   if (!listing) notFound();
   const guest = await getGuest();
   const rate = surchargeRate();
+  // An instant listing whose host takes cards is paid for at booking: the dates are held while the guest pays.
+  const payAtBooking = takesPaymentAtBooking(listing, listing.host);
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
       <h1 className="text-2xl font-semibold tracking-tight">Book {listing.name}</h1>
       <p className="mt-1 text-sm text-muted">
-        {listing.bookingMode === "INSTANT"
+        {payAtBooking
+          ? `This is an instant booking. You pay by card straight away, and we hold your dates for ${HOLD_MINUTES} minutes while you pay.`
+          : listing.bookingMode === "INSTANT"
           ? "This is an instant booking — your dates are confirmed as soon as you submit."
           : "This sends a request to the host. Your booking is not confirmed until the host confirms it, and we'll email you as soon as they do."}
       </p>
@@ -58,8 +63,9 @@ export default async function BookPage({
           initialCheckIn={query.checkIn || ""}
           initialCheckOut={query.checkOut || ""}
           initialGuests={query.guests ? Number(query.guests) : 1}
-          bankTransfer={!!bankDetailsOf(listing.host)}
+          bankTransfer={!payAtBooking && !!bankDetailsOf(listing.host)}
           cardPayments={cardPaymentsOn(listing.host)}
+          payAtBooking={payAtBooking}
           surchargePercent={rate.percent}
           surchargeFixed={rate.fixed}
         />

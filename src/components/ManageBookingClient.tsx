@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/style.css";
 import { formatDate, formatMoney } from "@/lib/format";
+import { HOLD_MINUTES } from "@/lib/stayPaymentInfo";
 
 type Props = {
   token: string;
@@ -23,6 +24,10 @@ type Props = {
   payment?: React.ReactNode;
   /** Paid by card: the booking is final, so changes and refunds go through the host instead of this page. */
   cardPaid?: boolean;
+  /** Pay at booking: the dates are held until this time while the guest pays. */
+  holdExpiresAt?: string | null;
+  /** The hold ran out unpaid and the dates were released. */
+  holdLapsed?: boolean;
   hostName?: string | null;
   hostPhone?: string | null;
   hostEmail?: string | null;
@@ -52,10 +57,27 @@ export function ManageBookingClient({
   unavailableNights,
   payment,
   cardPaid = false,
+  holdExpiresAt = null,
+  holdLapsed = false,
   hostName,
   hostPhone,
   hostEmail,
 }: Props) {
+  // Countdown for a payment hold. The clock is only read in the browser, after the page loads.
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    if (!holdExpiresAt) return;
+    const tick = () => setNow(Date.now());
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [holdExpiresAt]);
+  const msLeft = holdExpiresAt && now !== null ? new Date(holdExpiresAt).getTime() - now : null;
+  const holdRunOut = msLeft !== null && msLeft <= 0;
+  const holdActive = !!holdExpiresAt && !holdRunOut;
+  const mins = msLeft !== null && msLeft > 0 ? Math.floor(msLeft / 60000) : 0;
+  const secs = msLeft !== null && msLeft > 0 ? Math.floor((msLeft % 60000) / 1000) : 0;
+
   const unavailableSet = useMemo(() => new Set(unavailableNights), [unavailableNights]);
   const [status, setStatus] = useState(initialStatus);
   const [showReschedule, setShowReschedule] = useState(false);
@@ -142,12 +164,48 @@ export function ManageBookingClient({
             <p className="mt-1 text-sm text-muted">{guests} guest{guests > 1 ? "s" : ""}</p>
           </div>
           <span className="shrink-0 rounded-full bg-header-bg px-2.5 py-1 text-xs font-medium text-header-fg">
-            {status === "PENDING" ? "Waiting for host" : status.charAt(0) + status.slice(1).toLowerCase()}
+            {holdExpiresAt
+              ? holdRunOut
+                ? "Hold ended"
+                : "Awaiting payment"
+              : status === "PENDING"
+              ? "Waiting for host"
+              : holdLapsed
+              ? "Hold ended"
+              : status.charAt(0) + status.slice(1).toLowerCase()}
           </span>
         </div>
         <p className="mt-3 text-sm font-medium">{formatMoney(rescheduled ? newTotal || totalPrice : totalPrice)} total</p>
 
-        {status === "PENDING" && !rescheduled && !cancelled && (
+        {holdActive && !cancelled && (
+          <p className="mt-3 rounded-md bg-accent/10 px-3 py-2 text-sm text-accent-deep">
+            <strong>Your dates are held for you.</strong> Pay by card below to confirm your booking
+            {msLeft !== null ? (
+              <>
+                {" "}
+                &mdash; you have{" "}
+                <strong>
+                  {mins}:{String(secs).padStart(2, "0")}
+                </strong>{" "}
+                left.
+              </>
+            ) : (
+              "."
+            )}{" "}
+            If the time runs out, the dates are released and you will need to book again.
+          </p>
+        )}
+        {(holdLapsed || (holdExpiresAt && holdRunOut)) && !cancelled && (
+          <div className="mt-3 rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-600">
+            <p>
+              Your {HOLD_MINUTES} minute hold has ended and the dates were released. You have not been charged.
+            </p>
+            <Link href={`/listings/${listingSlug}/book`} className="mt-1 inline-block font-semibold underline">
+              Book again
+            </Link>
+          </div>
+        )}
+        {status === "PENDING" && !holdExpiresAt && !rescheduled && !cancelled && (
           <p className="mt-3 rounded-md bg-accent/10 px-3 py-2 text-sm text-accent-deep">
             The host will confirm your booking. It isn&apos;t booked until they do, and we&apos;ll email you as soon as they have.
           </p>
@@ -199,14 +257,16 @@ export function ManageBookingClient({
 
         {isActive && !cancelled && !confirmingCancel && !cardPaid && (
           <div className="mt-5 flex flex-wrap gap-2 border-t border-card-border pt-5">
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => setShowReschedule((v) => !v)}
-              className="rounded-md border border-card-border px-4 py-2 text-sm font-medium disabled:opacity-50"
-            >
-              {showReschedule ? "Cancel change" : "Request different dates"}
-            </button>
+            {!holdExpiresAt && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setShowReschedule((v) => !v)}
+                className="rounded-md border border-card-border px-4 py-2 text-sm font-medium disabled:opacity-50"
+              >
+                {showReschedule ? "Cancel change" : "Request different dates"}
+              </button>
+            )}
             <button
               type="button"
               disabled={busy}

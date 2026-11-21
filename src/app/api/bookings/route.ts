@@ -5,7 +5,8 @@ import { publicListingWhere } from "@/lib/visibility";
 import { getGuest } from "@/lib/guestSession";
 import { clientIp, rateLimit } from "@/lib/rateLimit";
 import { calcTotalPrice, isRangeAvailable, nightsBetween } from "@/lib/availability";
-import { notifyNewBooking, notifyInstantBooking } from "@/lib/notifications";
+import { notifyNewBooking, notifyInstantBooking, notifyPaymentHold } from "@/lib/notifications";
+import { holdExpiry, takesPaymentAtBooking } from "@/lib/holds";
 import { syncListingIfStale } from "@/lib/syncIcal";
 
 const bookingSchema = z.object({
@@ -74,6 +75,12 @@ export async function POST(req: NextRequest) {
 
   const totalPrice = calcTotalPrice(listing.basePrice, listing.cleaningFee, nights);
 
+  // An instant listing whose host takes card payments is paid for at the moment of booking: the dates are held while
+  // the guest pays, and the booking is confirmed only once the payment goes through.
+  const host = listing.hostId ? await prisma.host.findUnique({ where: { id: listing.hostId } }) : null;
+  const payAtBooking = takesPaymentAtBooking(listing, host);
+  const holdUntil = payAtBooking ? holdExpiry() : null;
+
   const booking = await prisma.booking.create({
     data: {
       listingId: listing.id,
@@ -85,16 +92,24 @@ export async function POST(req: NextRequest) {
       guests: data.guests,
       message: data.message,
       totalPrice,
-      // Hosts choose per listing: confirm straight away, or review each request.
-      status: listing.bookingMode === "INSTANT" ? "CONFIRMED" : "PENDING",
+      // Hosts choose per listing: confirm straight away, or review each request. A pay-at-booking listing is held
+      // (pending, with an expiry) until the card payment succeeds.
+      status: listing.bookingMode === "INSTANT" && !payAtBooking ? "CONFIRMED" : "PENDING",
+      holdExpiresAt: holdUntil,
       agreedToTerms: data.agreedToTerms,
       guestAccountId: guestAccount?.id ?? null,
     },
     include: { listing: { select: { id: true, name: true, hostId: true } } },
   });
 
-  if (booking.status === "CONFIRMED") await notifyInstantBooking(booking);
-  else await notifyNewBooking(booking);
+  if (holdUntil) {
+    // The host hears about it only once it is paid. The guest gets a link to pay, in case they close the page.
+    await notifyPaymentHold(booking, holdUntil);
+  } else if (booking.status === "CONFIRMED") {
+    await notifyInstantBooking(booking);
+  } else {
+    await notifyNewBooking(booking);
+  }
 
-  return NextResponse.json({ booking }, { status: 201 });
+  return NextResponse.json({ booking, hold: !!holdUntil, holdExpiresAt: holdUntil }, { status: 201 });
 }

@@ -5,6 +5,9 @@ import { formatMoney } from "@/lib/format";
 //   - Card through Stripe: a service fee that covers the card fee is added to the invoice.
 // Nothing here touches the database or Stripe, so the booking page can use it too.
 
+/** How long a pay-at-booking hold keeps the dates while the guest pays. */
+export const HOLD_MINUTES = 30;
+
 export type SurchargeRate = { percent: number; fixed: number };
 
 /** What a card payment adds. Set CARD_SURCHARGE_PERCENT and CARD_SURCHARGE_FIXED to match the Stripe fees. */

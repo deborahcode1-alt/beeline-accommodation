@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatMoney } from "@/lib/format";
-import { cardSurcharge, surchargeLabel } from "@/lib/stayPaymentInfo";
+import { HOLD_MINUTES, cardSurcharge, surchargeLabel } from "@/lib/stayPaymentInfo";
 
 type Props = {
   listingId: string;
@@ -24,6 +25,8 @@ type Props = {
   bankTransfer?: boolean;
   /** Guests can also pay by card, with a service fee added. */
   cardPayments?: boolean;
+  /** Instant booking paid at booking: the dates are held for a short time while the guest pays by card. */
+  payAtBooking?: boolean;
   surchargePercent?: number;
   surchargeFixed?: number;
 };
@@ -50,6 +53,7 @@ export function BookingForm({
   initialGuests,
   bankTransfer = false,
   cardPayments = false,
+  payAtBooking = false,
   surchargePercent = 1.7,
   surchargeFixed = 0.3,
 }: Props) {
@@ -65,6 +69,7 @@ export function BookingForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [manageToken, setManageToken] = useState<string | null>(null);
+  const router = useRouter();
   const rate = { percent: surchargePercent, fixed: surchargeFixed };
   const onlinePayment = bankTransfer || cardPayments;
 
@@ -110,6 +115,11 @@ export function BookingForm({
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data?.error?.formErrors?.[0] ?? data?.error ?? "Something went wrong");
+      }
+      // Paid at booking: the dates are now held, so go straight to the page where the guest pays.
+      if (data?.hold && data?.booking?.manageToken) {
+        router.push(`/manage/${data.booking.manageToken}`);
+        return;
       }
       setManageToken(data?.booking?.manageToken ?? null);
       setSuccess(true);
@@ -292,16 +302,35 @@ export function BookingForm({
             you won&apos;t be asked to pay until the host has said yes.
           </p>
         )}
+        {payAtBooking && (
+          <p className="mt-4 rounded-md border border-accent bg-soft px-4 py-3 text-sm">
+            <strong>Instant booking: you pay by card straight away.</strong> When you press the button, we hold your
+            dates for {HOLD_MINUTES} minutes while you pay. Your booking is confirmed as soon as the payment goes through.
+            If you don&apos;t pay in time, the dates are released for other guests.
+          </p>
+        )}
 
         <button
           type="submit"
           disabled={submitting}
           className="mt-4 w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-accent-fg transition hover:bg-accent-hover disabled:opacity-50 sm:w-auto"
         >
-          {submitting ? (instant ? "Booking..." : "Sending request...") : instant ? "Confirm booking" : "Send request to host"}
+          {submitting
+            ? payAtBooking
+              ? "Holding your dates..."
+              : instant
+                ? "Booking..."
+                : "Sending request..."
+            : payAtBooking
+              ? "Book and pay by card"
+              : instant
+                ? "Confirm booking"
+                : "Send request to host"}
         </button>
         <p className="mt-2 text-xs text-muted">
-          {onlinePayment
+          {payAtBooking
+            ? "You'll pay by card on the next page (a service fee applies). Card payments are final: there is no refund policy. If something changes, contact the host."
+            : onlinePayment
             ? `${instant ? "After you book" : "Once the host confirms"}, you pay up front ${
                 bankTransfer && cardPayments
                   ? "by direct bank transfer (no service fee) or by card (a service fee applies)"

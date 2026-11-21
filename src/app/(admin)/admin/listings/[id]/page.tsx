@@ -23,7 +23,7 @@ export default async function EditListingPage({
     where: { id },
     include: {
       photos: { orderBy: { order: "asc" } },
-      bookings: { where: { checkOut: { gte: startOfToday() } }, orderBy: { checkIn: "asc" } },
+      bookings: { where: { checkOut: { gte: startOfToday() }, holdExpiresAt: null }, orderBy: { checkIn: "asc" } },
       icalImports: { select: { lastSyncedAt: true, lastError: true } },
       host: true,
     },

@@ -16,13 +16,23 @@ export async function POST(
     return NextResponse.json({ error: "This booking is already inactive" }, { status: 400 });
   }
 
+  // A card payment is final: changes and refunds go through the host, not this page.
+  if (existing.paymentStatus === "PAID" && existing.paymentMethod === "CARD") {
+    return NextResponse.json(
+      { error: "Card payments are final. Please contact your host if something has changed." },
+      { status: 400 }
+    );
+  }
+
   const booking = await prisma.booking.update({
     where: { manageToken: token },
     data: { status: "CANCELLED" },
     include: { listing: { select: { id: true, name: true, hostId: true } } },
   });
 
-  await notifyGuestCancelled(booking);
+  // Letting go of an unpaid payment hold needs no message: the host never saw it.
+  const wasUnpaidHold = !!existing.holdExpiresAt && existing.paymentStatus !== "PAID";
+  if (!wasUnpaidHold) await notifyGuestCancelled(booking);
 
   return NextResponse.json({ booking });
 }

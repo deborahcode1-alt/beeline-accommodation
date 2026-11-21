@@ -8,7 +8,9 @@ import { ManageBookingClient } from "@/components/ManageBookingClient";
 import { ClaimStayButton } from "@/components/guest/ClaimStayButton";
 import { StayPayment } from "@/components/StayPayment";
 import { confirmCheckoutSession } from "@/lib/stayPayment";
+import { releaseHoldIfExpired } from "@/lib/holds";
 import {
+  HOLD_MINUTES,
   bankDetailsOf,
   bookingReference,
   cardPaymentsOn,
@@ -36,6 +38,9 @@ export default async function ManageBookingPage({
   // Back from the card payment page: check with Stripe now, in case the webhook is a moment slow.
   if (query.paid === "card" && query.session_id) await confirmCheckoutSession(token, query.session_id);
 
+  const existing = await prisma.booking.findUnique({ where: { manageToken: token }, select: { id: true } });
+  if (existing) await releaseHoldIfExpired(existing.id);
+
   const booking = await prisma.booking.findUnique({
     where: { manageToken: token },
     include: { listing: { include: { host: true } } },
@@ -46,6 +51,10 @@ export default async function ManageBookingPage({
     getUnavailableNights(booking.listing.id, booking.id),
     getGuest(),
   ]);
+
+  // A pay-at-booking hold: still counting down while unpaid, or lapsed and released.
+  const holdActive = !!booking.holdExpiresAt && booking.status === "PENDING" && booking.paymentStatus === "UNPAID";
+  const holdLapsed = !!booking.holdExpiresAt && booking.status === "CANCELLED" && booking.paymentStatus === "UNPAID";
 
   // Offer to keep this stay on the guest's account. Holding the private link proves it is theirs.
   const onYourAccount = !!guest && booking.guestAccountId === guest.id;
@@ -104,6 +113,8 @@ export default async function ManageBookingPage({
         minNights={booking.listing.minNights}
         unavailableNights={[...unavailableSet]}
         cardPaid={booking.paymentStatus === "PAID" && booking.paymentMethod === "CARD"}
+        holdExpiresAt={holdActive ? booking.holdExpiresAt!.toISOString() : null}
+        holdLapsed={holdLapsed}
         hostName={booking.listing.host?.name ?? null}
         hostPhone={booking.listing.host?.publicPhone ?? null}
         hostEmail={booking.listing.host?.publicEmail ?? null}
@@ -118,8 +129,10 @@ export default async function ManageBookingPage({
             surcharge={cardSurcharge(booking.totalPrice)}
             surchargeLabel={surchargeLabel()}
             reference={bookingReference(booking.id)}
-            bank={bankDetailsOf(booking.listing.host)}
+            bank={holdActive ? null : bankDetailsOf(booking.listing.host)}
             cardAvailable={cardPaymentsOn(booking.listing.host)}
+            hold={holdActive}
+            holdMinutes={HOLD_MINUTES}
             transferNotified={!!booking.transferNotifiedAt}
             returnedFrom={query.paid === "card" ? "card" : query.paid === "cancelled" ? "cancelled" : null}
           />

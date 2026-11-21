@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { blockingBookingWhere } from "@/lib/holds";
 
 export function toDateOnly(d: Date | string) {
   const date = new Date(d);
@@ -33,7 +34,8 @@ export async function getUnavailableNights(
     prisma.booking.findMany({
       where: {
         listingId,
-        status: { in: ["PENDING", "CONFIRMED"] },
+        // Confirmed and pending bookings take the dates. A payment hold that has run out does not.
+        ...blockingBookingWhere(),
         ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}),
       },
       select: { checkIn: true, checkOut: true },

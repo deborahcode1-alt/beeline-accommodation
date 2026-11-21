@@ -114,6 +114,52 @@ export async function notifyInstantBooking(booking: BookingWithListing) {
   );
 }
 
+function holdTime(d: Date) {
+  return new Intl.DateTimeFormat("en-AU", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "Australia/Brisbane",
+  }).format(d);
+}
+
+/** Instant booking, paid at booking: the guest's dates are held for a short time while they pay by card. */
+export async function notifyPaymentHold(booking: BookingWithListing, expiresAt: Date) {
+  const dates = `${fmtDate(booking.checkIn)} - ${fmtDate(booking.checkOut)}`;
+  await tryEmail(
+    booking.guestEmail,
+    `Finish booking ${booking.listing.name}: pay within 30 minutes`,
+    `Hi ${booking.guestName.split(" ")[0]},\n\nWe're holding ${booking.listing.name} (${dates}, ${formatMoney(booking.totalPrice)} total) ` +
+      `for you until ${holdTime(expiresAt)} (Queensland time) while you pay by card.\n\n` +
+      `Your booking isn't confirmed until the payment goes through. If you don't pay in time, the dates are released ` +
+      `for other guests.\n\nPay now: ${manageUrl(booking.manageToken)}\n\n- ${SITE_NAME}`
+  );
+}
+
+/** A card payment arrived after the held dates were released and someone else took them. */
+export async function notifyPaidAfterRelease(booking: BookingWithListing, refunded: boolean) {
+  const dates = `${fmtDate(booking.checkIn)} - ${fmtDate(booking.checkOut)}`;
+  await tryEmail(
+    booking.guestEmail,
+    `We couldn't keep your dates at ${booking.listing.name}`,
+    `Hi ${booking.guestName.split(" ")[0]},\n\nYour payment for ${booking.listing.name} (${dates}) arrived after the ` +
+      `30 minute hold had ended, and those dates have since been booked by someone else.\n\n` +
+      (refunded
+        ? `We've refunded your payment in full. It usually reaches your card within a few business days.\n\n`
+        : `We're arranging your refund and will be in touch shortly.\n\n`) +
+      `We're sorry about that. You're welcome to look for other dates: ${manageUrl(booking.manageToken)}\n\n- ${SITE_NAME}`
+  );
+  const host = await hostContact(booking.listing.hostId);
+  await tryEmail(
+    host.email,
+    `A payment needs attention: ${booking.listing.name}`,
+    `${booking.guestName} paid for ${booking.listing.name} (${dates}) after their 30 minute hold ended, and the dates had ` +
+      `been taken by another booking. ` +
+      (refunded
+        ? `The payment has been refunded to them automatically. No action is needed.`
+        : `The automatic refund did not go through, so please refund ${booking.guestEmail} from your Stripe dashboard.`)
+  );
+}
+
 /** How the guest can pay for this stay, from the host's bank details and card setting. */
 async function paymentOptionsFor(booking: BookingWithListing) {
   const row = await prisma.booking.findUnique({

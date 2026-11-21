@@ -41,8 +41,10 @@ export function isOwnersHost(host: { subscriptionStatus: string } | null) {
  * the owner's own listings, plus every host's only when `showAll` is set.
  */
 export function bookingScope(ctx: AdminContext, showAll = false) {
-  if (!ctx.isOwner) return { listing: { hostId: ctx.hostId } };
-  return showAll ? {} : { listing: OWN_LISTINGS };
+  // `holdExpiresAt: null` leaves out unpaid payment holds (instant bookings still being paid for), so a host never
+  // sees, or can act on, a booking that has not been paid. Once paid, the hold is cleared and it appears.
+  if (!ctx.isOwner) return { listing: { hostId: ctx.hostId }, holdExpiresAt: null };
+  return showAll ? { holdExpiresAt: null } : { listing: OWN_LISTINGS, holdExpiresAt: null };
 }
 
 /** The same idea for guest messages to hosts. */

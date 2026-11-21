@@ -252,6 +252,8 @@ model Booking {
   stripePaymentIntentId String?
   transferNotifiedAt DateTime? // guest said they have sent a bank transfer
   cardTermsAgreedAt  DateTime? // guest ticked "card payments are final" before paying by card
+  // Instant booking with pay-at-booking: the dates are held until this time while the guest pays. Cleared once paid.
+  holdExpiresAt      DateTime?
   confirmationTextSentAt DateTime?
   confirmationEmailSentAt DateTime?
   manageToken    String        @unique @default(cuid())

@@ -17,6 +17,9 @@ type Props = {
   cardAvailable: boolean;
   transferNotified: boolean;
   returnedFrom: "card" | "cancelled" | null;
+  /** The dates are being held while the guest pays (pay at booking). Card is the only way to pay. */
+  hold?: boolean;
+  holdMinutes?: number;
 };
 
 // How the guest pays up front: bank transfer with no service fee, or card with the service fee on the invoice.
@@ -34,6 +37,8 @@ export function StayPayment({
   cardAvailable,
   transferNotified: initialNotified,
   returnedFrom,
+  hold = false,
+  holdMinutes = 30,
 }: Props) {
   const [busy, setBusy] = useState<"card" | "transfer" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +64,7 @@ export function StayPayment({
     );
   }
 
-  if (status !== "CONFIRMED") {
+  if (status !== "CONFIRMED" && !hold) {
     return (
       <div className={box}>
         <h2 className="text-lg font-semibold">Payment</h2>
@@ -106,7 +111,11 @@ export function StayPayment({
   return (
     <div className={box}>
       <h2 className="text-lg font-semibold">Pay for your stay</h2>
-      <p className="mt-1 text-sm text-muted">Pay up front to secure your stay. Choose how you&apos;d like to pay.</p>
+      <p className="mt-1 text-sm text-muted">
+        {hold
+          ? `Pay by card to confirm your booking. Your dates are held for ${holdMinutes} minutes from when you booked.`
+          : "Pay up front to secure your stay. Choose how you'd like to pay."}
+      </p>
 
       {returnedFrom === "card" && (
         <p className="mt-3 rounded-md bg-accent/10 px-3 py-2 text-sm text-accent-deep">

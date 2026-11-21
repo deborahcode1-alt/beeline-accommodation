@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, canAccessHost } from "@/lib/adminAuth";
 import { refreshReadyForReview } from "@/lib/readyForReview";
+import { blockingBookingWhere } from "@/lib/holds";
 import { PROFILE_SUBJECTS, BLURB_MAX } from "@/lib/hostProfile";
 import { notifyHostLive } from "@/lib/notifications";
 import { stripeClient } from "@/lib/stripeClient";
@@ -150,7 +151,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const now = new Date();
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const upcoming = await prisma.booking.count({
-    where: { listing: { hostId: id }, status: { in: ["PENDING", "CONFIRMED"] }, checkOut: { gte: today } },
+    where: { listing: { hostId: id }, ...blockingBookingWhere(), checkOut: { gte: today } },
   });
   if (upcoming > 0) {
     return NextResponse.json(
