@@ -40,13 +40,22 @@ export default async function AccountPage() {
 
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
+  const nowMs = new Date().getTime();
+  // Pay at booking: an unpaid hold is "awaiting payment" while its 30 minutes run, then it has ended.
+  const holdState = (s: (typeof stays)[number]): "active" | "ended" | null => {
+    if (!s.holdExpiresAt || s.paymentStatus !== "UNPAID") return null;
+    if (s.status === "PENDING") return s.holdExpiresAt.getTime() > nowMs ? "active" : "ended";
+    if (s.status === "CANCELLED") return "ended";
+    return null;
+  };
   const isLive = (s: (typeof stays)[number]) =>
-    s.checkOut >= today && s.status !== "CANCELLED" && s.status !== "DECLINED";
+    s.checkOut >= today && s.status !== "CANCELLED" && s.status !== "DECLINED" && holdState(s) !== "ended";
   const upcoming = stays.filter(isLive);
   const past = stays.filter((s) => !isLive(s)).reverse();
 
   function StayCard({ s }: { s: (typeof stays)[number] }) {
     const phone = s.listing.host?.publicPhone?.replace(/[^\d+]/g, "");
+    const hold = holdState(s);
     return (
       <div className="rounded-xl border border-card-border p-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
@@ -59,15 +68,47 @@ export default async function AccountPage() {
               {s.guests === 1 ? "" : "s"} &middot; {formatMoney(s.totalPrice)}
             </p>
           </div>
-          <StatusBadge status={s.status} />
+          <StatusBadge
+            status={s.status}
+            label={hold === "active" ? "Awaiting payment" : hold === "ended" ? "Hold ended" : undefined}
+          />
         </div>
+        {hold === "active" && (
+          <p className="mt-2 text-sm text-accent-deep">
+            Your dates are held until{" "}
+            {s.holdExpiresAt!.toLocaleTimeString("en-AU", {
+              hour: "numeric",
+              minute: "2-digit",
+              timeZone: "Australia/Brisbane",
+            })}
+            . Pay by card to confirm your booking.
+          </p>
+        )}
+        {hold === "ended" && (
+          <p className="mt-2 text-sm text-muted">
+            The hold ran out before payment, so the dates were released. You have not been charged.
+          </p>
+        )}
         <div className="mt-3 flex flex-wrap gap-2 text-sm">
-          <Link
-            href={`/manage/${s.manageToken}`}
-            className="rounded-md border border-card-border px-3 py-1.5 font-medium hover:border-accent"
-          >
-            Manage booking
-          </Link>
+          {hold === "ended" ? (
+            <Link
+              href={`/listings/${s.listing.slug}/book`}
+              className="rounded-md border border-card-border px-3 py-1.5 font-medium hover:border-accent"
+            >
+              Book again
+            </Link>
+          ) : (
+            <Link
+              href={`/manage/${s.manageToken}`}
+              className={
+                hold === "active"
+                  ? "rounded-md bg-accent px-3 py-1.5 font-semibold text-accent-fg hover:bg-accent-hover"
+                  : "rounded-md border border-card-border px-3 py-1.5 font-medium hover:border-accent"
+              }
+            >
+              {hold === "active" ? "Pay now" : "Manage booking"}
+            </Link>
+          )}
           {phone && (
             <a
               href={`tel:${phone}`}

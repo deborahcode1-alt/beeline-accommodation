@@ -5,10 +5,11 @@ const styles: Record<string, string> = {
   CANCELLED: "bg-foreground/10 text-muted",
 };
 
-export function StatusBadge({ status }: { status: string }) {
+/** `label` replaces the wording (for example "Awaiting payment") while keeping the colour of `status`. */
+export function StatusBadge({ status, label }: { status: string; label?: string }) {
   return (
     <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status] ?? ""}`}>
-      {status.charAt(0) + status.slice(1).toLowerCase()}
+      {label ?? status.charAt(0) + status.slice(1).toLowerCase()}
     </span>
   );
 }
