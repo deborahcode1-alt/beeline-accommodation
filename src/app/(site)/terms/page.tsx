@@ -25,17 +25,18 @@ export default function TermsPage() {
         {
           heading: "Making a booking",
           body: [
-            "Some listings confirm a booking immediately when you submit it. Others are requests that the host accepts or declines. We will tell you which applies before you submit.",
-            "The host's own cancellation and payment terms are shown on the listing and when you book. By submitting a booking you agree to them. Nothing in these terms limits your rights under the Australian Consumer Law.",
+            "Some listings are instant bookings. Others are requests that the host accepts or declines. We will tell you which applies before you submit.",
+            "Instant bookings that are paid by card: you pay by card straight away. When you submit, we hold your dates for 30 minutes while you pay. Your booking is confirmed when the payment goes through. If you do not pay in time, the hold ends, the dates are released, you are not charged, and you will need to book again. If your payment arrives after the hold ended and the dates have been taken by someone else, your payment is refunded in full.",
+            "The host's payment and cancellation terms are shown on the listing and when you book. For bookings paid by bank transfer, the host's cancellation terms apply. For bookings paid by card, the card payment terms below apply instead. Nothing in these terms limits your rights under the Australian Consumer Law.",
           ],
         },
         {
           heading: "Payments",
           body: [
-            "Payment is made up front, to the host, using a method the host offers. This is either a direct bank transfer to the host's account, or a card payment, or both. Check the payment details with the host before you pay.",
+            "Payment is made up front, to the host, using a method the host offers. This is a direct bank transfer to the host's account, a card payment, or both. Instant bookings that are paid at the time of booking are card only. Check the payment details with the host before you pay.",
             "Bank transfers have no service fee. Card payments are processed securely by Stripe and have a service fee added to cover the cost of processing the card. The service fee is shown to you before you pay and appears as its own line on your invoice and receipt. Paying by bank transfer avoids it.",
             "Beeline does not take a commission on bookings and does not keep any part of what you pay for your stay. For bookings paid by bank transfer, refunds follow the host's cancellation terms shown when you book.",
-            "Card payments are final: there is no refund policy for a booking paid by card, and you are asked to agree to this before you pay. If something changes, contact your host, who can arrange a refund or a change. This does not limit your rights under the Australian Consumer Law, and if the host cancels, cannot provide the stay or the listing is not as described, you are entitled to a refund from the host. [Lawyer to confirm service fee and refund wording, including whether the service fee counts as a card surcharge under Australian rules.]",
+            "Card payments are final: there is no refund policy for a booking paid by card, and the host's cancellation terms do not apply to it. You are asked to agree to this before you pay. If something changes, contact your host, who can arrange a refund or a change. This does not limit your rights under the Australian Consumer Law, and if the host cancels, cannot provide the stay or the listing is not as described, you are entitled to a refund from the host. [Lawyer to confirm service fee and refund wording, including whether the service fee counts as a card surcharge under Australian rules.]",
           ],
         },
         {

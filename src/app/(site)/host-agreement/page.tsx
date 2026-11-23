@@ -19,6 +19,8 @@ export default function HostAgreementPage() {
           heading: "Subscription",
           body: [
             "The fee depends on how many listings you have: A$100 per month for 1 to 3 listings, or A$200 per month for 4 to 10 listings. If you pay yearly you pay for 11 months instead of 12 (A$1,100 or A$2,200 a year), so one month is free. Fees are in Australian dollars, billed in advance by our payment provider. Hosts with more than 10 listings agree a custom plan with us. You can cancel at any time from your dashboard. Cancellation takes effect at the end of the period you have paid for. [Lawyer to confirm refund wording under the Australian Consumer Law.]",
+            "Free trial: when you first subscribe you get 30 days free. You enter your card at the start, and your first payment is taken when the 30 days end unless you cancel before then. The free trial is available once per host, and not to a host who has already used the Starting up tier. We may agree a different trial end date with you in writing.",
+            "Starting up: new hosts may be offered a free Starting up tier for 3 months, with no card needed and your listings visible. We may stop offering it to new hosts at any time. When the 3 months end nothing changes by itself: we will invite you to subscribe, and we may remove your listings if you choose not to.",
             "If a payment fails we will email you and allow [number] days to fix it. If the subscription lapses, your listings are removed from the platform. Your information is kept for [number] days so you can reactivate by paying.",
             "Bookings already confirmed when a listing is removed remain your responsibility to honour and you must tell affected guests.",
           ],
@@ -28,6 +30,7 @@ export default function HostAgreementPage() {
           body: [
             "You confirm you own or are authorised to list each property, that descriptions, photos and prices are accurate and up to date, and that you hold any licences, insurance and approvals required for short-stay accommodation where you operate.",
             "You must have the right to use every photo you upload. Do not upload content that is misleading, offensive or unlawful.",
+            "You give Beeline a non-exclusive, royalty-free licence to display your listing text and photos on the Beeline website and in related promotion of your listing, for as long as your listing is on the platform. You keep ownership of your content.",
           ],
         },
         {
@@ -35,6 +38,7 @@ export default function HostAgreementPage() {
           body: [
             "You decide for each listing whether bookings are instant or request-only, and you set your own prices and cancellation terms. Guests pay you directly, by bank transfer or, when card payments are switched on for your account, by card through Stripe. Beeline does not hold guest money or resolve payment disputes.",
             "Keep your calendar accurate. If you use instant booking, you are responsible for honouring the bookings it confirms.",
+            "Instant booking with card payments: when you use instant booking and card payments are switched on for your account, the guest pays by card at the time of booking. We hold their dates for 30 minutes while they pay. You see the booking only once it is paid. If they do not pay in time, the hold lapses and the dates become available again. If a payment arrives after the dates were released and the dates have since been taken, we refund the guest automatically.",
           ],
         },
         {
