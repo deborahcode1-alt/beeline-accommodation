@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Beeline Host Admin",
+  title: "Book On Beeline Host Admin",
   description: "Manage listings, bookings, and calendar sync",
 };
 

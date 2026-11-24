@@ -13,7 +13,7 @@ export default function PrivacyPage() {
         {
           heading: "About this policy",
           body: [
-            "This policy explains how Beeline Accommodation (operated by The Trustee for The Opal Trust, ABN 79 778 523 721) collects, uses and protects personal information, in line with the Australian Privacy Principles.",
+            "This policy explains how Book On Beeline (operated by The Trustee for The Opal Trust, ABN 79 778 523 721) collects, uses and protects personal information, in line with the Australian Privacy Principles.",
           ],
         },
         {

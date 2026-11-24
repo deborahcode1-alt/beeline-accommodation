@@ -22,7 +22,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   applicationName: SITE_NAME,
-  appleWebApp: { capable: true, title: "Beeline", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "Book On Beeline", statusBarStyle: "black-translucent" },
   metadataBase: new URL(SITE_URL),
   title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
   description: `${SITE_TAGLINE}. ${SITE_SLOGAN} Find local hosts, rooms, houses and farm stays across regional Australia and contact them directly.`,

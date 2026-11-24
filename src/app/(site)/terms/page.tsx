@@ -12,14 +12,14 @@ export default function TermsPage() {
         {
           heading: "Who we are",
           body: [
-            "Beeline Accommodation (\"Beeline\", \"we\") operates this website, which helps guests find and contact independent accommodation hosts. Beeline is operated by The Trustee for The Opal Trust, ABN 79 778 523 721.",
+            "Book On Beeline (\"we\") operates this website, which helps guests find and contact independent accommodation hosts. Book On Beeline is operated by The Trustee for The Opal Trust, ABN 79 778 523 721.",
           ],
         },
         {
-          heading: "What Beeline does and does not do",
+          heading: "What Book On Beeline does and does not do",
           body: [
-            "Beeline is an online directory and booking tool. Each listing is offered by an independent host. Any booking or stay is an arrangement between you and that host, not with Beeline.",
-            "Beeline does not own, manage or inspect the accommodation, and does not take a commission on bookings. Hosts are responsible for the accuracy of their listings, the condition and safety of their property, and any licences or approvals they need.",
+            "Book On Beeline is an online directory and booking tool. Each listing is offered by an independent host. Any booking or stay is an arrangement between you and that host, not with Book On Beeline.",
+            "Book On Beeline does not own, manage or inspect the accommodation, and does not take a commission on bookings. Hosts are responsible for the accuracy of their listings, the condition and safety of their property, and any licences or approvals they need.",
           ],
         },
         {
@@ -35,7 +35,7 @@ export default function TermsPage() {
           body: [
             "Payment is made up front, to the host, using a method the host offers. This is a direct bank transfer to the host's account, a card payment, or both. Instant bookings that are paid at the time of booking are card only. Check the payment details with the host before you pay.",
             "Bank transfers have no service fee. Card payments are processed securely by Stripe and have a service fee added to cover the cost of processing the card. The service fee is shown to you before you pay and appears as its own line on your invoice and receipt. Paying by bank transfer avoids it.",
-            "Beeline does not take a commission on bookings and does not keep any part of what you pay for your stay. For bookings paid by bank transfer, refunds follow the host's cancellation terms shown when you book.",
+            "Book On Beeline does not take a commission on bookings and does not keep any part of what you pay for your stay. For bookings paid by bank transfer, refunds follow the host's cancellation terms shown when you book.",
             "Card payments are final: there is no refund policy for a booking paid by card, and the host's cancellation terms do not apply to it. You are asked to agree to this before you pay. If something changes, contact your host, who can arrange a refund or a change. This does not limit your rights under the Australian Consumer Law, and if the host cancels, cannot provide the stay or the listing is not as described, you are entitled to a refund from the host. [Lawyer to confirm service fee and refund wording, including whether the service fee counts as a card surcharge under Australian rules.]",
           ],
         },

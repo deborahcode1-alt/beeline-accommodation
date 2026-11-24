@@ -1,9 +1,9 @@
-// Beeline mark: a honeycomb hexagon with a house window inside, on a honey tile.
+// Book On Beeline mark: a honeycomb hexagon with a house window inside, on a honey tile.
 // Drawn as SVG so it stays sharp at any size.
 
 export function BrandMark({ className = "h-9 w-9" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 100 100" className={className} role="img" aria-label="Beeline logo">
+    <svg viewBox="0 0 100 100" className={className} role="img" aria-label="Book On Beeline logo">
       <rect width="100" height="100" rx="22" fill="#FFC107" />
       <g strokeLinejoin="round" strokeLinecap="round">
         <path d="M50 20 L77 35 L77 66 L50 81 L23 66 L23 35 Z" fill="#FFC107" stroke="#111" strokeWidth="7" />
@@ -27,7 +27,7 @@ export function BrandLogo({ light = true }: { light?: boolean }) {
     <span className="inline-flex items-center gap-2.5">
       <BrandMark />
       <span className={`flex flex-col leading-none ${text}`}>
-        <span className="text-xl font-extrabold tracking-tight">Beeline</span>
+        <span className="text-xl font-extrabold tracking-tight">Book On Beeline</span>
         <span className="mt-1 text-[8px] font-medium tracking-[0.38em]">ACCOMMODATION</span>
       </span>
     </span>

@@ -27,7 +27,7 @@ export default async function SignInPage({
         <SignInForm next={next} />
       </div>
       <div className="mt-10 border-t border-card-border pt-6 text-sm text-muted">
-        <p>Keep Beeline one tap away on your phone.</p>
+        <p>Keep Book On Beeline one tap away on your phone.</p>
         <InstallAppButton className="mt-3" />
       </div>
     </div>

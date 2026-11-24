@@ -16,7 +16,7 @@ export default async function SetPasswordPage({
 
   return (
     <div className="mx-auto max-w-lg px-6 py-12">
-      <h1 className="text-2xl font-extrabold tracking-tight">Welcome to Beeline</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight">Welcome to Book On Beeline</h1>
       {login ? (
         <>
           <p className="mt-2 text-sm text-muted">

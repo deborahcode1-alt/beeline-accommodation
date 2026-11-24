@@ -156,7 +156,7 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
     {
       key: "agreement",
       label: "Read and accept the host agreement",
-      detail: "The terms for hosting on Beeline: a simple subscription and no commission.",
+      detail: "The terms for hosting on Book On Beeline: a simple subscription and no commission.",
       done: !!host.agreedHostTermsAt,
       href: "/host-agreement",
       action: host.agreedHostTermsAt ? undefined : "agree",

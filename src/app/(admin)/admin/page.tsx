@@ -156,7 +156,7 @@ export default async function AdminDashboardPage({
 
       {host && (
         <NoticeBar icon={<CalendarCheckIcon />} href="/admin/subscription" action="Manage">
-          Your Beeline subscription:{" "}
+          Your Book On Beeline subscription:{" "}
           <SubscriptionBadge status={host.subscriptionStatus} startingUp={isOnStartingUp(host)} />
         </NoticeBar>
       )}

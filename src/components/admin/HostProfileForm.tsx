@@ -318,7 +318,7 @@ export function HostProfileForm({
               className="mt-0.5"
             />
             <span>
-              Let guests pay this host by card (through the Beeline Stripe account, with the service fee added)
+              Let guests pay this host by card (through the Book On Beeline Stripe account, with the service fee added)
             </span>
           </label>
         )}

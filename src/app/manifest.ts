@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
 
-// Makes Beeline installable on phones and desktops ("Add to Home Screen" / "Install app").
+// Makes Book On Beeline installable on phones and desktops ("Add to Home Screen" / "Install app").
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Beeline Accommodation",
-    short_name: "Beeline",
+    name: "Book On Beeline",
+    short_name: "Book On Beeline",
     description: "A direct route to your next stay. Stay local, book direct.",
     start_url: "/",
     scope: "/",

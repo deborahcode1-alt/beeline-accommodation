@@ -96,7 +96,7 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
       <div className="mt-6 rounded-2xl border border-card-border bg-soft/50 p-4 text-sm text-muted">
         <p className="font-medium text-foreground">How it works</p>
         <ul className="mt-2 list-disc space-y-1 pl-5">
-          <li>The payment goes directly to your Stripe account. Beeline never holds the money and takes no commission.</li>
+          <li>The payment goes directly to your Stripe account. Book On Beeline never holds the money and takes no commission.</li>
           <li>Guests pay a separate service fee on top of the price, which covers card processing costs.</li>
           <li>
             There is no refund policy for card payments. Guests contact you if something changes, and you decide any

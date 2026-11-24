@@ -61,7 +61,7 @@ export default async function ListingPage({
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <nav className="text-sm text-muted">
-        <Link href="/" className="hover:underline">Beeline</Link>
+        <Link href="/" className="hover:underline">Book On Beeline</Link>
         {listing.area && (
           <>
             {" / "}

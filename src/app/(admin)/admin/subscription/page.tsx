@@ -92,7 +92,7 @@ export default async function SubscriptionPage({
             : note[host.subscriptionStatus]}
         </p>
         <p className="mt-2 text-sm text-muted">
-          Beeline takes no commission on your bookings. The subscription is the only charge.
+          Book On Beeline takes no commission on your bookings. The subscription is the only charge.
         </p>
       </div>
 

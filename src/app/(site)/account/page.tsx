@@ -192,7 +192,7 @@ export default async function AccountPage() {
         <div className="mt-3 space-y-5">
           <ChangePasswordBox />
           <div>
-            <p className="text-sm text-muted">Keep Beeline one tap away on your phone.</p>
+            <p className="text-sm text-muted">Keep Book On Beeline one tap away on your phone.</p>
             <InstallAppButton className="mt-2" />
           </div>
         </div>

@@ -6,7 +6,7 @@ import { HOST_TIERS, formatAud } from "@/lib/pricing";
 export const metadata: Metadata = {
   title: "Become a collaborator",
   description:
-    "List your accommodation on Beeline for a simple subscription. No commission, your own payment method, and guests contact you directly.",
+    "List your accommodation on Book On Beeline for a simple subscription. No commission, your own payment method, and guests contact you directly.",
 };
 
 const BENEFITS = [
@@ -42,7 +42,7 @@ export default function HostPage() {
       <section className="bg-soft">
         <div className="mx-auto max-w-6xl px-6 py-14 sm:py-20">
           <h1 className="max-w-3xl text-4xl font-extrabold tracking-tight sm:text-5xl">
-            Become a Beeline collaborator
+            Become a Book On Beeline collaborator
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-foreground/80">
             List your property, get found by guests searching your area, and keep the booking relationship. Hosts pay

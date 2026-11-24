@@ -21,7 +21,7 @@ export default async function GetLivePage() {
       <PageHeader
         icon={<RocketIcon />}
         title="Get live"
-        subtitle="Work through these steps and your listings appear on Beeline. Each one ticks itself off as you finish it."
+        subtitle="Work through these steps and your listings appear on Book On Beeline. Each one ticks itself off as you finish it."
       />
 
       <div
@@ -58,7 +58,7 @@ export default async function GetLivePage() {
       </div>
 
       <h2 id="calendar-links" className="mt-12 text-lg font-semibold">
-        Your Beeline calendar links
+        Your Book On Beeline calendar links
       </h2>
       <div className="mt-3">
         <CalendarLinksLookup listings={listings} />

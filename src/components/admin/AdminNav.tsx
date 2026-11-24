@@ -54,7 +54,7 @@ export function AdminNav({
     <header className="bg-header-bg text-header-fg">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-y-2 px-6 py-3">
         <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
-          <Link href="/admin" aria-label="Beeline host admin">
+          <Link href="/admin" aria-label="Book On Beeline host admin">
             <BrandLogo />
           </Link>
           <nav className="flex flex-wrap items-center gap-5 text-sm">

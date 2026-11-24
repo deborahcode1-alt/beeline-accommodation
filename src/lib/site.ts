@@ -1,4 +1,4 @@
-export const SITE_NAME = "Beeline Accommodation";
+export const SITE_NAME = "Book On Beeline";
 export const SITE_TAGLINE = "A Direct Route to Your Next Stay";
 export const SITE_SLOGAN = "Stay Local. Book Direct.";
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bookonbeeline.com";

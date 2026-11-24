@@ -9,7 +9,7 @@ type InstallEvent = Event & {
 
 const subscribeNothing = () => () => {};
 
-// Beeline is an installable web app: no app store needed. Android and desktop Chrome offer a
+// Book On Beeline is an installable web app: no app store needed. Android and desktop Chrome offer a
 // one-tap install; iPhone and iPad install through Safari's Share menu, so we show those steps.
 export function InstallAppButton({
   className = "",
@@ -73,7 +73,7 @@ export function InstallAppButton({
           onDark ? "text-accent" : "text-accent-deep"
         }`}
       >
-        Get the Beeline app
+        Get the Book On Beeline app
       </button>
       {showSteps && (
         <p className="mt-2 max-w-xs text-xs">

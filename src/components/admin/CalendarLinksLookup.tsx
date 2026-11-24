@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CopyableUrl } from "@/components/admin/CopyableUrl";
 import { SITE_URL } from "@/lib/site";
 
-// Beeline's calendar link for each listing, for pasting into Airbnb, Booking.com and the others.
+// Book On Beeline's calendar link for each listing, for pasting into Airbnb, Booking.com and the others.
 export function CalendarLinksLookup({ listings }: { listings: { id: string; name: string; exportToken: string }[] }) {
   if (listings.length === 0) {
     return (
@@ -14,9 +14,9 @@ export function CalendarLinksLookup({ listings }: { listings: { id: string; name
   return (
     <div>
       <p className="text-sm text-muted">
-        Each listing has its own Beeline calendar link. Paste it into that listing&apos;s{" "}
+        Each listing has its own Book On Beeline calendar link. Paste it into that listing&apos;s{" "}
         <strong>Import calendar</strong> on Airbnb, Booking.com or any other site you use, so a booking made on
-        Beeline blocks those dates there. Keep the links private: anyone with a link can see that listing&apos;s
+        Book On Beeline blocks those dates there. Keep the links private: anyone with a link can see that listing&apos;s
         booked dates.
       </p>
       <div className="mt-4 space-y-4">
@@ -28,7 +28,7 @@ export function CalendarLinksLookup({ listings }: { listings: { id: string; name
                 href={`/admin/listings/${l.id}/calendar`}
                 className="text-xs text-accent-deep underline"
               >
-                Connect their calendars into Beeline
+                Connect their calendars into Book On Beeline
               </Link>
             </div>
             <div className="mt-2">
@@ -40,14 +40,14 @@ export function CalendarLinksLookup({ listings }: { listings: { id: string; name
       <ol className="mt-4 list-decimal space-y-1 pl-5 text-sm text-muted">
         <li>
           <strong>Airbnb:</strong> Calendar, pick the listing, Availability settings, Connect calendars, Import
-          calendar. Paste the link and name it Beeline.
+          calendar. Paste the link and name it Book On Beeline.
         </li>
         <li>
           <strong>Booking.com:</strong> Rates &amp; Availability, Sync calendars, Import calendar. Paste the link.
         </li>
         <li>
           Then do the reverse: copy each site&apos;s <strong>Export calendar</strong> link and paste it into the
-          listing&apos;s calendar page here, so their bookings block dates on Beeline.
+          listing&apos;s calendar page here, so their bookings block dates on Book On Beeline.
         </li>
       </ol>
     </div>

@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   if (!isOwner) {
     const blocked = await rateLimit(
       [{ name: "area-add", subject: auth.ctx.email, limit: 5, windowSeconds: 24 * 60 * 60 }],
-      "You've added a few areas today already. Ask Beeline to add any others."
+      "You've added a few areas today already. Ask Book On Beeline to add any others."
     );
     if (blocked) return blocked;
   }

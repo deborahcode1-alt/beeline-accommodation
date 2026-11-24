@@ -150,7 +150,7 @@ export function ListingForm({
         { id: data.area.id, name: data.area.name },
         data.area.published
           ? `${data.area.name} added and selected.`
-          : `${data.area.name} added and selected. Beeline will check it and switch on its page soon.`
+          : `${data.area.name} added and selected. Book On Beeline will check it and switch on its page soon.`
       );
     } catch (err) {
       setAreaMsg(err instanceof Error ? err.message : "Could not add that area");

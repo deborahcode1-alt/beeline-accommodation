@@ -332,7 +332,7 @@ export async function sendHostChecklistEmail(hostId: string, remaining: string[]
   const text =
     `Hi ${name},\n\nHere is your ${SITE_NAME} checklist. Work through it and your listings go live on the site once ` +
     `every step is done and we've approved it.\n\nSign in and open "Get live": ${site}/admin/get-live\n\n${todo}\n\n` +
-    `The page also shows your Beeline calendar link for each listing, ready to paste into Airbnb, Booking.com and the others.\n\n- ${SITE_NAME}`;
+    `The page also shows your Book On Beeline calendar link for each listing, ready to paste into Airbnb, Booking.com and the others.\n\n- ${SITE_NAME}`;
   const sent: string[] = [];
   for (const to of emails) {
     if (!isEmailConfigured()) break;
