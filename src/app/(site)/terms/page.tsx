@@ -48,7 +48,7 @@ export default function TermsPage() {
           heading: "Your account",
           body: [
             "4.1 Give accurate, current details when you register or book, including your name, email and phone number. The host relies on them to contact you.",
-            "4.2 Keep your login private. You are responsible for activity on your account. Tell us straight away at bookings@bookonbeeline.com (or bookonbeeline@gmail.com) if you think someone else has used it.",
+            "4.2 Keep your login private. You are responsible for activity on your account. Tell us straight away at bookonbeeline@gmail.com if you think someone else has used it.",
             "4.3 We may suspend or close an account that breaks these terms, makes false bookings or is used fraudulently.",
           ],
         },
@@ -169,7 +169,7 @@ export default function TermsPage() {
           heading: "Complaints",
           body: [
             "16.1 If you have a problem with a listing, a stay or a refund, contact the host first. Most problems can be sorted out this way.",
-            "16.2 If it is not resolved, email us at bookings@bookonbeeline.com (or bookonbeeline@gmail.com) with your booking details. We will acknowledge your complaint within 5 business days and review it. We may help you contact the host, ask the host to respond, or suspend or remove a listing that breaks our rules.",
+            "16.2 If it is not resolved, email us at bookonbeeline@gmail.com with your booking details. We will acknowledge your complaint within 5 business days and review it. We may help you contact the host, ask the host to respond, or suspend or remove a listing that breaks our rules.",
             "16.3 We cannot make a host give a refund. If a dispute with a host is still not resolved, you can contact the [Office of Fair Trading Queensland](https://www.qld.gov.au/law/fair-trading) or the fair trading office in your state, or apply to the Queensland Civil and Administrative Tribunal (QCAT).",
           ],
         },
@@ -206,7 +206,7 @@ export default function TermsPage() {
           body: [
             "[Trustee's full legal name] as trustee for The Opal Trust, trading as Book On Beeline, ABN 79 778 523 721.",
             "[Postal address]",
-            "Email: bookings@bookonbeeline.com (or bookonbeeline@gmail.com)",
+            "Email: bookonbeeline@gmail.com",
           ],
         },
       ]}
