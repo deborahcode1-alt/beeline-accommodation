@@ -6,7 +6,7 @@ import { publicListingWhere } from "@/lib/visibility";
 import { getGuest } from "@/lib/guestSession";
 import { BookingForm } from "@/components/BookingForm";
 import { DEFAULT_CANCELLATION_POLICY } from "@/lib/site";
-import { HOLD_MINUTES, bankDetailsOf, cardPaymentsOn, surchargeRate } from "@/lib/stayPaymentInfo";
+import { HOLD_MINUTES, bankDetailsOf, cardPaymentsOn } from "@/lib/stayPaymentInfo";
 import { takesPaymentAtBooking } from "@/lib/holds";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +32,6 @@ export default async function BookPage({
   });
   if (!listing) notFound();
   const guest = await getGuest();
-  const rate = surchargeRate();
   // An instant listing whose host takes cards is paid for at booking: the dates are held while the guest pays.
   const payAtBooking = takesPaymentAtBooking(listing, listing.host);
 
@@ -66,8 +65,6 @@ export default async function BookPage({
           bankTransfer={!payAtBooking && !!bankDetailsOf(listing.host)}
           cardPayments={cardPaymentsOn(listing.host)}
           payAtBooking={payAtBooking}
-          surchargePercent={rate.percent}
-          surchargeFixed={rate.fixed}
         />
       </div>
 

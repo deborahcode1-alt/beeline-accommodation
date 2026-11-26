@@ -13,7 +13,8 @@ import { propertyTypeLabel } from "@/lib/propertyType";
 import { bedroomLabel, bathroomLabel, parkingShort } from "@/lib/listingFacts";
 import { profileFacts } from "@/lib/hostProfile";
 import { DEFAULT_CANCELLATION_POLICY } from "@/lib/site";
-import { cardPaymentsOn } from "@/lib/stayPaymentInfo";
+import { ADMIN_FEE_NAME, ADMIN_FEE_PERCENT, ADMIN_FEE_REFUND_NOTE, cardPaymentsOn } from "@/lib/stayPaymentInfo";
+import { takesPaymentAtBooking } from "@/lib/holds";
 
 export const dynamic = "force-dynamic";
 
@@ -217,6 +218,14 @@ export default async function ListingPage({
                   Consumer Law are not affected.
                 </p>
               )}
+              {takesPaymentAtBooking(listing, host) && (
+                <p className="rounded-md bg-soft px-3 py-2 text-foreground">
+                  <strong>
+                    {ADMIN_FEE_NAME}: {ADMIN_FEE_PERCENT}%.
+                  </strong>{" "}
+                  {ADMIN_FEE_REFUND_NOTE}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -225,6 +234,7 @@ export default async function ListingPage({
           <AvailabilityCalendar
             slug={listing.slug}
             instant={listing.bookingMode === "INSTANT"}
+            feeApplies={takesPaymentAtBooking(listing, host)}
             basePrice={listing.basePrice}
             cleaningFee={listing.cleaningFee}
             minNights={listing.minNights}

@@ -6,10 +6,13 @@ import { useRouter } from "next/navigation";
 import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/style.css";
 import { formatMoney } from "@/lib/format";
+import { ADMIN_FEE_NAME, ADMIN_FEE_PERCENT, ADMIN_FEE_REFUND_NOTE, adminFee } from "@/lib/stayPaymentInfo";
 
 type Props = {
   slug: string;
   instant?: boolean;
+  /** Instant booking paid through the site: the admin service fee is added to the total. */
+  feeApplies?: boolean;
   basePrice: number;
   cleaningFee: number;
   minNights: number;
@@ -32,6 +35,7 @@ function formatFriendly(d: Date) {
 
 export function AvailabilityCalendar({
   instant = false,
+  feeApplies = false,
   slug,
   basePrice,
   cleaningFee,
@@ -70,6 +74,7 @@ export function AvailabilityCalendar({
 
   const nights = range?.from && range?.to ? nightsBetween(range.from, range.to) : 0;
   const total = nights > 0 ? basePrice * nights + cleaningFee : 0;
+  const fee = feeApplies && total > 0 ? adminFee(total) : 0;
   const meetsMinStay = nights === 0 || nights >= minNights;
 
   function handleBookNow() {
@@ -98,6 +103,11 @@ export function AvailabilityCalendar({
           <p className="text-xs text-muted">+ {formatMoney(cleaningFee)} cleaning fee</p>
         )}
       </div>
+      {feeApplies && (
+        <p className="mt-1 text-xs text-muted">
+          + {ADMIN_FEE_PERCENT}% {ADMIN_FEE_NAME.toLowerCase()}
+        </p>
+      )}
 
       <div className="mt-4 overflow-x-auto">
         <DayPicker
@@ -189,10 +199,19 @@ export function AvailabilityCalendar({
               <span>{formatMoney(cleaningFee)}</span>
             </div>
           )}
+          {fee > 0 && (
+            <div className="flex justify-between gap-3">
+              <span>
+                {ADMIN_FEE_NAME} ({ADMIN_FEE_PERCENT}%)
+              </span>
+              <span>{formatMoney(fee)}</span>
+            </div>
+          )}
           <div className="flex justify-between font-semibold">
             <span>Total</span>
-            <span>{formatMoney(total)}</span>
+            <span>{formatMoney(total + fee)}</span>
           </div>
+          {fee > 0 && <p className="text-xs text-muted">{ADMIN_FEE_REFUND_NOTE}</p>}
         </div>
       )}
 

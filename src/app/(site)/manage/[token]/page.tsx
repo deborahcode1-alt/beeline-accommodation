@@ -11,11 +11,10 @@ import { confirmCheckoutSession } from "@/lib/stayPayment";
 import { releaseHoldIfExpired } from "@/lib/holds";
 import {
   HOLD_MINUTES,
+  adminFeeFor,
   bankDetailsOf,
   bookingReference,
   cardPaymentsOn,
-  cardSurcharge,
-  surchargeLabel,
 } from "@/lib/stayPaymentInfo";
 
 export const dynamic = "force-dynamic";
@@ -126,8 +125,7 @@ export default async function ManageBookingPage({
             paymentMethod={booking.paymentMethod}
             amountPaid={booking.amountPaid}
             total={booking.totalPrice}
-            surcharge={cardSurcharge(booking.totalPrice)}
-            surchargeLabel={surchargeLabel()}
+            fee={adminFeeFor(booking.totalPrice, booking.listing.bookingMode)}
             reference={bookingReference(booking.id)}
             bank={holdActive ? null : bankDetailsOf(booking.listing.host)}
             cardAvailable={cardPaymentsOn(booking.listing.host)}

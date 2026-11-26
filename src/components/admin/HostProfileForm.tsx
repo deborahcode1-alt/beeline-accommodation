@@ -277,7 +277,7 @@ export function HostProfileForm({
         </legend>
         <p className="text-xs text-muted">
           Guests only see these after they book, with a reference to put on their transfer. Paying by bank
-          transfer has no service fee, so it is the cheapest way for guests to pay.
+          transfer goes straight to the host and carries no admin service fee.
         </p>
         <label className="flex flex-col gap-1 text-sm">
           Account name
@@ -318,7 +318,7 @@ export function HostProfileForm({
               className="mt-0.5"
             />
             <span>
-              Let guests pay this host by card (through the Book On Beeline Stripe account, with the service fee added)
+              Let guests pay this host by card (through the Book On Beeline Stripe account; instant bookings add the admin service fee)
             </span>
           </label>
         )}

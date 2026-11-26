@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatMoney } from "@/lib/format";
+import { ADMIN_FEE_NAME, ADMIN_FEE_PERCENT, ADMIN_FEE_REFUND_NOTE } from "@/lib/stayPaymentInfo";
 
 type Props = {
   token: string;
@@ -10,8 +11,8 @@ type Props = {
   paymentMethod: string | null;
   amountPaid: number | null;
   total: number;
-  surcharge: number;
-  surchargeLabel: string;
+  /** The admin service fee added to a card payment; 0 when this booking doesn't carry it. */
+  fee: number;
   reference: string;
   bank: { accountName: string; bsb: string; accountNumber: string } | null;
   cardAvailable: boolean;
@@ -22,7 +23,8 @@ type Props = {
   holdMinutes?: number;
 };
 
-// How the guest pays up front: bank transfer with no service fee, or card with the service fee on the invoice.
+// How the guest pays up front: bank transfer straight to the host, or card (with the admin service fee on the invoice
+// for instant bookings).
 export function StayPayment({
   token,
   status,
@@ -30,8 +32,7 @@ export function StayPayment({
   paymentMethod,
   amountPaid,
   total,
-  surcharge,
-  surchargeLabel,
+  fee,
   reference,
   bank,
   cardAvailable,
@@ -138,7 +139,9 @@ export function StayPayment({
             <h3 className="mt-1 font-semibold">Direct bank transfer</h3>
             <p className="mt-1 text-2xl font-extrabold">{formatMoney(total)}</p>
             <p className="text-xs text-muted">
-              {cardAvailable ? `No service fee. You save ${formatMoney(surcharge)}.` : "No service fee."}
+              {cardAvailable && fee > 0
+                ? `Paid straight to the host, with no admin service fee. You save ${formatMoney(fee)}.`
+                : "Paid straight to the host."}
             </p>
             <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
               <dt className="text-muted">Account name</dt>
@@ -172,13 +175,17 @@ export function StayPayment({
           <div className="rounded-md border border-card-border p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">Card</p>
             <h3 className="mt-1 font-semibold">Credit or debit card</h3>
-            <p className="mt-1 text-2xl font-extrabold">{formatMoney(total + surcharge)}</p>
-            <p className="text-xs text-muted">
-              {formatMoney(total)} + {formatMoney(surcharge)} service fee ({surchargeLabel})
-            </p>
+            <p className="mt-1 text-2xl font-extrabold">{formatMoney(total + fee)}</p>
+            {fee > 0 && (
+              <p className="text-xs text-muted">
+                {formatMoney(total)} + {formatMoney(fee)} {ADMIN_FEE_NAME.toLowerCase()} ({ADMIN_FEE_PERCENT}%)
+              </p>
+            )}
             <p className="mt-3 text-sm text-muted">
-              Secure payment by Stripe. The service fee appears as its own line on your invoice and receipt.
+              Secure payment by Stripe.
+              {fee > 0 && " The admin service fee appears as its own line on your invoice and receipt."}
             </p>
+            {fee > 0 && <p className="mt-2 text-sm text-muted">{ADMIN_FEE_REFUND_NOTE}</p>}
             <p className="mt-3 rounded-md bg-soft px-3 py-2 text-sm">
               <strong>The host&apos;s cancellation policy applies to card payments too.</strong> To cancel or change
               your booking, contact your host, who arranges any refund. This does not affect your rights under the
@@ -192,7 +199,9 @@ export function StayPayment({
                 className="mt-0.5"
               />
               <span>
-                I accept the host&apos;s cancellation policy, and understand that any refund is arranged with the host.
+                I accept the host&apos;s cancellation policy, and understand that any refund is arranged with the host
+                {fee > 0 && " and that the admin service fee is non-refundable (except as the law requires, or if the host cancels or can't provide the stay)"}
+                .
               </span>
             </label>
             <button
@@ -201,7 +210,7 @@ export function StayPayment({
               onClick={payByCard}
               className="mt-3 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover disabled:opacity-50"
             >
-              {busy === "card" ? "Opening secure payment..." : `Pay ${formatMoney(total + surcharge)} by card`}
+              {busy === "card" ? "Opening secure payment..." : `Pay ${formatMoney(total + fee)} by card`}
             </button>
           </div>
         )}

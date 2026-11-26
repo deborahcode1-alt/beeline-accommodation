@@ -4,7 +4,13 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatMoney } from "@/lib/format";
-import { HOLD_MINUTES, cardSurcharge, surchargeLabel } from "@/lib/stayPaymentInfo";
+import {
+  ADMIN_FEE_NAME,
+  ADMIN_FEE_PERCENT,
+  ADMIN_FEE_REFUND_NOTE,
+  HOLD_MINUTES,
+  adminFee,
+} from "@/lib/stayPaymentInfo";
 
 type Props = {
   listingId: string;
@@ -21,14 +27,12 @@ type Props = {
   initialCheckIn: string;
   initialCheckOut: string;
   initialGuests: number;
-  /** The host has bank details, so guests can pay by direct transfer with no service fee. */
+  /** The host has bank details, so guests can pay them by direct transfer. */
   bankTransfer?: boolean;
-  /** Guests can also pay by card, with a service fee added. */
+  /** Guests can also pay by card. */
   cardPayments?: boolean;
   /** Instant booking paid at booking: the dates are held for a short time while the guest pays by card. */
   payAtBooking?: boolean;
-  surchargePercent?: number;
-  surchargeFixed?: number;
 };
 
 function nightsBetween(checkIn: string, checkOut: string) {
@@ -54,8 +58,6 @@ export function BookingForm({
   bankTransfer = false,
   cardPayments = false,
   payAtBooking = false,
-  surchargePercent = 1.7,
-  surchargeFixed = 0.3,
 }: Props) {
   const [checkIn, setCheckIn] = useState(initialCheckIn);
   const [checkOut, setCheckOut] = useState(initialCheckOut);
@@ -70,12 +72,12 @@ export function BookingForm({
   const [success, setSuccess] = useState(false);
   const [manageToken, setManageToken] = useState<string | null>(null);
   const router = useRouter();
-  const rate = { percent: surchargePercent, fixed: surchargeFixed };
   const onlinePayment = bankTransfer || cardPayments;
 
   const nights = checkIn && checkOut ? nightsBetween(checkIn, checkOut) : 0;
   const total = nights > 0 ? basePrice * nights + cleaningFee : 0;
-  const surcharge = total > 0 ? cardSurcharge(total, rate) : 0;
+  // The admin service fee applies to instant bookings paid through the site (pay at booking).
+  const fee = payAtBooking && total > 0 ? adminFee(total) : 0;
   const meetsMinStay = nights <= 0 || nights >= minNights;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -282,6 +284,11 @@ export function BookingForm({
                 arranges any refund.
               </p>
             )}
+            {payAtBooking && (
+              <p className="font-medium text-foreground">
+                Instant bookings include an {ADMIN_FEE_NAME.toLowerCase()} of {ADMIN_FEE_PERCENT}%. {ADMIN_FEE_REFUND_NOTE}
+              </p>
+            )}
           </div>
           <label className="mt-3 flex items-start gap-2 text-sm">
             <input
@@ -329,14 +336,14 @@ export function BookingForm({
         </button>
         <p className="mt-2 text-xs text-muted">
           {payAtBooking
-            ? "You'll pay by card on the next page (a service fee applies). The host's cancellation policy applies, and any refund is arranged with the host."
+            ? "You'll pay by card on the next page. The total includes the non-refundable admin service fee (exceptions are set out in the terms above). The host's cancellation policy applies, and any refund is arranged with the host."
             : onlinePayment
             ? `${instant ? "After you book" : "Once the host confirms"}, you pay up front ${
                 bankTransfer && cardPayments
-                  ? "by direct bank transfer (no service fee) or by card (a service fee applies)"
+                  ? "by direct bank transfer to the host or by card"
                   : bankTransfer
                     ? "by direct bank transfer"
-                    : "by card (a service fee applies)"
+                    : "by card"
               }.`
             : "Online payment isn't connected for this listing yet — the host will confirm your dates and arrange payment directly with you."}
         </p>
@@ -361,27 +368,19 @@ export function BookingForm({
                 <span>{formatMoney(cleaningFee)}</span>
               </div>
             )}
+            {fee > 0 && (
+              <div className="flex justify-between gap-3">
+                <span>
+                  {ADMIN_FEE_NAME} ({ADMIN_FEE_PERCENT}%)
+                </span>
+                <span>{formatMoney(fee)}</span>
+              </div>
+            )}
             <div className="flex justify-between border-t border-card-border pt-1 font-semibold">
-              <span>{bankTransfer ? "Total (bank transfer)" : "Total"}</span>
-              <span>{formatMoney(total)}</span>
+              <span>Total</span>
+              <span>{formatMoney(total + fee)}</span>
             </div>
-            {cardPayments && (
-              <>
-                <div className="flex justify-between text-muted">
-                  <span>Service fee ({surchargeLabel(rate)})</span>
-                  <span>+{formatMoney(surcharge)}</span>
-                </div>
-                <div className="flex justify-between text-muted">
-                  <span>Total by card</span>
-                  <span>{formatMoney(total + surcharge)}</span>
-                </div>
-              </>
-            )}
-            {bankTransfer && cardPayments && (
-              <p className="pt-2 text-xs text-accent-deep">
-                Pay by bank transfer and save {formatMoney(surcharge)}.
-              </p>
-            )}
+            {fee > 0 && <p className="pt-2 text-xs text-muted">{ADMIN_FEE_REFUND_NOTE}</p>}
           </div>
         ) : (
           <p className="mt-3 text-sm text-muted">Enter your dates to see a price.</p>

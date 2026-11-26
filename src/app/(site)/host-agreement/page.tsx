@@ -12,7 +12,7 @@ export default function HostAgreementPage() {
         {
           heading: "The service",
           body: [
-            "Book On Beeline provides hosts with a listing on the platform, a bookings dashboard and tools to contact guests. Book On Beeline does not take a commission on bookings. Hosts pay the subscription fee, and guests who pay by card pay a service fee that covers card processing costs (see \"Card payments through Stripe\").",
+            "Book On Beeline provides hosts with a listing on the platform, a bookings dashboard and tools to contact guests. Book On Beeline does not take a commission on bookings. Hosts pay the subscription fee, and guests pay an admin service fee on instant bookings paid online (see \"Card payments through Stripe\").",
           ],
         },
         {
@@ -46,7 +46,8 @@ export default function HostAgreementPage() {
             "This section applies when card payments are switched on for your account. Guests then pay by card through Stripe, and the payment goes directly to your own Stripe account. Book On Beeline never holds the guest's money.",
             "Your listing's cancellation policy applies to every booking, whether the guest pays by card or bank transfer. If a guest wants to cancel or change a booking, they contact you. You decide it under your policy and the law, and you pay any refund. A card refund goes back to the guest's card through Stripe. Any amount you keep must follow the policy shown when the guest booked. Book On Beeline does not hold guest money and, to the extent the law allows, takes no responsibility for cancellations or refunds.",
             "This does not limit anyone's rights under the Australian Consumer Law. If you cancel a booking, cannot provide the stay, or the listing is not as described, you must refund the guest promptly.",
-            "You are the seller. You are responsible for refunds, payment disputes and chargebacks, and you settle them with the guest directly. Book On Beeline takes no commission and no deduction from your booking payment, and takes no part in refunds or cancellations. The guest pays a separate service fee that covers card processing costs. [Service fee under review: card surcharges are restricted from 1 October 2026. Lawyer to confirm the fee and refund wording.]",
+            "You are the seller. You are responsible for refunds, payment disputes and chargebacks, and you settle them with the guest directly. Book On Beeline takes no commission and no deduction from your booking payment, and takes no part in refunds or cancellations. ",
+            "Admin service fee for online bookings: Instant bookings paid through Book On Beeline include an admin service fee for online bookings of 2% of the booking price, paid by the guest in addition to the price of the stay. Booking requests, and bank transfers paid straight to you, do not include it. The fee is non-refundable, except if you cancel, you cannot provide the stay, or the law requires a refund. [To be confirmed: who receives the fee. Lawyer to confirm the fee and refund wording.]",
             "You must complete Stripe's setup and identity checks and keep your details correct. Stripe's terms apply to you.",
           ],
         },

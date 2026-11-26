@@ -97,7 +97,10 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
         <p className="font-medium text-foreground">How it works</p>
         <ul className="mt-2 list-disc space-y-1 pl-5">
           <li>The payment goes directly to your Stripe account. Book On Beeline never holds the money and takes no commission.</li>
-          <li>Guests pay a separate service fee on top of the price, which covers card processing costs.</li>
+          <li>
+            Instant bookings paid online add a 2% admin service fee for online bookings on top of the price. It is
+            non-refundable, except if you cancel, can&apos;t provide the stay, or the law requires a refund.
+          </li>
           <li>
             Your cancellation policy applies to card payments too. Guests contact you if something changes, and you
             arrange any refund.

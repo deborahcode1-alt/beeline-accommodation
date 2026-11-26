@@ -13,15 +13,17 @@ import {
 import { isRangeAvailable } from "@/lib/availability";
 import { releaseHoldIfExpired } from "@/lib/holds";
 import {
+  ADMIN_FEE_NAME,
+  ADMIN_FEE_PERCENT,
+  ADMIN_FEE_REFUND_NOTE,
+  adminFeeFor,
   bookingReference,
   cardPaymentsOn,
-  cardSurcharge,
   paysIntoOwnStripe,
-  surchargeLabel,
 } from "@/lib/stayPaymentInfo";
 
 // Paying for a stay by card. The guest is sent to a Stripe-hosted page, where the invoice shows the
-// stay and a separate "service fee" line. Stripe tells us (webhook) when it is paid, and the
+// stay and, for instant bookings, a separate admin service fee line. Stripe tells us (webhook) when it is paid, and the
 // manage page also checks on return, so the booking is marked paid either way.
 
 const bookingInclude = { listing: { select: { id: true, name: true, hostId: true } } } as const;
@@ -62,7 +64,8 @@ export async function createStayCheckout(token: string, agreedToCardTerms: boole
   const hostAccount = paysIntoOwnStripe(booking.listing.host) ? (booking.listing.host?.stripeAccountId ?? null) : null;
 
   const total = booking.totalPrice;
-  const surcharge = cardSurcharge(total);
+  // The admin service fee applies to instant bookings only; a booking request pays the stay price alone.
+  const fee = adminFeeFor(total, booking.listing.bookingMode);
   const ref = bookingReference(booking.id);
   const dates = `${formatDate(booking.checkIn)} to ${formatDate(booking.checkOut)}`;
 
@@ -74,8 +77,8 @@ export async function createStayCheckout(token: string, agreedToCardTerms: boole
     ...(wasHold
       ? { expires_at: Math.floor(Math.max(booking.holdExpiresAt!.getTime(), Date.now() + 31 * 60 * 1000) / 1000) }
       : {}),
-    // Cards only (Apple Pay and Google Pay run on cards). The service fee is sized to the card fee, and
-    // buy-now-pay-later methods the live account switches on cost more than that.
+    // Cards only (Apple Pay and Google Pay run on cards). Buy-now-pay-later methods the live account switches on
+    // cost the host much more, so they are left out.
     allowed_payment_method_types: ["card"],
     customer_email: booking.guestEmail,
     client_reference_id: booking.id,
@@ -91,17 +94,21 @@ export async function createStayCheckout(token: string, agreedToCardTerms: boole
           },
         },
       },
-      {
-        quantity: 1,
-        price_data: {
-          currency: "aud",
-          unit_amount: Math.round(surcharge * 100),
-          product_data: {
-            name: "Service fee",
-            description: `${surchargeLabel()}. Pay by bank transfer to avoid this.`,
-          },
-        },
-      },
+      ...(fee > 0
+        ? [
+            {
+              quantity: 1,
+              price_data: {
+                currency: "aud",
+                unit_amount: Math.round(fee * 100),
+                product_data: {
+                  name: ADMIN_FEE_NAME,
+                  description: `${ADMIN_FEE_PERCENT}% of the booking. ${ADMIN_FEE_REFUND_NOTE}`,
+                },
+              },
+            },
+          ]
+        : []),
     ],
     payment_intent_data: {
       description: `Stay at ${booking.listing.name}, ${dates} (${ref})`,
@@ -115,7 +122,7 @@ export async function createStayCheckout(token: string, agreedToCardTerms: boole
         metadata: { bookingId: booking.id, reference: ref },
       },
     },
-    metadata: { bookingId: booking.id, reference: ref, surchargeCents: String(Math.round(surcharge * 100)) },
+    metadata: { bookingId: booking.id, reference: ref, surchargeCents: String(Math.round(fee * 100)) },
     success_url: `${SITE_URL}/manage/${token}?paid=card&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${SITE_URL}/manage/${token}?paid=cancelled`,
     },

@@ -101,7 +101,7 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
     {
       key: "bank",
       label: "Add your bank details",
-      detail: "So guests can pay by direct bank transfer, with no service fee.",
+      detail: "So guests can pay you by direct bank transfer.",
       done: !!bankDetailsOf(host),
       href: profileHref,
     },

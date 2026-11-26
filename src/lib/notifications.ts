@@ -8,6 +8,8 @@ import {
   bookingReference,
   cardPaymentsOn,
   paymentInstructionsText,
+  ADMIN_FEE_REFUND_NOTE,
+  adminFee,
 } from "@/lib/stayPaymentInfo";
 
 type BookingWithListing = {
@@ -128,8 +130,10 @@ export async function notifyPaymentHold(booking: BookingWithListing, expiresAt: 
   await tryEmail(
     booking.guestEmail,
     `Finish booking ${booking.listing.name}: pay within 30 minutes`,
-    `Hi ${booking.guestName.split(" ")[0]},\n\nWe're holding ${booking.listing.name} (${dates}, ${formatMoney(booking.totalPrice)} total) ` +
+    `Hi ${booking.guestName.split(" ")[0]},\n\nWe're holding ${booking.listing.name} (${dates}) ` +
       `for you until ${holdTime(expiresAt)} (Queensland time) while you pay by card.\n\n` +
+      `Total to pay: ${formatMoney(booking.totalPrice + adminFee(booking.totalPrice))}, which includes a ` +
+      `${formatMoney(adminFee(booking.totalPrice))} admin service fee for online bookings. ${ADMIN_FEE_REFUND_NOTE}\n\n` +
       `Your booking isn't confirmed until the payment goes through. If you don't pay in time, the dates are released ` +
       `for other guests.\n\nPay now: ${manageUrl(booking.manageToken)}\n\n- ${SITE_NAME}`
   );
@@ -164,10 +168,11 @@ export async function notifyPaidAfterRelease(booking: BookingWithListing, refund
 async function paymentOptionsFor(booking: BookingWithListing) {
   const row = await prisma.booking.findUnique({
     where: { id: booking.id },
-    select: { paymentStatus: true, totalPrice: true, listing: { select: { host: true } } },
+    select: { paymentStatus: true, totalPrice: true, listing: { select: { host: true, bookingMode: true } } },
   });
   const host = row?.listing.host ?? null;
   return {
+    instant: row?.listing.bookingMode === "INSTANT",
     paid: row?.paymentStatus === "PAID",
     total: row?.totalPrice ?? booking.totalPrice,
     bank: bankDetailsOf(host),
@@ -187,6 +192,7 @@ export async function confirmationEmailContent(booking: BookingWithListing) {
         bank: pay.bank,
         cardAvailable: pay.cardAvailable,
         payLink: link,
+        instant: pay.instant,
       });
   const paymentPart = pay.paid
     ? "Your payment has been received. Thank you!"
@@ -225,8 +231,12 @@ export async function notifyPaymentReceived(
     booking.guestEmail,
     `Payment received for ${booking.listing.name}`,
     `Hi ${booking.guestName.split(" ")[0]},\n\nThanks, we've received your card payment of ${formatMoney(paid.amount)} ` +
-      `for ${booking.listing.name} (${dates}). That is ${formatMoney(paid.amount - paid.surcharge)} for your stay plus a ` +
-      `${formatMoney(paid.surcharge)} service fee. Reference ${ref}.\n\nStripe will also email you a receipt.\n\n` +
+      `for ${booking.listing.name} (${dates}).` +
+      (paid.surcharge > 0
+        ? ` That is ${formatMoney(paid.amount - paid.surcharge)} for your stay plus a ${formatMoney(paid.surcharge)} ` +
+          `admin service fee for online bookings. ${ADMIN_FEE_REFUND_NOTE}`
+        : "") +
+      ` Reference ${ref}.\n\nStripe will also email you a receipt.\n\n` +
       `Manage your booking: ${manageUrl(booking.manageToken)}\n\n- ${SITE_NAME}`
   );
   const host = await hostContact(booking.listing.hostId);
@@ -234,7 +244,8 @@ export async function notifyPaymentReceived(
     host.email,
     `Paid by card: ${booking.listing.name}`,
     `${booking.guestName} paid ${formatMoney(paid.amount)} by card for ${booking.listing.name}, ${dates} ` +
-      `(includes a ${formatMoney(paid.surcharge)} service fee). Reference ${ref}. The booking is marked paid.`
+      (paid.surcharge > 0 ? `(includes a ${formatMoney(paid.surcharge)} admin service fee). ` : "") +
+      `Reference ${ref}. The booking is marked paid.`
   );
   await trySms(host.phone, `${booking.guestName} paid ${formatMoney(paid.amount)} by card for ${booking.listing.name}, ${dates}.`);
 }
