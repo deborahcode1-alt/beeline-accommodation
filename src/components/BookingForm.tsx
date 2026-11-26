@@ -278,8 +278,8 @@ export function BookingForm({
             ))}
             {cardPayments && (
               <p className="font-medium text-foreground">
-                Paying by card: card payments are final, with no refund policy. If something changes, contact the host.
-                The policy above applies to bookings not paid by card.
+                The policy above applies to card payments too. To cancel or change a booking, contact the host, who
+                arranges any refund.
               </p>
             )}
           </div>
@@ -329,7 +329,7 @@ export function BookingForm({
         </button>
         <p className="mt-2 text-xs text-muted">
           {payAtBooking
-            ? "You'll pay by card on the next page (a service fee applies). Card payments are final: there is no refund policy. If something changes, contact the host."
+            ? "You'll pay by card on the next page (a service fee applies). The host's cancellation policy applies, and any refund is arranged with the host."
             : onlinePayment
             ? `${instant ? "After you book" : "Once the host confirms"}, you pay up front ${
                 bankTransfer && cardPayments

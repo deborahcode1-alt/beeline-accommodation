@@ -180,9 +180,9 @@ export function StayPayment({
               Secure payment by Stripe. The service fee appears as its own line on your invoice and receipt.
             </p>
             <p className="mt-3 rounded-md bg-soft px-3 py-2 text-sm">
-              <strong>Card payments are final: there is no refund policy.</strong> If something changes, contact your
-              host. They can arrange a refund or a change. This does not affect your rights under the Australian
-              Consumer Law.
+              <strong>The host&apos;s cancellation policy applies to card payments too.</strong> To cancel or change
+              your booking, contact your host, who arranges any refund. This does not affect your rights under the
+              Australian Consumer Law.
             </p>
             <label className="mt-3 flex items-start gap-2 text-sm">
               <input
@@ -192,7 +192,7 @@ export function StayPayment({
                 className="mt-0.5"
               />
               <span>
-                I understand a card payment is final, and that I should contact my host if something changes.
+                I accept the host&apos;s cancellation policy, and understand that any refund is arranged with the host.
               </span>
             </label>
             <button

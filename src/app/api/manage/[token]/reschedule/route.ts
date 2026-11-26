@@ -40,7 +40,7 @@ export async function POST(
   }
   if (existing.paymentStatus === "PAID" && existing.paymentMethod === "CARD") {
     return NextResponse.json(
-      { error: "Card payments are final. Please contact your host to ask about changing your dates." },
+      { error: "This booking has been paid by card. Please contact your host to ask about changing your dates." },
       { status: 400 }
     );
   }

@@ -1,5 +1,19 @@
 export type LegalSection = { heading: string; body: string[] };
 
+/** Turns "[words](https://...)" into a link. Plain "[square brackets]" are left as they are. */
+function withLinks(text: string) {
+  const parts = text.split(/(\[[^\]]+\]\(https:\/\/[^)\s]+\))/);
+  return parts.map((part, i) => {
+    const link = part.match(/^\[([^\]]+)\]\((https:\/\/[^)\s]+)\)$/);
+    if (!link) return part;
+    return (
+      <a key={i} href={link[2]} className="text-accent-deep underline">
+        {link[1]}
+      </a>
+    );
+  });
+}
+
 export function LegalPage({
   title,
   updated,
@@ -27,7 +41,9 @@ export function LegalPage({
             </h2>
             <div className="mt-2 space-y-2 text-sm leading-relaxed text-foreground/85">
               {s.body.map((p, j) => (
-                <p key={j}>{p}</p>
+                <p key={j} className={p.startsWith("• ") ? "pl-4" : undefined}>
+                  {withLinks(p)}
+                </p>
               ))}
             </div>
           </section>

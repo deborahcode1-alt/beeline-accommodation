@@ -225,8 +225,8 @@ export function ManageBookingClient({
           <div className="mt-5 border-t border-card-border pt-5 text-sm">
             <p className="font-medium">Need to change or cancel?</p>
             <p className="mt-1 text-muted">
-              Card payments are final, so there is nothing to change on this page. Contact{" "}
-              {hostName ? hostName : "your host"} and they can arrange a refund or a change if they are able to.
+              The host&apos;s cancellation policy applies. To cancel, change your dates or ask for a refund, contact{" "}
+              {hostName ? hostName : "your host"}. Refunds are arranged with the host.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {hostPhone && (

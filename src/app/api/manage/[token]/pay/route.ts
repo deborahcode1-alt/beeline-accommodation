@@ -5,7 +5,7 @@ import { createStayCheckout } from "@/lib/stayPayment";
 const schema = z.object({ agreed: z.boolean() });
 
 // Starts a card payment for the stay. The guest holds the private manage link, which is the proof it is theirs.
-// They must have ticked that a card payment is final; the tick is saved with the booking.
+// They must have accepted the cancellation and refund terms; the tick is saved with the booking.
 export async function POST(req: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const parsed = schema.safeParse(await req.json().catch(() => null));

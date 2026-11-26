@@ -51,9 +51,9 @@ export async function createStayCheckout(token: string, agreedToCardTerms: boole
   if (!cardPaymentsOn(booking.listing.host)) {
     throw new Error("Card payment isn't available for this stay. Please pay by bank transfer.");
   }
-  // A card payment is final, so the guest must have agreed to that before paying. The time is kept as proof.
+  // The guest must have accepted the cancellation and refund terms before paying. The time is kept as proof.
   if (!agreedToCardTerms) {
-    throw new Error("Please tick the box to confirm you understand a card payment is final.");
+    throw new Error("Please tick the box to accept the host's cancellation policy.");
   }
   await prisma.booking.update({ where: { id: booking.id }, data: { cardTermsAgreedAt: new Date() } });
 

@@ -212,9 +212,9 @@ export default async function ListingPage({
               ))}
               {cardPaymentsOn(host) && (
                 <p className="rounded-md bg-soft px-3 py-2 text-foreground">
-                  <strong>Paying by card:</strong> card payments are final, with no refund policy. If something changes,
-                  contact the host, who can arrange a refund or a change. The policy above applies to bookings not
-                  paid by card. Your rights under the Australian Consumer Law are not affected.
+                  <strong>Paying by card:</strong> the cancellation policy above applies to card payments too. To cancel
+                  or change a booking, contact the host, who arranges any refund. Your rights under the Australian
+                  Consumer Law are not affected.
                 </p>
               )}
             </div>

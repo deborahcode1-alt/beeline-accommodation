@@ -529,8 +529,8 @@ export function ListingForm({
         <legend className="font-medium">Cancellation policy</legend>
         <p className="text-xs text-muted">
           Pick a ready-made policy guests will recognise from Airbnb and Booking.com, or write your own. It is shown on
-          the listing page and again when someone books. It applies to bookings that are not paid by card: card
-          payments are final, and guests contact you if something changes.
+          the listing page and again when someone books. It applies to every booking, including card payments, and
+          you arrange any refund.
         </p>
         {POLICY_CHOICES.map((choice) => {
           const preset = presetFor(choice.type);

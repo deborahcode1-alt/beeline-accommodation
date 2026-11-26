@@ -16,10 +16,10 @@ export async function POST(
     return NextResponse.json({ error: "This booking is already inactive" }, { status: 400 });
   }
 
-  // A card payment is final: changes and refunds go through the host, not this page.
+  // A card-paid booking involves a refund, so cancelling goes through the host, not this page.
   if (existing.paymentStatus === "PAID" && existing.paymentMethod === "CARD") {
     return NextResponse.json(
-      { error: "Card payments are final. Please contact your host if something has changed." },
+      { error: "Please contact your host to cancel. Any refund is arranged with the host under their cancellation policy." },
       { status: 400 }
     );
   }
