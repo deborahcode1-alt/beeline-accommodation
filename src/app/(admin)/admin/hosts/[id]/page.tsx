@@ -52,7 +52,7 @@ export default async function HostDetailPage({
             ))}
       </p>
 
-      <div className="mt-8">
+      <div id="subscription" className="mt-8 scroll-mt-24">
         <OwnerHostControls
           hostId={host.id}
           status={host.subscriptionStatus}
@@ -76,7 +76,9 @@ export default async function HostDetailPage({
         </section>
       )}
 
-      <h2 className="mt-12 text-lg font-semibold">Profile</h2>
+      <h2 id="profile" className="mt-12 scroll-mt-24 text-lg font-semibold">
+        Profile
+      </h2>
       <div className="mt-3">
         <HostProfileForm
           hostId={host.id}

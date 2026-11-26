@@ -15,6 +15,8 @@ export type GetLiveItem = {
   /** Not needed to go live, so it is left out of the count until it is done. */
   optional?: boolean;
   href?: string;
+  /** Shown to the owner instead of a button, for a step only the host can do. */
+  note?: string;
   /** A step the host confirms with a button rather than by filling something in. */
   action?: GetLiveAction;
 };
@@ -68,8 +70,12 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
   });
   if (!host) return null;
 
-  // Hosts edit their own profile; the owner reaches the same form from the host's page.
-  const profileHref = opts.forOwner ? `/admin/hosts/${host.id}` : "/admin/profile";
+  // Hosts edit their own profile; the owner reaches the same form from the host's page, so the owner's buttons jump
+  // to the right part of that page.
+  const ownerHref = (section: string) => `/admin/hosts/${host.id}#${section}`;
+  const profileHref = opts.forOwner ? ownerHref("profile") : "/admin/profile";
+  const alertsHref = opts.forOwner ? ownerHref("alerts") : "/admin/profile";
+  const bankHref = opts.forOwner ? ownerHref("bank") : "/admin/profile";
   const listings = host.listings;
   const names = (rows: { name: string }[]) => rows.map((l) => l.name).join(", ");
 
@@ -107,14 +113,14 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
       label: "Set where booking alerts go",
       detail: "The email address that gets a message when a booking arrives. A mobile number for texts is a bonus.",
       done: !!host.notificationEmail?.trim(),
-      href: profileHref,
+      href: alertsHref,
     },
     {
       key: "bank",
       label: "Add your bank details",
       detail: "So guests can pay you by direct bank transfer.",
       done: !!bankDetailsOf(host),
-      href: profileHref,
+      href: bankHref,
     },
     ...(connectOn
       ? [
@@ -129,7 +135,11 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
                   : "Needed for instant booking. Skip it if you only take booking requests and bank transfers."),
             done: stripeConnected,
             optional: !stripeConnected && instantListings.length === 0,
-            href: opts.forOwner ? `/admin/hosts/${host.id}` : "/admin/payments",
+            // Only the host can link their own Stripe account.
+            href: opts.forOwner ? undefined : "/admin/payments",
+            note: opts.forOwner
+              ? "The host does this from their own sign-in, on the Payments tab."
+              : undefined,
           },
         ]
       : []),
@@ -196,7 +206,7 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
         ? "You're on the free Starting up tier. We'll invite you to choose a plan near the end."
         : "Your first 30 days are free: you enter your card now and the first payment is taken after the month. Just getting started? You can choose the free Starting up tier instead. No commission on bookings either way.",
       done: subscribed,
-      href: opts.forOwner ? `/admin/hosts/${host.id}` : "/admin/subscription",
+      href: opts.forOwner ? ownerHref("subscription") : "/admin/subscription",
     },
   ];
 

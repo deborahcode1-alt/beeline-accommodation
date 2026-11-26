@@ -55,6 +55,7 @@ export function GetLiveChecklist({ items, canConfirm }: { items: GetLiveItem[]; 
                 )}
               </p>
               <p className="mt-0.5 text-sm text-muted">{item.detail}</p>
+              {!item.done && item.note && <p className="mt-1 text-sm font-medium">{item.note}</p>}
               {!item.done && (
                 <div className="mt-2 flex flex-wrap items-center gap-3">
                   {item.href && (

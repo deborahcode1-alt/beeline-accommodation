@@ -248,7 +248,7 @@ export function HostProfileForm({
         </p>
       </fieldset>
 
-      <fieldset className="grid gap-4 rounded-lg border border-card-border p-4">
+      <fieldset id="alerts" className="grid scroll-mt-24 gap-4 rounded-lg border border-card-border p-4">
         <legend className="px-1 text-sm font-semibold">
           Where we send your booking alerts (private)
         </legend>
@@ -271,7 +271,7 @@ export function HostProfileForm({
         </label>
       </fieldset>
 
-      <fieldset className="grid gap-4 rounded-lg border border-card-border p-4">
+      <fieldset id="bank" className="grid scroll-mt-24 gap-4 rounded-lg border border-card-border p-4">
         <legend className="px-1 text-sm font-semibold">
           Where guests send a bank transfer (private)
         </legend>
