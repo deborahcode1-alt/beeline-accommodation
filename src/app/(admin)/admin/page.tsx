@@ -150,7 +150,7 @@ export default async function AdminDashboardPage({
           <strong>Get your listings live:</strong>{" "}
           {getLive.allDone
             ? "all steps done. We’re checking everything over."
-            : `${getLive.doneCount} of ${getLive.items.length} steps done.`}
+            : `${getLive.doneCount} of ${getLive.total} steps done.`}
         </NoticeBar>
       )}
 

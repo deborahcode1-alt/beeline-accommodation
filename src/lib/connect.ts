@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { SITE_URL } from "@/lib/site";
 import { stripeClient } from "@/lib/stripeClient";
 import { recordCardPayment } from "@/lib/stayPayment";
+import { refreshReadyForReview } from "@/lib/readyForReview";
 
 // Stripe Connect (Standard accounts, direct charges). Each host links their own Stripe account, so a guest's
 // card payment goes straight to that host's Stripe account and bank. Beeline never holds the money and takes
@@ -42,6 +43,9 @@ export async function applyAccountStatus(account: Stripe.Account) {
       stripeDetailsSubmitted: !!account.details_submitted,
     },
   });
+  // Connecting Stripe can finish a host's Get live checklist.
+  const host = await prisma.host.findUnique({ where: { stripeAccountId: account.id }, select: { id: true } });
+  await refreshReadyForReview(host?.id);
 }
 
 /**

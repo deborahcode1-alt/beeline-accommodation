@@ -14,7 +14,7 @@ export default async function GetLivePage() {
 
   const result = await getLiveChecklist(ctx.hostId);
   if (!result) redirect("/admin");
-  const { items, doneCount, allDone, approved, listings } = result;
+  const { items, doneCount, total, allDone, approved, listings } = result;
 
   return (
     <div className="max-w-2xl">
@@ -36,20 +36,20 @@ export default async function GetLivePage() {
           </p>
         ) : allDone ? (
           <p>
-            <strong>All {items.length} steps done.</strong> We&apos;ll check everything and switch your listings on,
+            <strong>All {total} steps done.</strong> We&apos;ll check everything and switch your listings on,
             usually within a day. You&apos;ll get an email when you&apos;re live.
           </p>
         ) : (
           <p>
             <strong>
-              {doneCount} of {items.length} steps done.
+              {doneCount} of {total} steps done.
             </strong>{" "}
             Your listings aren&apos;t on the site yet. They go live after every step is finished and we&apos;ve
             approved it.
           </p>
         )}
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-foreground/10">
-          <div className="h-full bg-accent" style={{ width: `${Math.round((doneCount / items.length) * 100)}%` }} />
+          <div className="h-full bg-accent" style={{ width: `${Math.round((doneCount / total) * 100)}%` }} />
         </div>
       </div>
 

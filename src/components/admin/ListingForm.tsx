@@ -425,7 +425,7 @@ export function ListingForm({
           </select>
           {canInstant === false && form.bookingMode !== "INSTANT" && (
             <span className="text-xs text-muted">
-              Instant booking needs card payments. Connect your Stripe account from the Payments tab to switch it on.
+              Instant booking needs your own Stripe account. Connect it from the Payments tab to switch it on.
             </span>
           )}
         </label>

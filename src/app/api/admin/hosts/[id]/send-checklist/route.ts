@@ -18,7 +18,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
 
   const sent = await sendHostChecklistEmail(
     id,
-    result.items.filter((i) => !i.done).map((i) => i.label)
+    result.items.filter((i) => !i.done && !i.optional).map((i) => i.label)
   );
   if (sent.length === 0) {
     return NextResponse.json({ error: "This host has no sign-in or alert email to send to yet." }, { status: 400 });

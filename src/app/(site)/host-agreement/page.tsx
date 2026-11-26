@@ -37,7 +37,7 @@ export default function HostAgreementPage() {
           body: [
             "You decide for each listing whether bookings are instant or request-only, and you set your own prices and cancellation terms. Guests pay you directly, by bank transfer or, when card payments are switched on for your account, by card through Stripe. Book On Beeline does not hold guest money or resolve payment disputes.",
             "Keep your calendar accurate. If you use instant booking, you are responsible for honouring the bookings it confirms.",
-            "Instant booking with card payments: when you use instant booking and card payments are switched on for your account, the guest pays by card at the time of booking. We hold their dates for 30 minutes while they pay. You see the booking only once it is paid. If they do not pay in time, the hold lapses and the dates become available again. If a payment arrives after the dates were released and the dates have since been taken, we refund the guest automatically.",
+            "Instant booking with card payments: to switch on instant booking you must connect your own Stripe account. When you use instant booking and card payments are switched on for your account, the guest pays by card at the time of booking. We hold their dates for 30 minutes while they pay. You see the booking only once it is paid. If they do not pay in time, the hold lapses and the dates become available again. If a payment arrives after the dates were released and the dates have since been taken, we refund the guest automatically.",
           ],
         },
         {

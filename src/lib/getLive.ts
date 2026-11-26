@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { bankDetailsOf } from "@/lib/stayPaymentInfo";
+import { bankDetailsOf, paysIntoOwnStripe } from "@/lib/stayPaymentInfo";
 
 // The "Get live" checklist: what a host does before their listings appear on the site. Every step
 // ticks itself from what is saved, except the two the host confirms by hand (agreement, calendars).
@@ -12,6 +12,8 @@ export type GetLiveItem = {
   label: string;
   detail: string;
   done: boolean;
+  /** Not needed to go live, so it is left out of the count until it is done. */
+  optional?: boolean;
   href?: string;
   /** A step the host confirms with a button rather than by filling something in. */
   action?: GetLiveAction;
@@ -21,6 +23,8 @@ export type GetLiveResult = {
   hostName: string;
   items: GetLiveItem[];
   doneCount: number;
+  /** How many steps count towards going live. */
+  total: number;
   allDone: boolean;
   approved: boolean;
   listings: { id: string; name: string; exportToken: string }[];
@@ -37,7 +41,7 @@ export type NextStepInfo = { label: string; href: string } | null;
 export async function getNextStep(hostId: string, skipKeys: string[] = []): Promise<NextStepInfo> {
   const result = await getLiveChecklist(hostId);
   if (!result) return null;
-  const next = result.items.find((i) => !i.done && !skipKeys.includes(i.key));
+  const next = result.items.find((i) => !i.done && !i.optional && !skipKeys.includes(i.key));
   if (!next) return null;
   return { label: next.label, href: next.action ? "/admin/get-live" : (next.href ?? "/admin/get-live") };
 }
@@ -53,6 +57,7 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
           name: true,
           description: true,
           basePrice: true,
+          bookingMode: true,
           cancellationPolicy: true,
           icalExportToken: true,
           _count: { select: { photos: true } },
@@ -75,6 +80,12 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
   const needsCalendar = listings.filter(
     (l) => !l.icalImports.some((i) => i.lastSyncedAt && !i.lastError)
   );
+
+  // Instant booking is paid by card, so it needs the host's own Stripe account. Without an instant listing the step
+  // is optional.
+  const stripeConnected = paysIntoOwnStripe(host);
+  const instantListings = listings.filter((l) => l.bookingMode === "INSTANT");
+  const connectOn = process.env.STRIPE_CONNECT_ENABLED === "true";
 
   const subscribed =
     host.subscriptionStatus === "ACTIVE" ||
@@ -105,6 +116,23 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
       done: !!bankDetailsOf(host),
       href: profileHref,
     },
+    ...(connectOn
+      ? [
+          {
+            key: "stripe",
+            label: "Connect Stripe to take card payments",
+            detail: stripeConnected
+              ? "Your Stripe account is connected."
+              : (host.stripeAccountId ? "Stripe still needs a few details from you. " : "") +
+                (instantListings.length > 0
+                  ? `Needed because instant booking is on for: ${names(instantListings)}.`
+                  : "Needed for instant booking. Skip it if you only take booking requests and bank transfers."),
+            done: stripeConnected,
+            optional: !stripeConnected && instantListings.length === 0,
+            href: opts.forOwner ? `/admin/hosts/${host.id}` : "/admin/payments",
+          },
+        ]
+      : []),
     {
       key: "listing",
       label: "Add at least one listing",
@@ -172,12 +200,14 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
     },
   ];
 
-  const doneCount = items.filter((i) => i.done).length;
+  const counted = items.filter((i) => !i.optional);
+  const doneCount = counted.filter((i) => i.done).length;
   return {
     hostName: host.name,
     items,
     doneCount,
-    allDone: doneCount === items.length,
+    total: counted.length,
+    allDone: doneCount === counted.length,
     approved: !!host.liveApprovedAt,
     listings: listings.map((l) => ({ id: l.id, name: l.name, exportToken: l.icalExportToken })),
   };

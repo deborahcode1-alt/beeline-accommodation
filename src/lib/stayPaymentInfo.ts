@@ -76,6 +76,11 @@ export function cardPaymentsOn(host: HostPaymentFields | null | undefined) {
   return !testKey || process.env.ALLOW_TEST_CARD_PAYMENTS === "true";
 }
 
+/** Whether a host may switch instant booking on: their own Stripe account is connected and cards are working. */
+export function canTakeInstantBookings(host: HostPaymentFields | null | undefined) {
+  return paysIntoOwnStripe(host) && cardPaymentsOn(host);
+}
+
 /** The "how to pay" part of the confirmation email. Empty when the host has no online way to pay set up. */
 export function paymentInstructionsText(params: {
   total: number;

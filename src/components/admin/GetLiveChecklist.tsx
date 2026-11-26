@@ -48,6 +48,11 @@ export function GetLiveChecklist({ items, canConfirm }: { items: GetLiveItem[]; 
             <div className="min-w-0 flex-1">
               <p className="font-medium">
                 {item.label} <span className="sr-only">{item.done ? "(done)" : "(to do)"}</span>
+                {item.optional && (
+                  <span className="ml-2 rounded-full bg-foreground/10 px-2 py-0.5 text-xs font-medium text-muted">
+                    Optional
+                  </span>
+                )}
               </p>
               <p className="mt-0.5 text-sm text-muted">{item.detail}</p>
               {!item.done && (

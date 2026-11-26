@@ -66,7 +66,7 @@ export default async function HostDetailPage({
           <h2 className="text-lg font-semibold">Get live checklist</h2>
           <p className="mt-1 text-sm text-muted">
             {getLive.approved ? "Live on the site. " : "Not on the site yet. "}
-            {getLive.doneCount} of {getLive.items.length} steps done. The host sees this same list under Get live
+            {getLive.doneCount} of {getLive.total} steps done. The host sees this same list under Get live
             when they sign in.
           </p>
           <OwnerGetLive hostId={host.id} approved={getLive.approved} allDone={getLive.allDone} />
