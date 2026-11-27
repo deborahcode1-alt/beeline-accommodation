@@ -5,6 +5,7 @@ import { getAdminContext } from "@/lib/adminAuth";
 import { HostProfileForm } from "@/components/admin/HostProfileForm";
 import { OwnerHostControls } from "@/components/admin/OwnerHostControls";
 import { getLiveChecklist } from "@/lib/getLive";
+import { refreshConnectStatus } from "@/lib/connect";
 import { GetLiveChecklist } from "@/components/admin/GetLiveChecklist";
 import { OwnerGetLive } from "@/components/admin/OwnerGetLive";
 import { DeleteHostSection } from "@/components/admin/DeleteHostSection";
@@ -13,13 +14,18 @@ export const dynamic = "force-dynamic";
 
 export default async function HostDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ connect?: string }>;
 }) {
   const ctx = await getAdminContext();
   if (!ctx) redirect("/admin/login");
   if (!ctx.isOwner) redirect("/admin");
   const { id } = await params;
+  // Back from Stripe: ask it what happened, so the checklist is right straight away.
+  const { connect } = await searchParams;
+  if (connect === "return" || connect === "refresh") await refreshConnectStatus(id);
 
   const host = await prisma.host.findUnique({
     where: { id },

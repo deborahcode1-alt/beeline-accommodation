@@ -52,7 +52,7 @@ export async function applyAccountStatus(account: Stripe.Account) {
  * Where to send a host so they can link (or finish linking) their Stripe account. The first time, this creates a
  * Standard account for them on Stripe; the host then signs up with their own email and bank details on Stripe's pages.
  */
-export async function connectOnboardingUrl(hostId: string): Promise<string> {
+export async function connectOnboardingUrl(hostId: string, returnPath = "/admin/payments"): Promise<string> {
   if (!isConnectEnabled()) throw new Error("Card payments aren't switched on yet.");
   const host = await prisma.host.findUnique({ where: { id: hostId } });
   if (!host) throw new Error("Host not found.");
@@ -74,8 +74,8 @@ export async function connectOnboardingUrl(hostId: string): Promise<string> {
   const link = await stripe.accountLinks.create({
     account: accountId,
     type: "account_onboarding",
-    refresh_url: `${SITE_URL}/admin/payments?connect=refresh`,
-    return_url: `${SITE_URL}/admin/payments?connect=return`,
+    refresh_url: `${SITE_URL}${returnPath}?connect=refresh`,
+    return_url: `${SITE_URL}${returnPath}?connect=return`,
   });
   return link.url;
 }

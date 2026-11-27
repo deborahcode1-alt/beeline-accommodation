@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 // Sends the host to Stripe's own pages to link, or finish linking, their Stripe account.
-export function ConnectStripeButton({ label }: { label: string }) {
+export function ConnectStripeButton({ label, hostId }: { label: string; hostId?: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -11,7 +11,11 @@ export function ConnectStripeButton({ label }: { label: string }) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/admin/payments", { method: "POST" });
+      const res = await fetch("/api/admin/payments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hostId }),
+      });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error ?? "Could not open Stripe");
       window.location.href = data.url;

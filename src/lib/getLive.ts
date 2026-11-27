@@ -15,8 +15,10 @@ export type GetLiveItem = {
   /** Not needed to go live, so it is left out of the count until it is done. */
   optional?: boolean;
   href?: string;
-  /** Shown to the owner instead of a button, for a step only the host can do. */
+  /** A short extra line under the detail. */
   note?: string;
+  /** The step's button goes straight to Stripe. hostId is set on the owner's view. */
+  connectStripe?: { hostId?: string; label: string };
   /** A step the host confirms with a button rather than by filling something in. */
   action?: GetLiveAction;
 };
@@ -135,10 +137,13 @@ export async function getLiveChecklist(hostId: string, opts: { forOwner?: boolea
                   : "Needed for instant booking. Skip it if you only take booking requests and bank transfers."),
             done: stripeConnected,
             optional: !stripeConnected && instantListings.length === 0,
-            // Only the host can link their own Stripe account.
             href: opts.forOwner ? undefined : "/admin/payments",
+            connectStripe: {
+              hostId: opts.forOwner ? host.id : undefined,
+              label: host.stripeAccountId ? "Finish on Stripe" : "Go to Stripe",
+            },
             note: opts.forOwner
-              ? "The host does this from their own sign-in, on the Payments tab."
+              ? "This creates a real Stripe account. The host must enter their own ID and bank details, so use it when you're setting it up together, or ask them to press it from their own sign-in."
               : undefined,
           },
         ]

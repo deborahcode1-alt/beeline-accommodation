@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { GetLiveItem } from "@/lib/getLive";
+import { ConnectStripeButton } from "@/components/admin/ConnectStripeButton";
 
 // The Get live steps, ticked from what the host has saved. Two steps are confirmed with a button.
 export function GetLiveChecklist({ items, canConfirm }: { items: GetLiveItem[]; canConfirm: boolean }) {
@@ -58,7 +59,10 @@ export function GetLiveChecklist({ items, canConfirm }: { items: GetLiveItem[]; 
               {!item.done && item.note && <p className="mt-1 text-sm font-medium">{item.note}</p>}
               {!item.done && (
                 <div className="mt-2 flex flex-wrap items-center gap-3">
-                  {item.href && (
+                  {item.connectStripe && (
+                    <ConnectStripeButton label={item.connectStripe.label} hostId={item.connectStripe.hostId} />
+                  )}
+                  {item.href && !item.connectStripe && (
                     <Link
                       href={item.href}
                       className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-fg transition hover:bg-accent-hover"
