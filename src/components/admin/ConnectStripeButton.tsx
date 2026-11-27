@@ -6,10 +6,13 @@ import { useState } from "react";
 export function ConnectStripeButton({ label, hostId }: { label: string; hostId?: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Set when the main Stripe account still has a set-up step to finish: the Stripe page to do it on.
+  const [setupUrl, setSetupUrl] = useState<string | null>(null);
 
   async function go() {
     setBusy(true);
     setError(null);
+    setSetupUrl(null);
     try {
       const res = await fetch("/api/admin/payments", {
         method: "POST",
@@ -17,6 +20,7 @@ export function ConnectStripeButton({ label, hostId }: { label: string; hostId?:
         body: JSON.stringify({ hostId }),
       });
       const data = await res.json();
+      if (data.setupUrl) setSetupUrl(data.setupUrl);
       if (!res.ok || !data.url) throw new Error(data.error ?? "Could not open Stripe");
       window.location.href = data.url;
     } catch (err) {
@@ -35,7 +39,20 @@ export function ConnectStripeButton({ label, hostId }: { label: string; hostId?:
       >
         {busy ? "Opening Stripe..." : label}
       </button>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && !setupUrl && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {setupUrl && (
+        <div className="mt-3 max-w-md rounded-xl border border-card-border bg-soft p-4">
+          <p className="text-sm">{error}</p>
+          <a
+            href={setupUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-block rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-fg transition hover:bg-accent-hover"
+          >
+            Sign in to Stripe and finish set-up
+          </a>
+        </div>
+      )}
     </div>
   );
 }

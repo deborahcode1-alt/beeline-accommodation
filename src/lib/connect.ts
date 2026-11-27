@@ -34,6 +34,15 @@ export function hostIsConnected(host: Partial<ConnectFields> | null | undefined)
   return !!host?.stripeAccountId && !!host.stripeChargesEnabled;
 }
 
+/**
+ * Stripe won't create host accounts until the main account's own Connect set-up is finished, and its error names
+ * the Stripe page where that is done. Returns that page, or null for any other kind of error.
+ */
+export function platformSetupUrl(message: string) {
+  const url = message.match(/https:\/\/dashboard\.stripe\.com\/[^\s"')]+/)?.[0].replace(/[.,;:]+$/, "");
+  return url && /connect|platform/i.test(url) ? url : null;
+}
+
 /** Saves what Stripe says about a connected account. */
 export async function applyAccountStatus(account: Stripe.Account) {
   await prisma.host.updateMany({
